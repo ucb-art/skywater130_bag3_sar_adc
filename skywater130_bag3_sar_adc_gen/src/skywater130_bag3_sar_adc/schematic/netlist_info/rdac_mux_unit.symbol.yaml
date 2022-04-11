@@ -1,0 +1,525 @@
+lib_name: skywater130_bag3_sar_adc
+cell_name: rdac_mux_unit
+view_name: symbol
+bbox:
+  - -4
+  - -4
+  - 208
+  - 164
+terminals:
+  VDD:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 46
+          - 156
+          - 54
+          - 164
+    stype: 1
+    ttype: 2
+  VSS:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 46
+          - -4
+          - 54
+          - 4
+    stype: 2
+    ttype: 2
+  in:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 56
+          - 4
+          - 64
+    stype: 0
+    ttype: 0
+  out:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 186
+          - 56
+          - 194
+          - 64
+    stype: 0
+    ttype: 1
+  sel0:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 106
+          - 4
+          - 114
+    stype: 0
+    ttype: 0
+  sel1:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 86
+          - 4
+          - 94
+    stype: 0
+    ttype: 0
+shapes:
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 0
+          - 90
+        -
+          - 40
+          - 90
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 6
+        - 100
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: sel1
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 0
+          - 110
+        -
+          - 40
+          - 110
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 6
+        - 120
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: sel0
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 190
+          - 60
+        -
+          - 150
+          - 60
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 184
+        - 70
+      alignment: 7
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: out
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 50
+          - 0
+        -
+          - 50
+          - 30
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 60
+        - 6
+      alignment: 1
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VSS
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 50
+          - 160
+        -
+          - 50
+          - 120
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 60
+        - 154
+      alignment: 1
+      orient: R270
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VDD
+  -
+    - 0
+    - layer: 236
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 0
+        - 0
+        - 190
+        - 160
+  -
+    - 8
+    - layer: 236
+      purpose: 237
+      net: ""
+      origin:
+        - 80
+        - 150
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: "[@instanceName]"
+      evaluator: cdsNLPEvalText
+  -
+    - 8
+    - layer: 231
+      purpose: 237
+      net: ""
+      origin:
+        - 130
+        - 140
+      alignment: 4
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: "[@partName]"
+      evaluator: cdsNLPEvalText
+  -
+    - 0
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 0
+        - 0
+        - 190
+        - 160
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 40
+          - 120
+        -
+          - 60
+          - 120
+        -
+          - 70
+          - 110
+        -
+          - 70
+          - 90
+        -
+          - 60
+          - 80
+        -
+          - 40
+          - 80
+        -
+          - 40
+          - 120
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 80
+          - 80
+        -
+          - 100
+          - 40
+        -
+          - 80
+          - 40
+        -
+          - 100
+          - 80
+        -
+          - 80
+          - 80
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 100
+          - 80
+        -
+          - 120
+          - 80
+        -
+          - 100
+          - 40
+        -
+          - 120
+          - 40
+        -
+          - 100
+          - 80
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 70
+          - 100
+        -
+          - 100
+          - 100
+        -
+          - 100
+          - 80
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 20
+          - 60
+        -
+          - 90
+          - 60
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 20
+          - 110
+        -
+          - 40
+          - 110
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 20
+          - 90
+        -
+          - 40
+          - 90
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 100
+          - 100
+        -
+          - 140
+          - 100
+        -
+          - 140
+          - 90
+        -
+          - 130
+          - 90
+        -
+          - 140
+          - 70
+        -
+          - 150
+          - 90
+        -
+          - 140
+          - 90
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 140
+          - 70
+        -
+          - 140
+          - 20
+        -
+          - 100
+          - 20
+        -
+          - 100
+          - 40
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 110
+          - 60
+        -
+          - 130
+          - 60
+        -
+          - 140
+          - 50
+        -
+          - 150
+          - 60
+        -
+          - 160
+          - 60
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 0
+          - 60
+        -
+          - 40
+          - 60
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 6
+        - 70
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: in
+instances:
+  {}
+props:
+  interfaceLastChanged:
+    - 4
+    - time_val: 1626759249
+  partName:
+    - 3
+    - rdac_mux_unit
+  pin#:
+    - 0
+    - 6
+  portOrder:
+    - 5
+    - name: ILList
+      bin_val: ("out" "VDD" "VSS" "in" "sel0" "sel1")
+  vendorName:
+    - 3
+    - ""
+app_defs:
+  _dbLastSavedCounter:
+    - 0
+    - 209
+  _dbvCvTimeStamp:
+    - 0
+    - 209
+  cdbRevision:
+    - 0
+    - 227612

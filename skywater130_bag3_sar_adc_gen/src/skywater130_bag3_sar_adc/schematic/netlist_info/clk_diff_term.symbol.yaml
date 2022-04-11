@@ -1,0 +1,427 @@
+lib_name: skywater130_bag3_sar_adc
+cell_name: clk_diff_term
+view_name: symbol
+bbox:
+  - -4
+  - -60
+  - 328
+  - 84
+terminals:
+  VDD:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 106
+          - 76
+          - 114
+          - 84
+    stype: 1
+    ttype: 2
+  VSS:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 126
+          - 76
+          - 134
+          - 84
+    stype: 2
+    ttype: 2
+  inn:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - -54
+          - 4
+          - -46
+    stype: 0
+    ttype: 2
+  inp:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 26
+          - 4
+          - 34
+    stype: 0
+    ttype: 2
+  mid:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - -14
+          - 4
+          - -6
+    stype: 0
+    ttype: 2
+shapes:
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 0
+          - -50
+        -
+          - 40
+          - -50
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 46
+        - -40
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: inn
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 0
+          - 30
+        -
+          - 40
+          - 30
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 46
+        - 20
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: inp
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 110
+          - 80
+        -
+          - 110
+          - 40
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 110
+        - 34
+      alignment: 1
+      orient: R270
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VDD
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 130
+          - 80
+        -
+          - 130
+          - 40
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 130
+        - 34
+      alignment: 1
+      orient: R270
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VSS
+  -
+    - 0
+    - layer: 236
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 0
+        - -60
+        - 200
+        - 80
+  -
+    - 8
+    - layer: 236
+      purpose: 237
+      net: ""
+      origin:
+        - 200
+        - 40
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: "[@instanceName]"
+      evaluator: cdsNLPEvalText
+  -
+    - 8
+    - layer: 231
+      purpose: 237
+      net: ""
+      origin:
+        - 140
+        - -40
+      alignment: 4
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: "[@partName]"
+      evaluator: cdsNLPEvalText
+  -
+    - 0
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 40
+        - -60
+        - 200
+        - 40
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 40
+          - 30
+        -
+          - 80
+          - 30
+        -
+          - 80
+          - 20
+        -
+          - 70
+          - 20
+        -
+          - 90
+          - 10
+        -
+          - 70
+          - 10
+        -
+          - 90
+          - 0
+        -
+          - 80
+          - 0
+        -
+          - 80
+          - -20
+        -
+          - 70
+          - -20
+        -
+          - 90
+          - -30
+        -
+          - 70
+          - -30
+        -
+          - 90
+          - -40
+        -
+          - 80
+          - -40
+        -
+          - 80
+          - -50
+        -
+          - 40
+          - -50
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 80
+          - -10
+        -
+          - 100
+          - -10
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 100
+          - 0
+        -
+          - 100
+          - -20
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 110
+          - 0
+        -
+          - 110
+          - -20
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 110
+          - -10
+        -
+          - 130
+          - -10
+        -
+          - 130
+          - 40
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 80
+          - 30
+        -
+          - 200
+          - 30
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 80
+          - -50
+        -
+          - 200
+          - -50
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 0
+          - -10
+        -
+          - 40
+          - -10
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 46
+        - -10
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: mid
+instances:
+  {}
+props:
+  interfaceLastChanged:
+    - 4
+    - time_val: 1635802562
+  partName:
+    - 3
+    - clk_diff_term
+  pin#:
+    - 0
+    - 5
+  portOrder:
+    - 5
+    - name: ILList
+      bin_val: ("VDD" "VSS" "inn" "inp" "mid")
+  vendorName:
+    - 3
+    - ""
+app_defs:
+  _dbLastSavedCounter:
+    - 0
+    - 130
+  _dbvCvTimeStamp:
+    - 0
+    - 130
+  cdbRevision:
+    - 0
+    - 227612

@@ -21,7 +21,7 @@ from .sar_comp import SARComp, SA
 from .sar_logic_sync import SARLogic, SARLogicArray
 from .clk_sync_sar import SyncClkGen
 from .sar_samp import Sampler
-from .util_orig import MOSBaseTapWrapper
+from .util.util import MOSBaseTapWrapper
 #from .util.wrapper import MOSBaseTapWrapper
 
 

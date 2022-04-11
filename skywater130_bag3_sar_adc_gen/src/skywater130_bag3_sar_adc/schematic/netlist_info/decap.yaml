@@ -1,0 +1,437 @@
+lib_name: skywater130_bag3_sar_adc
+cell_name: decap
+view_name: schematic
+bbox:
+  - -162
+  - -122
+  - 177
+  - 181
+terminals:
+  MINUS:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -90
+            - -80
+            - R0
+          bbox:
+            - -151
+            - -106
+            - -80
+            - -70
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -115
+            - -80
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 2
+    ttype: 2
+  PLUS:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -90
+            - 140
+            - R0
+          bbox:
+            - -151
+            - 114
+            - -80
+            - 150
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -115
+            - 140
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 1
+    ttype: 2
+shapes:
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 60
+          - 90
+        -
+          - 60
+          - 100
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 60
+          - 100
+        -
+          - 90
+          - 100
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 120
+          - 90
+        -
+          - 120
+          - 100
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 90
+          - 100
+        -
+          - 120
+          - 100
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 90
+          - 90
+        -
+          - 90
+          - 100
+  -
+    - 4
+    - layer: 228
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 85
+        - 95
+        - 95
+        - 105
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - 40
+          - -40
+        -
+          - 40
+          - -30
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - -20
+          - -40
+        -
+          - 10
+          - -40
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - -20
+          - -40
+        -
+          - -20
+          - -30
+  -
+    - 4
+    - layer: 228
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 35
+        - -45
+        - 45
+        - -35
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - 10
+          - -40
+        -
+          - 10
+          - -30
+  -
+    - 4
+    - layer: 228
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 5
+        - -45
+        - 15
+        - -35
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - 90
+          - -80
+        -
+          - 90
+          - 50
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - 10
+          - -40
+        -
+          - 40
+          - -40
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - 40
+          - -80
+        -
+          - 40
+          - -40
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 60
+          - 100
+        -
+          - 60
+          - 140
+  -
+    - 4
+    - layer: 228
+      purpose: 4294967295
+      net: ""
+      bbox:
+        - 55
+        - 95
+        - 65
+        - 105
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 10
+          - 10
+        -
+          - 10
+          - 140
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: PLUS
+      origin:
+        - 50
+        - 147
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: PLUS
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: MINUS
+      origin:
+        - 50
+        - -73
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: MINUS
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: MINUS
+      points:
+        -
+          - 40
+          - -80
+        -
+          - 90
+          - -80
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: PLUS
+      points:
+        -
+          - 10
+          - 140
+        -
+          - 60
+          - 140
+instances:
+  XN:
+    lib_name: BAG_prim
+    cell_name: nmos4_standard
+    view_name: symbol
+    xform:
+      - 10
+      - 10
+      - R270
+    bbox:
+      - -24
+      - -122
+      - 55
+      - 78
+    connections:
+      B: MINUS
+      D: MINUS
+      G: PLUS
+      S: MINUS
+    params:
+      l:
+        - 3
+        - 40n
+      nf:
+        - 3
+        - 1
+      w:
+        - 3
+        - 4
+    is_primitive: true
+  XP:
+    lib_name: BAG_prim
+    cell_name: pmos4_standard
+    view_name: symbol
+    xform:
+      - 90
+      - 50
+      - MXR90
+    bbox:
+      - 3
+      - -18
+      - 177
+      - 181
+    connections:
+      B: PLUS
+      D: PLUS
+      G: MINUS
+      S: PLUS
+    params:
+      l:
+        - 3
+        - 40n
+      w:
+        - 3
+        - 4
+    is_primitive: true
+props:
+  connectivityLastUpdated:
+    - 0
+    - 376
+  instance#:
+    - 0
+    - 2
+  lastSchematicExtraction:
+    - 4
+    - time_val: 1646002222
+  pin#:
+    - 0
+    - 2
+  schGeometryLastUpdated:
+    - 0
+    - 376
+  schGeometryVersion:
+    - 3
+    - sch.ds.gm.1.4
+app_defs:
+  _dbLastSavedCounter:
+    - 0
+    - 376
+  _dbvCvTimeStamp:
+    - 0
+    - 376
+  cdbRevision:
+    - 0
+    - 227612

@@ -1,16 +1,19 @@
 import math
-from typing import Optional, List, Union
+from typing import Any, Dict, cast, Type, Optional, List, Tuple, Union
 
+from bag.design.module import Module
 from bag.layout.routing.base import WireArray, TrackID
-from bag.layout.template import TemplateBase
+from bag.layout.template import TemplateDB, TemplateBase
 from bag.typing import TrackType
+from bag.util.immutable import Param
+from bag.util.importlib import import_class
 from bag.util.math import HalfInt
 from pybag.core import BBox
 from pybag.enum import RoundMode, MinLenMode, Direction, Orient2D
 from xbase.layout.enum import MOSType, SubPortMode, MOSWireType
 from xbase.layout.mos.base import MOSBase
 from xbase.layout.mos.placement.data import MOSBasePlaceInfo, TilePatternElement, TilePattern
-
+from xbase.layout.mos.top import GenericWrapper
 
 def draw_stack_wire(self: TemplateBase, wire: WireArray, top_layid: int, x0: Optional[Union[int, float]] = None,
                     y0: Optional[Union[int, float]] = None, x1: Optional[Union[int, float]] = None,
@@ -224,7 +227,6 @@ def max_conn_wires(self, tr_manager, wire_type, wire_list, start_coord=None, end
         raise ValueError("[Util Error:] Targeted connection have no effect")
     return res_wire_list
 
-
 def fill_and_collect(mosbase, tile_idx, ret_p_list, ret_n_list, collect_all_bnd_dummies=True, extend_to_gate=False,
                      start_col=None, stop_col=None, fill_empty=False):
     nrows = mosbase.get_tile_pinfo(tile_idx).num_rows
@@ -269,14 +271,9 @@ def connect_conn_dummy_rows(mosbase: MOSBase, dum_row_list: List[List[WireArray]
             mosbase.extend_wires(dum_row_list[sup_dum_idx], upper=sup_coord)
 
 
-def fill_conn_layer_intv(mosbase: MOSBase, tile_idx: int, row_idx: int,
-                         extend_to_gate: bool = True, export_gate: bool = False,
+def fill_conn_layer_intv(mosbase: MOSBase, tile_idx: int, row_idx: int, extend_to_gate: bool = True,
                          start_col=None, stop_col=None, fill_empty=False):
-    if extend_to_gate & export_gate:
-        raise ValueError('Cant use both extend_to_gate and export_gate')
     ncols = mosbase.num_cols
-    start_col = start_col if start_col else 0
-    stop_col = stop_col if stop_col else ncols
     pinfo, tile_yb, flip_tile = mosbase.used_array.get_tile_info(tile_idx)
     row_place_info = mosbase.get_tile_pinfo(tile_idx).get_row_place_info(row_idx)
     row_info = mosbase.get_row_info(row_idx, tile_idx)
@@ -299,40 +296,15 @@ def fill_conn_layer_intv(mosbase: MOSBase, tile_idx: int, row_idx: int,
             conn_lower, conn_upper = (row_place_info.yb_blk + tile_yb + g_side_bnd,
                                       row_place_info.yb_blk + tile_yb + row_info.ds_conn_y[1])
 
-    if export_gate:
-        tile_yb += pinfo.height
-        if row_info.flip:
-            g_conn_lower, g_conn_upper = (-row_place_info.yt_blk + tile_yb + row_info.g_conn_y[0],
-                                          -row_place_info.yt_blk + tile_yb + row_info.g_conn_y[1])
-        else:
-            g_conn_lower, g_conn_upper = (-row_place_info.yb_blk + tile_yb - row_info.g_conn_y[1],
-                                          -row_place_info.yb_blk + tile_yb - row_info.g_conn_y[0])
-    else:
-        if row_info.flip:
-            g_conn_lower, g_conn_upper = (row_place_info.yt_blk + tile_yb - row_info.g_conn_y[1],
-                                          row_place_info.yt_blk + tile_yb - row_info.g_conn_y[0])
-
-        else:
-            g_conn_lower, g_conn_upper = (row_place_info.yb_blk + tile_yb + row_info.g_conn_y[0],
-                                          row_place_info.yb_blk + tile_yb + row_info.g_conn_y[1])
-
     if fill_empty:
         intv_list = [[(start_col, stop_col)]]
     else:
-        try:
-            intv_list = mosbase.used_array.get_complement(tile_idx, row_idx, start_col, stop_col)
-        except IndexError:
-            intv_list = mosbase.used_array.get_complement(tile_idx, row_idx, 0, ncols)
-
+        intv_list = mosbase.used_array.get_complement(tile_idx, row_idx, start_col if start_col else 0,
+                                                      stop_col if stop_col else ncols)
     s_dum_list, d_dum_list = [], []
     for intv in intv_list:
         intv_pair = intv[0]
-        if intv_pair[0] > stop_col or intv_pair[1] < start_col:
-            continue
-        else:
-            intv_pair = (intv_pair[0], min(intv_pair[1], stop_col))
-            intv_pair = (max(intv_pair[0], start_col), intv_pair[1])
-            ndum = intv_pair[1] - intv_pair[0]
+        ndum = intv_pair[1] - intv_pair[0]
         if ndum < 1 or (ndum == 1 and intv_pair[0] != 0 and intv_pair[1] != mosbase.num_cols):
             continue
         s_track = mosbase.arr_info.col_to_track(mosbase.conn_layer, intv_pair[0] + 2 if intv_pair[0] else 0,
@@ -392,7 +364,6 @@ def get_available_tracks_reverse(mosbase, layer_id: int, tid_lo: TrackType, tid_
             cur_htr -= 1
 
     return ans
-
 
 def fill_tap_intv(mosbase, tile_idx, start_col, stop_col, port_mode=SubPortMode.EVEN) -> None:
     if stop_col - start_col < mosbase.min_sub_col:
@@ -582,3 +553,177 @@ def fill_tap(mosbase, tile_idx, port_mode=SubPortMode.EVEN, extra_margin=True):
 
     return row0_sup, row1_sup
 
+
+
+class MOSBaseTapWithPower(MOSBase):
+    """A MOSArrayWrapper that works with any given generator class."""
+
+    def __init__(self, temp_db: TemplateDB, params: Param, **kwargs: Any) -> None:
+        MOSBase.__init__(self, temp_db, params, **kwargs)
+
+        self._sch_cls: Optional[Type[Module]] = None
+        self._core: Optional[MOSBase] = None
+
+    @property
+    def core(self) -> MOSBase:
+        return self._core
+
+    @classmethod
+    def get_params_info(cls) -> Dict[str, str]:
+        return dict(
+            cls_name='wrapped class name.',
+            params='parameters for the wrapped class.',
+            pwr_gnd_list='List of supply names for each tile.',
+            ncols_tot='Total number of columns',
+            ndum_side='Dummies at sides',
+        )
+
+    @classmethod
+    def get_default_param_values(cls) -> Dict[str, Any]:
+        return dict(pwr_gnd_list=None, ncols_tot=0, ndum_side=0)
+
+    def get_schematic_class_inst(self) -> Optional[Type[Module]]:
+        return self._sch_cls
+
+    def get_layout_basename(self) -> str:
+        cls_name: str = self.params['cls_name']
+        cls_name = cls_name.split('.')[-1]
+        return cls_name + 'Tap'
+
+    def draw_layout(self) -> None:
+        gen_cls = cast(Type[MOSBase], import_class(self.params['cls_name']))
+        pwr_gnd_list: List[Tuple[str, str]] = self.params['pwr_gnd_list']
+
+        master: MOSBase = self.new_template(gen_cls, params=self.params['params'])
+        tr_manager = master.tr_manager
+        hm_layer = master.conn_layer + 1
+        vm_layer = hm_layer + 1
+        xm_layer = vm_layer + 1
+        self._core = master
+        self.draw_base(master.draw_base_info)
+
+        num_tiles = master.num_tile_rows
+        tap_ncol = max((self.get_tap_ncol(tile_idx=tile_idx) for tile_idx in range(num_tiles)))
+        tap_sep_col = self.sub_sep_col
+        num_cols = master.num_cols + 2 * (tap_sep_col + tap_ncol)
+        tot_ncols = max(num_cols + 2 * self.params['ndum_side'], self.params['ncols_tot'])
+        ndum_side = (tot_ncols - num_cols) // 2
+        tot_ncols = ndum_side * 2 + num_cols
+
+        self.set_mos_size(tot_ncols, num_tiles=num_tiles)
+        if not pwr_gnd_list:
+            pwr_gnd_list = [('VDD', 'VSS')] * num_tiles
+        elif len(pwr_gnd_list) != num_tiles:
+            raise ValueError('pwr_gnd_list length mismatch.')
+
+        inst = self.add_tile(master, 0, tap_ncol + tap_sep_col + ndum_side)
+        sup_names = set()
+
+        vdd_conn_list, vss_conn_list = [], []
+        for tidx in range(num_tiles):
+            pwr_name, gnd_name = pwr_gnd_list[tidx]
+            sup_names.add(pwr_name)
+            sup_names.add(gnd_name)
+            vdd_list = []
+            vss_list = []
+            self.add_tap(0, vdd_list, vss_list, tile_idx=tidx)
+            self.add_tap(tot_ncols, vdd_list, vss_list, tile_idx=tidx, flip_lr=True)
+            self.add_pin(pwr_name, vdd_list, connect=True)
+            self.add_pin(gnd_name, vss_list, connect=True)
+            vdd_conn_list.extend(vdd_list)
+            vss_conn_list.extend(vss_list)
+
+        vdd_conn_list = self.connect_wires(vdd_conn_list)[0].to_warr_list()
+        vss_conn_list = self.connect_wires(vss_conn_list)[0].to_warr_list()
+
+        vdd_hm_list = inst.get_all_port_pins('VDD')
+        vss_hm_list = inst.get_all_port_pins('VSS')
+        # Connect conn layer and hm layer supply
+        self.connect_differential_wires(vdd_hm_list, vss_hm_list, vdd_conn_list[0], vss_conn_list[0])
+        self.connect_differential_wires(vdd_hm_list, vss_hm_list, vdd_conn_list[1], vss_conn_list[1])
+
+        # Get vm locs at two sides
+        side_margin_col = (tot_ncols - master.num_cols) // 2
+        sup_vm_locs_l = self.get_available_tracks(vm_layer,
+                                                  self.arr_info.col_to_track(vm_layer, 0),
+                                                  self.arr_info.col_to_track(vm_layer, side_margin_col),
+                                                  self.bound_box.yl, self.bound_box.yh,
+                                                  tr_manager.get_width(vm_layer, 'sup'),
+                                                  tr_manager.get_sep(vm_layer, ('sup', 'sup')),
+                                                  include_last=True)
+        sup_vm_locs_r = get_available_tracks_reverse(self, vm_layer,
+                                                  self.arr_info.col_to_track(vm_layer, tot_ncols - side_margin_col),
+                                                  self.arr_info.col_to_track(vm_layer, tot_ncols),
+                                                  self.bound_box.yl, self.bound_box.yh,
+                                                  tr_manager.get_width(vm_layer, 'sup'),
+                                                  tr_manager.get_sep(vm_layer, ('sup', 'sup')),
+                                                  include_last=True)
+        vdd_vm_tidx_list = sup_vm_locs_l[1::2] + sup_vm_locs_r[1::2]
+        vss_vm_tidx_list = sup_vm_locs_l[::2] + sup_vm_locs_r[::2]
+        tr_w_sup_vm = tr_manager.get_width(vm_layer, 'sup')
+        vdd_vm_list, vss_vm_list = [], []
+        for tidx in vdd_vm_tidx_list:
+            vdd_vm_list.append(self.connect_to_tracks(vdd_hm_list, TrackID(vm_layer, tidx, tr_w_sup_vm),
+                                                      track_lower=self.bound_box.yl, track_upper=self.bound_box.yh))
+        for tidx in vss_vm_tidx_list:
+            vss_vm_list.append(self.connect_to_tracks(vss_hm_list, TrackID(vm_layer, tidx, tr_w_sup_vm),
+                                                      track_lower=self.bound_box.yl, track_upper=self.bound_box.yh))
+
+        # # Go up to xm_layer
+        # tile_height = self.get_tile_info(0)[0].height
+        # num_xm_per_tile = \
+        #     tr_manager.get_num_wires_between(xm_layer, 'sup', self.grid.coord_to_track(xm_layer, 0, RoundMode.NEAREST),
+        #                                      'sup', self.grid.coord_to_track(xm_layer, tile_height, RoundMode.NEAREST),
+        #                                      'sup')
+        # # put xm_layer over hm_layer
+        # vss_xm_tidx_list, vdd_xm_tidx_list = [], []
+        # for vss in vss_hm_list:
+        #     coord = self.grid.track_to_coord(hm_layer, vss.track_id.base_index)
+        #     vss_xm_tidx_list.append(self.grid.coord_to_track(xm_layer, coord, mode=RoundMode.NEAREST))
+        # for vdd in vdd_hm_list:
+        #     coord = self.grid.track_to_coord(hm_layer, vdd.track_id.base_index)
+        #     vdd_xm_tidx_list.append(self.grid.coord_to_track(xm_layer, coord, mode=RoundMode.NEAREST))
+
+        # vdd_xm_list, vss_xm_list = [], []
+        # tr_w_sup_xm = tr_manager.get_width(xm_layer, 'sup')
+        # for tidx in vdd_xm_tidx_list:
+        #     vdd_xm_list.append(self.connect_to_tracks(vdd_vm_list, TrackID(xm_layer, tidx, tr_w_sup_xm),
+        #                                               track_lower=self.bound_box.xl, track_upper=self.bound_box.xh))
+        # for tidx in vss_xm_tidx_list:
+        #     vss_xm_list.append(self.connect_to_tracks(vss_vm_list, TrackID(xm_layer, tidx, tr_w_sup_xm),
+        #                                               track_lower=self.bound_box.xl, track_upper=self.bound_box.xh))
+
+        for name in inst.port_names_iter():
+            if name in sup_names:
+                self.reexport(inst.get_port(name), connect=True)
+            else:
+                self.reexport(inst.get_port(name))
+
+        self.sch_params = master.sch_params
+        self._sch_cls = master.get_schematic_class_inst()
+
+
+class MOSBaseTapWrapper(GenericWrapper):
+    """A MOSArrayWrapper that works with any given generator class."""
+
+    def __init__(self, temp_db: TemplateDB, params: Param, **kwargs: Any) -> None:
+        GenericWrapper.__init__(self, temp_db, params, **kwargs)
+
+    @property
+    def core(self) -> MOSBase:
+        real_core = super().core
+        return cast(MOSBaseTapWithPower, real_core).core
+
+    @classmethod
+    def get_params_info(cls) -> Dict[str, str]:
+        ans = MOSBaseTapWithPower.get_params_info()
+        return ans
+
+    @classmethod
+    def get_default_param_values(cls) -> Dict[str, Any]:
+        ans = MOSBaseTapWithPower.get_default_param_values()
+        return ans
+
+    def draw_layout(self) -> None:
+        master = self.new_template(MOSBaseTapWithPower, params=self.params)
+        self.wrap_mos_base(master, False)

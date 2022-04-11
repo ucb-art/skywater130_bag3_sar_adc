@@ -9,7 +9,7 @@ from bag.layout.template import TemplateDB
 from bag.util.immutable import ImmutableSortedDict
 from bag.util.immutable import Param
 from bag.util.math import HalfInt
-from skywater130_bag3_sar_adc.layout.util_orig import fill_conn_layer_intv
+from skywater130_bag3_sar_adc.layout.util.util import fill_conn_layer_intv
 from skywater130_bag3_sar_adc.layout.vco_ring_osc import RingOscUnit
 from pybag.enum import RoundMode, MinLenMode, Direction
 from xbase.layout.enum import MOSWireType

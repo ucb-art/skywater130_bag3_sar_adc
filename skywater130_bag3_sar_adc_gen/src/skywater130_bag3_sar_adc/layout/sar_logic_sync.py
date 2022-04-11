@@ -17,7 +17,7 @@ from .digital import NAND2Core, InvChainCore, NOR3Core, InvCore, PassGateCore
 from .digital import LatchCore, FlopCore
 from .digital import get_adj_tid_list
 
-from skywater130_bag3_sar_adc.layout.util_orig import fill_tap, export_xm_sup
+from skywater130_bag3_sar_adc.layout.util.util import fill_tap, export_xm_sup
 from skywater130_bag3_sar_adc.layout.vco_cnter_dec import CnterAsync
 from .clk_sync_sar import SyncClkGen
 

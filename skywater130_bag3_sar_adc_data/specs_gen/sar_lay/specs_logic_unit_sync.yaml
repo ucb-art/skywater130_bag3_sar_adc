@@ -1,0 +1,68 @@
+impl_lib: AAA_SAR_lay
+impl_cell: AAA_Logic_unit_sync
+root_dir: gen_outputs/bag_sar
+lay_class: bag3_digital.layout.stdcells.util.STDCellWrapper
+
+params:
+  draw_taps: True
+  cls_name: skywater130_bag3_sar_adc.layout.sar_logic_sync.SARLogicUnit
+  params:
+    substrate_row: False
+    has_pmos_sw: True
+    w_n: 84
+    w_p: 110
+    seg_dict:
+      oai:
+        seg: 1
+        seg_pstack1: 2
+      flop: 2
+      oai_fb: 1
+      buf: [4, 8]
+      nor: 2
+      nand_mid: 2
+      nand_done: 2
+      nand_state: 2
+      inv_ret: 2
+      inv_done: 2
+      inv_state: 2
+      buf_state: [1, 2]
+      inv_clk: 2
+    pinfo:
+      tiles:
+        - name: logic_tile
+      tile_specs:
+        arr_info:
+          lch: 30
+          top_layer: 4
+          tr_widths:
+            sig: {2: 1}
+            clk: {2: 1}
+            sup: {2: 1}
+          tr_spaces: {}
+        place_info:
+          logic_tile:
+            priority: 1
+            bot_mirror: False
+            top_mirror: False
+            row_specs:
+              - mos_type: nch
+                width: 84
+                threshold: standard
+                bot_wires:
+                  data: ['sup', 'sig<0:1>']
+                  shared: ['sup']
+                top_wires: ['sig<0:2>']
+                flip: True
+              - mos_type: pch
+                width: 110
+                threshold: standard
+                bot_wires: ['sig<0:1>']
+                top_wires:
+                  data: ['sig<0:1>', 'sup']
+                  shared: ['sup']
+        abut_list: []
+#          - [[sampler_tile, 1], [off_tile, 0]]
+#          - edges: [[off_tile, 1], [ptap_tile, 0]]
+
+
+

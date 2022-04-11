@@ -1,0 +1,326 @@
+lib_name: skywater130_bag3_sar_adc
+cell_name: mos_cap
+view_name: schematic
+bbox:
+  - -441
+  - 22
+  - -90
+  - 296
+terminals:
+  G:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: ipin
+          view_name: symbol
+          xform:
+            - -320
+            - 240
+            - R0
+          bbox:
+            - -377
+            - 214
+            - -320
+            - 250
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -350
+            - 240
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 0
+  VDD:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -380
+            - 240
+            - R0
+          bbox:
+            - -441
+            - 214
+            - -370
+            - 250
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -405
+            - 240
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 1
+    ttype: 2
+  VSS:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -380
+            - 210
+            - R0
+          bbox:
+            - -441
+            - 184
+            - -370
+            - 220
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -405
+            - 210
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 2
+    ttype: 2
+shapes:
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: VSS
+      points:
+        -
+          - -130
+          - 160
+        -
+          - -120
+          - 160
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: VSS
+      origin:
+        - -110
+        - 167
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VSS
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: VSS
+      points:
+        -
+          - -230
+          - 160
+        -
+          - -200
+          - 160
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: VSS
+      origin:
+        - -167
+        - 136
+      alignment: 8
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VSS
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: G
+      points:
+        -
+          - -160
+          - 220
+        -
+          - -160
+          - 240
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: VSS
+      origin:
+        - -210
+        - 167
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VSS
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: G
+      points:
+        -
+          - -160
+          - 200
+        -
+          - -160
+          - 220
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: G
+      origin:
+        - -167
+        - 204
+      alignment: 2
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: G
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: VSS
+      points:
+        -
+          - -160
+          - 100
+        -
+          - -160
+          - 140
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: VSS
+      points:
+        -
+          - -200
+          - 160
+        -
+          - -190
+          - 160
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: VSS
+      points:
+        -
+          - -120
+          - 160
+        -
+          - -90
+          - 160
+instances:
+  XCAP:
+    lib_name: xbase
+    cell_name: nmos4_analog
+    view_name: symbol
+    xform:
+      - -120
+      - 220
+      - MYR90
+    bbox:
+      - -221
+      - 22
+      - -116
+      - 296
+    connections:
+      b: VSS
+      d: VSS
+      g: G
+      s: VSS
+    params:
+      {}
+    is_primitive: false
+props:
+  connectivityLastUpdated:
+    - 0
+    - 367
+  instance#:
+    - 0
+    - 1
+  lastSchematicExtraction:
+    - 4
+    - time_val: 1615753113
+  pin#:
+    - 0
+    - 3
+  schGeometryLastUpdated:
+    - 0
+    - 367
+  schGeometryVersion:
+    - 3
+    - sch.ds.gm.1.4
+app_defs:
+  _dbLastSavedCounter:
+    - 0
+    - 367
+  _dbvCvTimeStamp:
+    - 0
+    - 367
+  cdbRevision:
+    - 0
+    - 227612

@@ -1,0 +1,348 @@
+lib_name: skywater130_bag3_sar_adc
+cell_name: buffer_group
+view_name: schematic
+bbox:
+  - -331
+  - 30
+  - 318
+  - 330
+terminals:
+  VDD:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -270
+            - 320
+            - R0
+          bbox:
+            - -331
+            - 294
+            - -260
+            - 330
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -295
+            - 320
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 1
+    ttype: 2
+  VSS:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -270
+            - 290
+            - R0
+          bbox:
+            - -331
+            - 264
+            - -260
+            - 300
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -295
+            - 290
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 2
+    ttype: 2
+  din:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: ipin
+          view_name: symbol
+          xform:
+            - -150
+            - 320
+            - R0
+          bbox:
+            - -207
+            - 294
+            - -150
+            - 330
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -180
+            - 320
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 0
+  dout:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -80
+            - 320
+            - R0
+          bbox:
+            - -80
+            - 294
+            - -23
+            - 330
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -55
+            - 320
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
+shapes:
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: net1
+      points:
+        -
+          - 230
+          - 130
+        -
+          - 270
+          - 130
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: dout
+      points:
+        -
+          - 230
+          - 150
+        -
+          - 270
+          - 150
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: dout
+      origin:
+        - 234
+        - 157
+      alignment: 2
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: dout
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: din
+      points:
+        -
+          - -30
+          - 150
+        -
+          - 10
+          - 150
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: din
+      origin:
+        - 6
+        - 157
+      alignment: 8
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: din
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: VSS
+      points:
+        -
+          - 110
+          - 30
+        -
+          - 110
+          - 70
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: VSS
+      origin:
+        - 103
+        - 66
+      alignment: 8
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VSS
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: VDD
+      points:
+        -
+          - 110
+          - 230
+        -
+          - 110
+          - 270
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: VDD
+      origin:
+        - 103
+        - 234
+      alignment: 2
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: VDD
+instances:
+  XBUF:
+    lib_name: bag3_digital
+    cell_name: inv_chain
+    view_name: symbol
+    xform:
+      - 10
+      - 70
+      - R0
+    bbox:
+      - 6
+      - 66
+      - 318
+      - 234
+    connections:
+      VDD: VDD
+      VSS: VSS
+      in: din
+      out: dout
+      outb: net1
+    params:
+      {}
+    is_primitive: false
+props:
+  connectivityLastUpdated:
+    - 0
+    - 997
+  instance#:
+    - 0
+    - 1
+  lastSchematicExtraction:
+    - 4
+    - time_val: 1644474474
+  net#:
+    - 0
+    - 1
+  pin#:
+    - 0
+    - 4
+  schGeometryLastUpdated:
+    - 0
+    - 997
+  schGeometryVersion:
+    - 3
+    - sch.ds.gm.1.4
+  schXtrVersion:
+    - 3
+    - sch.10.0
+app_defs:
+  _dbLastSavedCounter:
+    - 0
+    - 997
+  _dbvCvTimeStamp:
+    - 0
+    - 997
+  cdbRevision:
+    - 0
+    - 227612

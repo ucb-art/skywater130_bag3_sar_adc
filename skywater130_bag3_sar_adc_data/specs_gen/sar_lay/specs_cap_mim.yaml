@@ -1,0 +1,24 @@
+lay_class: skywater130_bag3_sar_adc.layout.sar_cdac.CapMIMCore
+impl_lib: AAA_SAR_lay
+impl_cell: AAA_MIMCAP
+root_dir: gen_outputs/mimcap
+
+params:
+  ny: 4
+  cap_config:
+    top_layer: 5
+    bot_layer: 4
+    #width: 80  #refers to capacitor layer width and height
+    height: 3
+    cap_sp: 1.6
+    #bot_w: 1
+    #bot_y_w: 4
+    #sp: 0
+    #sp_le: 0 # in resolution
+    port_tr_w: 2
+    has_rmetal: False
+#    cap: 317e-18
+  width: 40 # in um
+  ratio: 1
+#  add_tap: True
+

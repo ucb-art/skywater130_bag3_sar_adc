@@ -1,0 +1,116 @@
+impl_lib: AAA_Comp_SA
+impl_cell: AAA_Comp_SA_sense
+root_dir: gen_outputs/bag_comp
+lay_class: xbase.layout.mos.top.GenericWrapper
+#lay_class: bag3_digital.layout.stdcells.util.STDCellWrapper
+
+params:
+#  draw_taps: True
+  cls_name: skywater130_bag3_sar_adc.layout.sar_comp_senseamp.SA
+  params:
+    substrate_row: False
+    vertical_out: True
+    add_tap: True
+#    has_bridge: True
+    even_center: True
+    seg_dict:
+      in: 2
+      tail: 4
+      nfb: 2
+      pfb: 2
+      sw: 2
+    w_dict:
+      in: 336
+      nfb: 336
+      pfb: 400
+      tail: 336
+      sw: 200
+    pinfo:
+      tiles:
+        - name: ptap_tile
+        - name: sa_tile
+        - name: ntap_tile
+      tile_specs:
+        arr_info:
+          lch: 30 #84
+          top_layer: 4
+          tr_widths:
+            sig: {2: 1}
+            clk: {2: 1}
+            sup: {2: 1}
+          tr_spaces: {}
+        place_info:
+          ntap_tile:
+            priority: 1
+            row_specs:
+              - mos_type: ntap
+                width: 336
+                threshold: standard
+                top_wires: []
+                bot_wires:
+                  data: ['sup']
+                flip: True
+          ptap_tile:
+            priority: 1
+            row_specs:
+              - mos_type: ptap
+                width: 400
+                threshold: standard
+                top_wires: []
+                bot_wires:
+                  data: ['sup']
+                flip: True
+          sa_tile:
+            priority: 1
+            bot_mirror: False
+            top_mirror: False
+            row_specs:
+              - mos_type: nch
+                width: 336
+                threshold: standard
+                bot_wires:
+                  data: ['sup', 'sig<0:1>']
+                  shared: ['sup']
+                top_wires: ['sig<0:1>']
+              - mos_type: nch
+                width: 336
+                threshold: standard
+                bot_wires: ['sig<0:1>']
+                top_wires:
+                  data: ['sig<0:1>']
+                flip: True
+              - mos_type: nch
+                width: 336
+                threshold: standard
+                bot_wires: ['sig<0:1>']
+                top_wires:
+                  data: ['sig<0:1>']
+              - mos_type: pch
+                width: 400
+                threshold: standard
+                bot_wires: ['sig<0:1>']
+                top_wires:
+                  data: ['sig<0:2>', 'sup']
+                  shared: ['sup']
+                flip: True
+              - mos_type: pch
+                width: 200
+                threshold: standard
+                bot_wires: ['sig<0:1>']
+                top_wires:
+                  data: ['sig<0:2>', 'sup']
+                  shared: ['sup']
+                flip: True
+              - mos_type: pch
+                width: 200
+                threshold: standard
+                bot_wires: ['sig<0:1>']
+                top_wires:
+                  data: ['sig<0:2>', 'sup']
+                  shared: ['sup']
+        abut_list:
+          - [[ptap_tile, 1], [sa_tile, 0]]
+          - [[sa_tile, 1], [ntap_tile, 0]]
+
+
+
