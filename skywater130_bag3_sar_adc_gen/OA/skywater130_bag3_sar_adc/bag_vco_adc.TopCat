@@ -1,0 +1,7 @@
+TDMCHECKPOINT="1.0"
+skywater130_bag3_sar_adc/clk.Cat type="category"
+skywater130_bag3_sar_adc/dac.Cat type="category"
+skywater130_bag3_sar_adc/ra.Cat type="category"
+skywater130_bag3_sar_adc/sah.Cat type="category"
+skywater130_bag3_sar_adc/sar.Cat type="category"
+skywater130_bag3_sar_adc/vco.Cat type="category"

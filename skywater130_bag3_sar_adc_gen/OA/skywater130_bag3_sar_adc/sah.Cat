@@ -1,0 +1,6 @@
+TDMCHECKPOINT="1.0"
+skywater130_bag3_sar_adc/bootstrap type="cell"
+skywater130_bag3_sar_adc/bootstrap_diff type="cell"
+skywater130_bag3_sar_adc/bootstrap_fast type="cell"
+skywater130_bag3_sar_adc/nmos_sampler_diff type="cell"
+keepEmptyCategory type="unknown"

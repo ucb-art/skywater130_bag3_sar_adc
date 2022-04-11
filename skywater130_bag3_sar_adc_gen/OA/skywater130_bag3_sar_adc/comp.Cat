@@ -1,0 +1,8 @@
+TDMCHECKPOINT="1.0"
+skywater130_bag3_sar_adc/comp_dual_strongarm_core type="cell"
+skywater130_bag3_sar_adc/comp_dyn_latch type="cell"
+skywater130_bag3_sar_adc/comp_half_latch type="cell"
+skywater130_bag3_sar_adc/comp_preamp type="cell"
+skywater130_bag3_sar_adc/comp_strongarm_core type="cell"
+skywater130_bag3_sar_adc/comp_tri_tail_core type="cell"
+keepEmptyCategory type="unknown"
