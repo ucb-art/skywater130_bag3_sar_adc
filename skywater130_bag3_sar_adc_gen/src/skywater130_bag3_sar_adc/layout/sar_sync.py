@@ -22,7 +22,6 @@ from .sar_logic_sync import SARLogic, SARLogicArray
 from .clk_sync_sar import SyncClkGen
 from .sar_samp import Sampler
 from .util.util import MOSBaseTapWrapper
-#from .util.wrapper import MOSBaseTapWrapper
 
 
 class SARSlice(TemplateBase):
@@ -245,8 +244,7 @@ class SARSlice(TemplateBase):
         dac_n_xm = self.connect_to_tracks(dac_top_n, TrackID(hm_layer, dac_topn_tidx, tr_w_sig_xm))
         dac_p_xm = self.connect_to_tracks(dac_top_p, TrackID(hm_layer, dac_topp_tidx, tr_w_sig_xm))
 
-        # FIXME
-        self.connect_wires([comp.get_pin('inp'), dac_p_xm]) #self.connect_to_track_wires(comp.get_pin('inp'), dac_p_xm)
+        self.connect_wires([comp.get_pin('inp'), dac_p_xm]) 
         self.connect_wires([comp.get_pin('inn'), dac_n_xm])
         # self.connect_bbox_to_track_wires(Direction.LOWER, (comp.get_port('inp').get_single_layer(), 'drawing'),
         #                                  comp.get_pin('inp'), dac_p_xm)
@@ -263,6 +261,7 @@ class SARSlice(TemplateBase):
         # comp_n_m_vm = self.connect_to_tracks(logic.get_pin('comp_n_m'), TrackID(vm_layer, comp_n_m_vm_tidx,
         # #                                                                         tr_w_dig_vm))
 
+        # Connect comp to logic
         logic_top_hm_tidx = max(logic.get_all_port_pins('VSS', layer=hm_layer),
                                 key=lambda x: x.track_id.base_index).track_id.base_index
         logic_top_coord = self.grid.track_to_coord(hm_layer, logic_top_hm_tidx)
@@ -296,7 +295,6 @@ class SARSlice(TemplateBase):
         #                                  comp.get_pin('outp_m'), comp_p_m_xm)
         
         # Connect comp_clk
-        # FIXME
         comp_clk_xm, comp_clkb_xm = [], []
         clk_bbox: List[BBox] = comp.get_all_port_pins('clk')
         #clkb_bbox: List[BBox] = comp.get_all_port_pins('clkb')
@@ -324,6 +322,8 @@ class SARSlice(TemplateBase):
     
         self.set_size_from_bound_box(top_layer, BBox(0, 0, w_tot, h_tot))
 
+
+        # Route digital logic outputs to CDAC switches
         sig_type_list = ['clk'] + ['dig'] * nbits * 5 if has_pmos_sw else ['clk'] + ['dig'] * nbits * 3
 
         sig_type_list = sig_type_list * 2 if lower_layer_routing else sig_type_list

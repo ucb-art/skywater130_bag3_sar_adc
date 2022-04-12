@@ -1002,7 +1002,6 @@ class SAHalf(MOSBase):
         th_ans = {}
         for name, row_idx in [('tail', ridx_n), ('in', ridx_n + 1), ('nfb', ridx_n + 2),
                               ('pfb', ridx_p)]:
-            print(name, row_idx)
             rinfo = self.get_row_info(row_idx, 0)
             w = w_dict.get(name, 0)
             if w == 0:
@@ -1051,7 +1050,6 @@ class SA(MOSBase):
         add_tap: bool = self.params['add_tap']
         vertical_out: bool = self.params['vertical_out']
         even_center: bool = self.params['even_center']
-        print("add_tap: ", add_tap)
         master_params = self.params.copy().to_dict()
         if add_tap:
             pinfo = MOSBasePlaceInfo.make_place_info(self.grid, self.params['pinfo'])

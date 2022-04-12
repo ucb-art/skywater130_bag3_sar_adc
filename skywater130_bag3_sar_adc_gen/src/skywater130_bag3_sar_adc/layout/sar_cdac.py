@@ -298,7 +298,7 @@ class CapColCore(TemplateBase):
             array_bbox = mimcap.array_box #should just have one box
             ideal_cap = unit_master.sch_params.get('cap', 0)
             self.top_pin_idx = mimcap_master.top_pin_idx
-            m = 1 #TODO: the multiple in the schematic - have to edit in schematic either ways
+            m = 1 #TODO: the multiple in the schematic - have to edit in schematic
 
         else:
             cap_half_config = copy.deepcopy(cap_config.to_dict())
