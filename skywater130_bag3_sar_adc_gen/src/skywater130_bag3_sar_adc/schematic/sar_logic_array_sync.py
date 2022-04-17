@@ -115,5 +115,5 @@ class skywater130_bag3_sar_adc__sar_logic_array_sync(Module):
                 self.instances[f'XLOGIC{idx}'].design(**_params)
 
         # Array retimer units
-        retimer_conn = [('in', f"out_ret<{nbits-1}:0>"), ('out', f"data_out<{nbits-1}:0>")]
+        retimer_conn = [('in', f"out_ret<{nbits-1}:0>"), ('out', f"data_out<{nbits-1}:0>"), ('outb', f"outn<{nbits-1}:0>")]
         self.rename_instance('XFLOP_OUT', f"XFLOP_OUT<{nbits-1}:0>", retimer_conn)

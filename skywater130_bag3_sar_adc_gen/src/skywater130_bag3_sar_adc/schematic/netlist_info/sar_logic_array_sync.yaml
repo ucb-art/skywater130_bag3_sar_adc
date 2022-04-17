@@ -851,6 +851,22 @@ shapes:
       drafting: true
       text: bit_nxt
   -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: outn
+      origin:
+        - -180
+        - -83
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: outn
+  -
     - 5
     - layer: 228
       purpose: 4294967295
@@ -1298,7 +1314,7 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
-      net: net03
+      net: outn
       points:
         -
           - -200
@@ -1363,24 +1379,6 @@ shapes:
       drafting: true
       text: VDD
 instances:
-  I5:
-    lib_name: basic
-    cell_name: noConn
-    view_name: symbol
-    xform:
-      - -160
-      - -90
-      - R0
-    bbox:
-      - -170
-      - -140
-      - -150
-      - -86
-    connections:
-      noConn: net03
-    params:
-      {}
-    is_primitive: true
   XBUF_CLK:
     lib_name: bag3_digital
     cell_name: inv_chain
@@ -1444,7 +1442,7 @@ instances:
       clk: clk_mid
       in: out_ret
       out: data_out
-      outb: net03
+      outb: outn
     params:
       {}
     is_primitive: false
@@ -1482,7 +1480,7 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 23512
+    - 26753
   instance#:
     - 0
     - 6
@@ -1491,16 +1489,16 @@ props:
     - time_val: 1603314068
   lastSchematicExtraction:
     - 4
-    - time_val: 1650175763
+    - time_val: 1650190275
   net#:
     - 0
-    - 2
+    - 1
   pin#:
     - 0
     - 18
   schGeometryLastUpdated:
     - 0
-    - 23512
+    - 26753
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -1510,10 +1508,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 23512
+    - 26753
   _dbvCvTimeStamp:
     - 0
-    - 23512
+    - 26753
   cdbRevision:
     - 0
     - 227612

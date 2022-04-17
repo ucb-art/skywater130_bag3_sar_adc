@@ -828,30 +828,6 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
-      net: net02
-      points:
-        -
-          - 220
-          - 130
-        -
-          - 260
-          - 130
-  -
-    - 5
-    - layer: 228
-      purpose: 4294967295
-      net: net01
-      points:
-        -
-          - 220
-          - 110
-        -
-          - 260
-          - 110
-  -
-    - 5
-    - layer: 228
-      purpose: 4294967295
       net: inn
       points:
         -
@@ -877,42 +853,6 @@ shapes:
       drafting: true
       text: inn
 instances:
-  I8:
-    lib_name: basic
-    cell_name: noConn
-    view_name: symbol
-    xform:
-      - 260
-      - 130
-      - R90
-    bbox:
-      - 256
-      - 120
-      - 310
-      - 140
-    connections:
-      noConn: net02
-    params:
-      {}
-    is_primitive: true
-  I9:
-    lib_name: basic
-    cell_name: noConn
-    view_name: symbol
-    xform:
-      - 260
-      - 110
-      - R90
-    bbox:
-      - 256
-      - 100
-      - 310
-      - 120
-    connections:
-      noConn: net01
-    params:
-      {}
-    is_primitive: true
   XBUF<1:0>:
     lib_name: bag3_digital
     cell_name: inv_chain
@@ -995,13 +935,13 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 15084
+    - 15739
   instance#:
     - 0
     - 10
   lastSchematicExtraction:
     - 4
-    - time_val: 1650175685
+    - time_val: 1650225012
   net#:
     - 0
     - 8
@@ -1010,7 +950,7 @@ props:
     - 13
   schGeometryLastUpdated:
     - 0
-    - 15084
+    - 15739
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -1020,10 +960,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 15084
+    - 15739
   _dbvCvTimeStamp:
     - 0
-    - 15084
+    - 15739
   cdbRevision:
     - 0
     - 227612

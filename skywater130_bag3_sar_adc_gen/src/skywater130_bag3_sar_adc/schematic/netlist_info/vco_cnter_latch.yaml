@@ -1602,22 +1602,22 @@ instances:
     is_primitive: true
   XNIN_N:
     lib_name: BAG_prim
-    cell_name: pmos4_lvt
+    cell_name: nmos4_lvt
     view_name: symbol
     xform:
       - 100
-      - 360
+      - 250
       - R0
     bbox:
       - 32
-      - 273
-      - 231
-      - 447
+      - 216
+      - 232
+      - 295
     connections:
-      B: VDD
+      B: VSS
       D: outp
       G: dn
-      S: top
+      S: bot
     params:
       l:
         - 3
@@ -1631,22 +1631,22 @@ instances:
     is_primitive: true
   XNIN_P:
     lib_name: BAG_prim
-    cell_name: pmos4_lvt
+    cell_name: nmos4_lvt
     view_name: symbol
     xform:
       - 640
-      - 360
+      - 250
       - MY
     bbox:
-      - 509
-      - 273
+      - 508
+      - 216
       - 708
-      - 447
+      - 295
     connections:
-      B: VDD
+      B: VSS
       D: outn
       G: d
-      S: top
+      S: bot
     params:
       l:
         - 3
@@ -1747,22 +1747,22 @@ instances:
     is_primitive: true
   XPIN_N:
     lib_name: BAG_prim
-    cell_name: nmos4_lvt
+    cell_name: pmos4_lvt
     view_name: symbol
     xform:
       - 100
-      - 250
+      - 360
       - R0
     bbox:
       - 32
-      - 216
-      - 232
-      - 295
+      - 273
+      - 231
+      - 447
     connections:
-      B: VSS
+      B: VDD
       D: outp
       G: dn
-      S: bot
+      S: top
     params:
       l:
         - 3
@@ -1776,22 +1776,22 @@ instances:
     is_primitive: true
   XPIN_P:
     lib_name: BAG_prim
-    cell_name: nmos4_lvt
+    cell_name: pmos4_lvt
     view_name: symbol
     xform:
       - 640
-      - 250
+      - 360
       - MY
     bbox:
-      - 508
-      - 216
+      - 509
+      - 273
       - 708
-      - 295
+      - 447
     connections:
-      B: VSS
+      B: VDD
       D: outn
       G: d
-      S: bot
+      S: top
     params:
       l:
         - 3
@@ -1835,13 +1835,13 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 22342
+    - 22952
   instance#:
     - 0
     - 12
   lastSchematicExtraction:
     - 4
-    - time_val: 1648760707
+    - time_val: 1650190576
   net#:
     - 0
     - 4
@@ -1850,7 +1850,7 @@ props:
     - 8
   schGeometryLastUpdated:
     - 0
-    - 22342
+    - 22952
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -1860,10 +1860,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 22342
+    - 22952
   _dbvCvTimeStamp:
     - 0
-    - 22342
+    - 22952
   cdbRevision:
     - 0
     - 227612
