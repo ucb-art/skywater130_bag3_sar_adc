@@ -303,7 +303,6 @@ class InvChainCore(MOSBase):
     def draw_layout(self) -> None:
         params = self.params
         pinfo = MOSBasePlaceInfo.make_place_info(self.grid, params['pinfo'])
-        print(params['pinfo'])
         self.draw_base(pinfo)
 
         hm_layer = self.conn_layer + 1

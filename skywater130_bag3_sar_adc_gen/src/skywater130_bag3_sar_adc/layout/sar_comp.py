@@ -10,13 +10,13 @@ from bag.util.immutable import Param, ImmutableSortedDict
 from bag.util.importlib import import_class
 from bag.util.math import HalfInt
 from pybag.core import BBox
-from pybag.enum import RoundMode, MinLenMode
+from pybag.enum import RoundMode
 from xbase.layout.enum import MOSWireType, SubPortMode, MOSType
 from xbase.layout.mos.base import MOSBasePlaceInfo, MOSBase
 from .sar_async_clkgen import SARAsyncClkSimple
 from .digital import InvChainCore
 from .util.template import TemplateBaseZL
-from .util.util import connect_conn_dummy_rows, fill_conn_layer_intv, get_available_tracks_reverse, fill_tap_intv
+from .util.util import connect_conn_dummy_rows, fill_conn_layer_intv, fill_tap_intv
 
 
 class PreAmpHalf(MOSBase):

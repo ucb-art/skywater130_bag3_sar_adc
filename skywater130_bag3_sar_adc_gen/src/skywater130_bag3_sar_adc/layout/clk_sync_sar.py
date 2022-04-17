@@ -6,7 +6,7 @@ from bag.layout.routing import TrackID
 from bag.layout.template import TemplateDB
 from bag.util.immutable import Param
 from skywater130_bag3_sar_adc.layout.digital import InvChainCore
-from skywater130_bag3_sar_adc.layout.util.util import fill_tap, export_xm_sup
+from skywater130_bag3_sar_adc.layout.util.util import fill_tap
 from skywater130_bag3_sar_adc.layout.vco_cnter_dec import CnterAsync
 from pybag.enum import RoundMode, MinLenMode
 from xbase.layout.enum import SubPortMode, MOSWireType

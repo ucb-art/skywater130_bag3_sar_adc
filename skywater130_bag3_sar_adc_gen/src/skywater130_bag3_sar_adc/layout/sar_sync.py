@@ -9,11 +9,7 @@ from bag.layout.routing.base import TrackManager, TrackID
 from bag.layout.template import TemplateDB, TemplateBase
 from bag.util.immutable import Param
 from bag.util.math import HalfInt
-from skywater130_bag3_sar_adc.layout.digital import InvChainCore
-from skywater130_bag3_sar_adc.layout.util_orig import fill_tap, export_xm_sup
-from skywater130_bag3_sar_adc.layout.vco_cnter_dec import CnterAsync
 
-from bag3_digital.layout.stdcells.util import STDCellWrapper
 from pybag.core import Transform, BBox
 from pybag.enum import RoundMode, Orientation, Direction
 from .sar_cdac import CapDacColCore
@@ -69,7 +65,7 @@ class SARSlice(TemplateBase):
         comp_params = comp_params.copy(append=dict(cls_name=SA.get_qualified_name(),
                                             sup_top_layer=3))
         cdac_master: CapDacColCore = self.new_template(CapDacColCore, params=cdac_params)
-        comp_master_dummy: MOSBase = self.new_template(SARComp, params=comp_params) #change from SARComp
+        comp_master_dummy: MOSBase = self.new_template(SARComp, params=comp_params) 
         clkgen_master_dummy: MOSBase = self.new_template(SyncClkGen, params=clkgen_params)
         logic_master_dummy: MOSBase = self.new_template(SARLogic, params=logic_params)
         logic_ncols_tot = logic_master_dummy.bound_box.w // comp_master_dummy.sd_pitch
@@ -94,13 +90,13 @@ class SARSlice(TemplateBase):
             cls_name=SARComp.get_qualified_name(),
             params=comp_params.copy(append=dict(ncols_tot=ncols_tot-100))
         )
-        comp_master: TemplateBase = self.new_template(GenericWrapper, params=comp_gen_params) #GenericWrapper
+        comp_master: TemplateBase = self.new_template(GenericWrapper, params=comp_gen_params) 
 
         clkgen_params = dict(
             cls_name=SyncClkGen.get_qualified_name(),
             params=clkgen_params
         )
-        clkgen_master: TemplateBase = self.new_template(GenericWrapper, params=clkgen_params) #GenericWrapper
+        clkgen_master: TemplateBase = self.new_template(GenericWrapper, params=clkgen_params)
 
 
         # Connect digital signals
@@ -115,7 +111,7 @@ class SARSlice(TemplateBase):
         w_dac, h_dac = cdac_master.bound_box.w, cdac_master.bound_box.h
 
         # Calculate logic signal routing
-        lower_layer_routing = logic_params['logic_array']['lower_layer_routing'] # FIXME: logic_master.sch_params['lower_layer_routing']
+        lower_layer_routing = logic_params['logic_array']['lower_layer_routing'] 
         type_list = ['dig'] * nbits * 6 if has_pmos_sw else ['dig']*nbits*3
         if lower_layer_routing:
             type_list += type_list
@@ -239,8 +235,8 @@ class SARSlice(TemplateBase):
         dac_top_n = self.extend_wires(dac_top_n, lower=coord_p, min_len_mode=-1)
         dac_top_p = self.extend_wires(dac_top_p, lower=coord_p, min_len_mode=-1)
 
-        dac_topn_tidx = self.grid.coord_to_track(hm_layer, coord_n, mode=RoundMode.NEAREST) #FIXME yh
-        dac_topp_tidx = self.grid.coord_to_track(hm_layer, coord_p, mode=RoundMode.NEAREST) #FIXME yh
+        dac_topn_tidx = self.grid.coord_to_track(hm_layer, coord_n, mode=RoundMode.NEAREST) 
+        dac_topp_tidx = self.grid.coord_to_track(hm_layer, coord_p, mode=RoundMode.NEAREST) 
         dac_n_xm = self.connect_to_tracks(dac_top_n, TrackID(hm_layer, dac_topn_tidx, tr_w_sig_xm))
         dac_p_xm = self.connect_to_tracks(dac_top_p, TrackID(hm_layer, dac_topp_tidx, tr_w_sig_xm))
 

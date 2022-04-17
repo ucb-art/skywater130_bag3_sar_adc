@@ -17,10 +17,6 @@ from .digital import NAND2Core, InvChainCore, NOR3Core, InvCore, PassGateCore
 from .digital import LatchCore, FlopCore
 from .digital import get_adj_tid_list
 
-from skywater130_bag3_sar_adc.layout.util.util import fill_tap, export_xm_sup
-from skywater130_bag3_sar_adc.layout.vco_cnter_dec import CnterAsync
-from .clk_sync_sar import SyncClkGen
-
 
 class OAICore(MOSBase):
     def __init__(self, temp_db: TemplateDB, params: Param, **kwargs: Any) -> None:
@@ -514,8 +510,6 @@ class SARLogicUnit(MOSBase):
         tidx_hidm_vm = self.grid.coord_to_track(vm_layer, flop.bound_box.xh, mode=RoundMode.LESS_EQ)
         # tidx_listdm_vm = self.get_available_tracks(vm_layer, tidx_lodm_vm, tidx_hidm_vm,
         #                                       flop.bound_box.xl, flop.bound_box.xh, width=tr_w_vm, sep=tr_sp_vm)
-        # print(tidx_listdm_vm)
-
 
         # connect flop input with pass gate for dp_m
         tidx_lodmflop_vm = self.grid.coord_to_track(vm_layer, flop.bound_box.xl, mode=RoundMode.GREATER_EQ)

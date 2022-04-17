@@ -1,7 +1,0 @@
-TDMCHECKPOINT="1.0"
-skywater130_bag3_sar_adc/rdac_dec type="cell"
-skywater130_bag3_sar_adc/rdac_dec_bi2th type="cell"
-skywater130_bag3_sar_adc/rdac_dec_unit type="cell"
-skywater130_bag3_sar_adc/rdac_mux_unit type="cell"
-skywater130_bag3_sar_adc/rdac_np_mux type="cell"
-keepEmptyCategory type="unknown"

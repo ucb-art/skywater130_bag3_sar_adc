@@ -1,6 +1,0 @@
-TDMCHECKPOINT="1.0"
-skywater130_bag3_sar_adc/cap_drv type="cell"
-skywater130_bag3_sar_adc/cap_unit type="cell"
-skywater130_bag3_sar_adc/cdac_array_bot type="cell"
-skywater130_bag3_sar_adc/cdac_unit type="cell"
-keepEmptyCategory type="unknown"
