@@ -495,13 +495,13 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 5373
+    - 5636
   instance#:
     - 0
     - 2
   lastSchematicExtraction:
     - 4
-    - time_val: 1612209512
+    - time_val: 1650175739
   net#:
     - 0
     - 0
@@ -510,7 +510,7 @@ props:
     - 6
   schGeometryLastUpdated:
     - 0
-    - 5373
+    - 5636
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -520,10 +520,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 5373
+    - 5636
   _dbvCvTimeStamp:
     - 0
-    - 5373
+    - 5636
   cdbRevision:
     - 0
     - 227612

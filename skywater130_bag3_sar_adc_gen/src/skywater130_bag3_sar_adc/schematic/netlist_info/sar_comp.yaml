@@ -548,18 +548,6 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
-      net: clkb
-      points:
-        -
-          - -220
-          - 90
-        -
-          - -180
-          - 90
-  -
-    - 5
-    - layer: 228
-      purpose: 4294967295
       net: VDD
       points:
         -
@@ -613,13 +601,25 @@ shapes:
       drafting: true
       text: VSS
   -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: clk
+      points:
+        -
+          - -220
+          - 290
+        -
+          - -180
+          - 290
+  -
     - 7
     - layer: 228
       purpose: 237
-      net: clkb
+      net: clk
       origin:
         - -184
-        - 97
+        - 297
       alignment: 8
       orient: R0
       font: 5
@@ -627,7 +627,7 @@ shapes:
       overbar: false
       visible: true
       drafting: true
-      text: clkb
+      text: clk
   -
     - 5
     - layer: 228
@@ -636,10 +636,10 @@ shapes:
       points:
         -
           - -220
-          - 230
+          - 120
         -
           - -180
-          - 230
+          - 120
   -
     - 7
     - layer: 228
@@ -647,7 +647,7 @@ shapes:
       net: osn
       origin:
         - -184
-        - 237
+        - 127
       alignment: 8
       orient: R0
       font: 5
@@ -663,10 +663,10 @@ shapes:
       net: VDD
       points:
         -
-          - -80
+          - 20
           - 350
         -
-          - -80
+          - 20
           - 390
   -
     - 7
@@ -674,7 +674,7 @@ shapes:
       purpose: 237
       net: VDD
       origin:
-        - -87
+        - 13
         - 354
       alignment: 2
       orient: R90
@@ -691,10 +691,10 @@ shapes:
       net: VSS
       points:
         -
-          - -80
+          - 20
           - 30
         -
-          - -80
+          - 20
           - 70
   -
     - 7
@@ -702,7 +702,7 @@ shapes:
       purpose: 237
       net: VSS
       origin:
-        - -87
+        - 13
         - 66
       alignment: 8
       orient: R90
@@ -719,19 +719,19 @@ shapes:
       net: outn_m
       points:
         -
-          - 460
           - 220
+          - 230
         -
-          - 500
-          - 220
+          - 260
+          - 230
   -
     - 7
     - layer: 228
       purpose: 237
       net: outn_m
       origin:
-        - 464
-        - 227
+        - 224
+        - 237
       alignment: 2
       orient: R0
       font: 5
@@ -747,19 +747,19 @@ shapes:
       net: outp_m
       points:
         -
-          - 460
-          - 260
+          - 220
+          - 270
         -
-          - 500
           - 260
+          - 270
   -
     - 7
     - layer: 228
       purpose: 237
       net: outp_m
       origin:
-        - 464
-        - 267
+        - 224
+        - 277
       alignment: 2
       orient: R0
       font: 5
@@ -776,10 +776,10 @@ shapes:
       points:
         -
           - -220
-          - 250
+          - 100
         -
           - -180
-          - 250
+          - 100
   -
     - 7
     - layer: 228
@@ -787,7 +787,7 @@ shapes:
       net: osp
       origin:
         - -184
-        - 257
+        - 107
       alignment: 8
       orient: R0
       font: 5
@@ -804,10 +804,10 @@ shapes:
       points:
         -
           - -220
-          - 170
+          - 160
         -
           - -180
-          - 170
+          - 160
   -
     - 7
     - layer: 228
@@ -815,7 +815,7 @@ shapes:
       net: inp
       origin:
         - -184
-        - 177
+        - 167
       alignment: 8
       orient: R0
       font: 5
@@ -828,30 +828,26 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
-      net: clk
+      net: net02
       points:
         -
-          - -220
+          - 220
+          - 130
+        -
+          - 260
+          - 130
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: net01
+      points:
+        -
+          - 220
           - 110
         -
-          - -180
+          - 260
           - 110
-  -
-    - 7
-    - layer: 228
-      purpose: 237
-      net: clk
-      origin:
-        - -184
-        - 117
-      alignment: 8
-      orient: R0
-      font: 5
-      height: 10
-      overbar: false
-      visible: true
-      drafting: true
-      text: clk
   -
     - 5
     - layer: 228
@@ -860,10 +856,10 @@ shapes:
       points:
         -
           - -220
-          - 200
+          - 140
         -
           - -180
-          - 200
+          - 140
   -
     - 7
     - layer: 228
@@ -871,7 +867,7 @@ shapes:
       net: inn
       origin:
         - -184
-        - 207
+        - 147
       alignment: 8
       orient: R0
       font: 5
@@ -881,6 +877,42 @@ shapes:
       drafting: true
       text: inn
 instances:
+  I8:
+    lib_name: basic
+    cell_name: noConn
+    view_name: symbol
+    xform:
+      - 260
+      - 130
+      - R90
+    bbox:
+      - 256
+      - 120
+      - 310
+      - 140
+    connections:
+      noConn: net02
+    params:
+      {}
+    is_primitive: true
+  I9:
+    lib_name: basic
+    cell_name: noConn
+    view_name: symbol
+    xform:
+      - 260
+      - 110
+      - R90
+    bbox:
+      - 256
+      - 100
+      - 310
+      - 120
+    connections:
+      noConn: net01
+    params:
+      {}
+    is_primitive: true
   XBUF<1:0>:
     lib_name: bag3_digital
     cell_name: inv_chain
@@ -934,7 +966,7 @@ instances:
     is_primitive: true
   XSA:
     lib_name: skywater130_bag3_sar_adc
-    cell_name: comp_tri_tail_core
+    cell_name: comp_strongarm_core
     view_name: symbol
     xform:
       - -180
@@ -943,15 +975,16 @@ instances:
     bbox:
       - -184
       - 66
-      - 464
+      - 224
       - 354
     connections:
       VDD: VDD
       VSS: VSS
       clk: clk
-      clkb: clkb
       inn: inn
       inp: inp
+      midn: net02
+      midp: net01
       osn: osn
       osp: osp
       outn: outn_m
@@ -962,22 +995,22 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 13792
+    - 15084
   instance#:
     - 0
-    - 8
+    - 10
   lastSchematicExtraction:
     - 4
-    - time_val: 1648782396
+    - time_val: 1650175685
   net#:
     - 0
-    - 6
+    - 8
   pin#:
     - 0
     - 13
   schGeometryLastUpdated:
     - 0
-    - 13792
+    - 15084
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -987,10 +1020,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 13792
+    - 15084
   _dbvCvTimeStamp:
     - 0
-    - 13792
+    - 15084
   cdbRevision:
     - 0
     - 227612
