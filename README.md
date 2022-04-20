@@ -67,4 +67,4 @@ This generator still contains a few non-waivable DRC errors out of the box. Thes
 
 ## Licensing
 
-This library is licensed under the Apache-2.0 license.  See [here](LICENSE) for full text of the Apache license.
+This library is licensed under the BSD, 3-Clause license.  See [here](LICENSE) for full text of the BSD, 3-Clause license.
