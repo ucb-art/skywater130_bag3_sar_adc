@@ -6,7 +6,7 @@ lay_class: xbase.layout.mos.top.GenericWrapper
 
 params:
 #  draw_taps: True
-  cls_name: skywater130_bag3_sar_adc.layout.sar.sar_comp.SA
+  cls_name: skywater130_bag3_sar_adc.layout.sar_comp.SA
   params:
     substrate_row: False
     vertical_out: True

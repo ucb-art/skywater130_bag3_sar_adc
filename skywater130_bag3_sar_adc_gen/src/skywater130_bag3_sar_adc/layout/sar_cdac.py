@@ -1,6 +1,8 @@
 import copy
+from logging import exception
 
 from typing import Any, Dict, Type, Optional, List, Mapping, Union, Tuple
+from xmlrpc.client import Boolean
 
 from bag.design.database import ModuleDB, Module
 from bag.env import get_tech_global_info
@@ -276,7 +278,7 @@ class CapColCore(TemplateBase):
         pin_conn_sep = grid.get_sep_tracks(unit_pin_layer, ntr1=cap_config['top_w'], ntr2=1)
 
         
-
+        #print(cap_config)
         if (cap_config['ismim'] == True):
             cap_config_copy = copy.deepcopy(cap_config.to_dict())
             cap_config_copy['unit'] = 1
@@ -293,9 +295,10 @@ class CapColCore(TemplateBase):
 
             mimcap = self.add_instance(mimcap_master, xform=Transform(unit_x, 0))
             bbox = mimcap.bound_box.extend(x=0, y=0)
+            #print(bbox)
             cap_bot = mimcap.get_pin('minus') #just get the minus pin
             cap_top_list = mimcap.get_pin('plus')#just get plus pin
-            array_bbox = mimcap.array_box #should just have one box
+            #array_bbox = mimcap.array_box #should just have one box
             ideal_cap = unit_master.sch_params.get('cap', 0)
             self.top_pin_idx = mimcap_master.top_pin_idx
             m = 1 #TODO: the multiple in the schematic - have to edit in schematic
@@ -375,7 +378,7 @@ class CapColCore(TemplateBase):
             self.reexport(tap.get_port('VSS'))
 
         self.set_size_from_bound_box(max(cap_config['top_layer'], cap_config['bot_layer']), bbox)
-        self.array_box = array_bbox
+        self.array_box = bbox #array_bbox
 
         top_pin_list = []
         #mim modify
@@ -860,7 +863,7 @@ class CapDacColCore(TemplateBase):
                     else:
                         w_list.append(cap_config['unit_width']*(2**h_idx))
                         h_list.append(cap_config['height']*(2**(idx-h_idx-1)))
-                if (idx>= diff_idx):
+                if (idx >= diff_idx):
                     h_list[-1] = h_list[-1]/2
         
             height_list = h_list[diff_idx:][::-1] + \
@@ -891,6 +894,7 @@ class CapDacColCore(TemplateBase):
         height_orig = cap_config['height']
         if (cap_config['ismim'] == True):
             cap_config_mim = copy.deepcopy(cap_config.to_dict())
+            cap_config_mim['total_width'] = self.params['width']
             cap_config_mim['height'] = sum(height_list) #+sum(bit_list)*cap_config['cap_sp']
             cap_master = self.new_template(CapColCore, params=dict(cap_config=cap_config_mim, width=width_list[-1], ny=4 * sum(ny_list)))
             cap_config_mim['height'] = height_orig + cap_config_mim['cap_sp']
@@ -993,8 +997,13 @@ class CapDacColCore(TemplateBase):
                 vrefm_single, vrefm_pin_single = [], []
                 vdd_xm, vss_xm = [], []
                 vdd_vm, vss_vm = [], []
+
+                cap_config_dum = copy.deepcopy(cap_config.to_dict()) 
                 for idx, (ny, h, bit) in enumerate(zip(ny_list, height_list, bit_list)):
-                    unit_cap_height = int(h/self.grid.resolution) // ny
+                    cap_config_dum['height'] = height_list[idx]
+                    cap_master = self.new_template(CapColCore, params=dict(cap_config=cap_config_dum, width=width_list[idx], ny=4,
+                                                                       ratio=1))
+                    unit_cap_height = cap_master.array_box.yh // ny #int(h/self.grid.resolution) // ny
                     sw_n_params = dict(
                     cls_name=CapDrvCore.get_qualified_name(),
                     draw_taps=True,
@@ -1048,7 +1057,7 @@ class CapDacColCore(TemplateBase):
                             unit_drv = sw_n.bound_box.yh-sw_n.bound_box.yl
 
                     sw_y = int(sw_y + max( (sw_n.bound_box.yh-sw_n.bound_box.yl), unit_drv,
-                                    int(h/self.grid.resolution) + cap_config['cap_sp']/self.grid.resolution))
+                                    int(cap_master.array_box.yh) + cap_config['cap_sp']/self.grid.resolution))
                     sw_y = -(-sw_y//h_blk)*h_blk
                     capmim_y.append(sw_y)
                 
@@ -1209,9 +1218,11 @@ class CapDacColCore(TemplateBase):
         tr_w_sig_vm = tr_manager.get_width(vm_layer, 'sig')
         tr_sp_sig_vm = tr_manager.get_sep(vm_layer, ('sig', 'sig'))
         sig_tidx_start = grid.find_next_track(vm_layer, sw_right_coord, tr_width=tr_w_sig_vm)
+        sig_tidx_used, sig_tidx_locs = tr_manager.place_wires(vm_layer, ['sig'] * nbits, align_idx=0,
+                                                              align_track=sig_tidx_start)
+        print(sig_tidx_locs)
         sig_tidx_used, sig_tidx_locs = tr_manager.place_wires(vm_layer, ['sig'] * nbits + ['cap'], align_idx=0,
                                                               align_track=sig_tidx_start)
-
         cap_x = self.grid.track_to_coord(vm_layer, sig_tidx_locs[-1])
 
         cap_x = -(-cap_x // w_blk) * w_blk
@@ -1243,7 +1254,7 @@ class CapDacColCore(TemplateBase):
                 cap_list.append(cap)
                 pin = cap.get_all_port_pins('top')
                 cap_ext_x.append(cap.array_box.xl)#cap_x + int(-(-shift//w_blk)*w_blk))
-                cap_y += cap_master.array_box.h
+                cap_y += cap_master.array_box.yh
             
             # Get cap dac pins
             cap_bot = [pin for inst in cap_list for pin in inst.get_all_port_pins('top')]
@@ -1382,9 +1393,14 @@ class CapDacColCore(TemplateBase):
             self.connect_bbox_to_track_wires(Direction.UPPER, (vrefm.get_single_layer(), 'drawing'),
                                              vrefm_pin, hm_w)  #FIXME
 
-        #connect bot pins                                     
+        # connect bot pins   
+        # want to space out bottom pins so less parasitic
         bot_vm_list: List[WireArray] = []
         for idx in range(nbits):
+            # bot_tidx_locs = self.get_available_tracks(vm_layer, self.grid.coord_to_track(xm_layer, sw_x, RoundMode.NEAREST),
+            #                   self.grid.coord_to_track(xm_layer, cap_x, RoundMode.NEAREST),
+            #                   self.bound_box.yl, self.bound_box.yh, tr_w_sig_vm,
+            #                   sep_margin = 3)
             bot_vm_list.append(self.connect_to_tracks(bit_cap_list_list[idx],
                                                       TrackID(vm_layer, sig_tidx_locs[idx], tr_w_sig_vm),
                                                       track_upper=self.bound_box.yh))
@@ -1493,13 +1509,9 @@ class CapMIMUnitCore(TemplateBase):
         grid = self.grid
 
         # Read cap_info
+        unit_cap = cap_config['unit_cap']
         top_layer = cap_config['top_layer']
         bot_layer = cap_config['bot_layer']
-        #top_w = cap_config['width']
-        #bot_w = cap_config['bot_w']
-        #bot_y_w = cap_config['bot_y_w']
-        #sp = cap_config['sp']
-        #sp_le = cap_config['sp_le']
 
         w_blk, h_blk = grid.get_block_size(max(top_layer, bot_layer), half_blk_x=True, half_blk_y=True)
         height = cap_config['height']
@@ -1527,7 +1539,7 @@ class CapMIMUnitCore(TemplateBase):
         cap_bound = 0.15 
         via_bnd = 0.14
         topm_wid = 0.3
-        cap_off = 1.48  #offset between cap blocks
+        cap_off = 1.5#1.48  #offset between cap blocks
         top_ext = topm_wid+cap_bound
         bot_ext = botm_wid+cap_bound
 
@@ -1560,48 +1572,115 @@ class CapMIMUnitCore(TemplateBase):
             raise ValueError("No MIM cap constructable")
 
         #Cap construction
-        self.add_rect_array(bot_metal, BBox(0, int(bot_sp/lay_res), 
-                                    int((width+bot_ext+cap_bound)/lay_res), int((height+2*cap_bound+bot_sp)/lay_res)))
-        self.add_rect_array(top_metal, BBox(int((cap_bound+botm_wid)/lay_res), int((bot_sp+cap_bound)/lay_res), 
-                                int((width+(top_ext+bot_ext))/lay_res), int((height+bot_sp+cap_bound)/lay_res)))
-        if (width/height > ratio): #TODO: make it possible to have multiblock vertically
-            num_blocks = int(math.ceil(max(width, height)/(20*min(width, height))))
-            block_w = (width-(num_blocks-1)*cap_off)/num_blocks
-            for n in range(0, num_blocks):
-                self.add_rect_array(cap_lay, BBox(int((bot_ext+(n)*(block_w+cap_off))/lay_res), int((bot_sp+cap_bound)/lay_res),
-                                                         int((bot_ext+(n+1)*(block_w)+(n)*cap_off)/lay_res), int((height+cap_bound+bot_sp)/lay_res)))
-                self.add_via(  BBox(int(((bot_ext+via_bnd)+n*(block_w+cap_off))/lay_res), int((bot_sp+2*cap_bound)/lay_res),
-                                    int((bot_ext-via_bnd+(n+1)*(block_w)+n*cap_off)/lay_res), int((height+cap_bound+bot_sp-via_bnd)/lay_res)),
-                            bot_metal, top_metal, 
-                            bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
-            
+        if unit_cap:
+            unit_height = cap_config['unit_height']
+            unit_width = cap_config['unit_width']
+            width_total = cap_config['width_total']
+            if (unit_height/unit_width > ratio or unit_width/unit_height>ratio): 
+                raise ValueError("Unit dimensions violate DRC rules")
+            num_vert = int(height/unit_height)
+            num_hor = int(width_total/unit_width) #need to differentiate between total width and cap width (dumies)
+            block_w = unit_width
+            base_y = int((bot_sp+cap_bound)/lay_res)
+            num_dum = int((width_total-width)/unit_width)
+            for j in range(0, num_vert):  
+                y_bot = base_y + j*(int((unit_height+cap_off)/lay_res))
+                for n in range(0, num_hor):
+                    self.add_rect_array(cap_lay, BBox(int((bot_ext+(n)*(block_w+cap_off))/lay_res), y_bot,
+                                            int((bot_ext+(n+1)*(block_w)+(n)*cap_off)/lay_res), y_bot+int(unit_height/lay_res)))
+                    self.add_via(BBox(int(((bot_ext+via_bnd)+n*(block_w+cap_off))/lay_res), y_bot + int(cap_bound/lay_res),
+                                        int((bot_ext-via_bnd+(n+1)*(block_w)+n*cap_off)/lay_res), y_bot+int((unit_height-via_bnd)/lay_res)),
+                                bot_metal, top_metal, 
+                                bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
+            if (width<width_total):
+                # for the actual cap
+                self.add_rect_array(bot_metal, BBox(int((width_total-width+(num_dum)*cap_off)/lay_res), int(bot_sp/lay_res), 
+                                    int((width_total+(num_hor-1)*cap_off+bot_ext+cap_bound)/lay_res),
+                                    int((height+(num_vert-1)*cap_off+2*cap_bound+bot_sp)/lay_res)))
+                self.add_rect_array(top_metal, BBox(int((width_total-width+(num_dum)*cap_off)/lay_res), int((bot_sp+cap_bound)/lay_res), 
+                                    int((width_total+(num_hor-1)*cap_off+bot_ext+cap_bound)/lay_res), 
+                                    int((height+(num_vert-1)*cap_off+bot_sp+cap_bound)/lay_res)))
+                # for the dummy
+                self.add_rect_array(bot_metal, BBox(0, int(bot_sp/lay_res), 
+                                    int((width_total-width+(num_dum-1)*cap_off+bot_ext+cap_bound)/lay_res), 
+                                    int((height+(num_vert-1)*cap_off+2*cap_bound+bot_sp)/lay_res)))
+                self.add_rect_array(top_metal, BBox(int((cap_bound+botm_wid)/lay_res), int((bot_sp+cap_bound)/lay_res), 
+                                    int((width_total-width+(num_dum-1)*cap_off+bot_ext+cap_bound)/lay_res), 
+                                    int((height+(num_vert-1)*cap_off+bot_sp+cap_bound)/lay_res)))
+            else: 
+                self.add_rect_array(bot_metal, BBox(0, int(bot_sp/lay_res), 
+                                        int((width+(num_hor-1)*cap_off+bot_ext+cap_bound)/lay_res), 
+                                        int((height+(num_vert-1)*cap_off+2*cap_bound+bot_sp)/lay_res)))
+                self.add_rect_array(top_metal, BBox(int((cap_bound+botm_wid)/lay_res), int((bot_sp+cap_bound)/lay_res), 
+                                    int((width+(num_hor-1)*cap_off+(top_ext+bot_ext))/lay_res), 
+                                    int((height+(num_vert-1)*cap_off+bot_sp+cap_bound)/lay_res)))
+            # add top metal and bottom 
+            w_tot = bot_ext+width_total+(num_hor-1)*cap_off +top_ext
+            h_tot = bot_sp+cap_bound+height+(num_vert-1)*cap_off
+            pin_boty = bot_sp
+            pin_botx = (width_total-width+(num_dum)*cap_off)+botm_wid
+            pin_topx = bot_ext+width_total+(num_hor-1)*cap_off+cap_bound
+            pin_topy = bot_sp+cap_bound
+
+            self.add_rect_array(top_metal, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)))
+            self.add_rect_array(bot_metal, BBox(int((width_total-width+(num_dum)*cap_off-botm_wid)/lay_res), int(pin_boty//lay_res), 
+                                                            int(pin_botx//lay_res), int(h_tot//lay_res)))
+
+
+            self.add_pin_primitive('minus', top_layer, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)), show=False)
+            self.add_pin_primitive('plus', bot_layer, BBox(int((width_total-width+(num_dum)*cap_off-botm_wid)/lay_res), int(pin_boty//lay_res), 
+                                                            int(pin_botx//lay_res), int(h_tot//lay_res)), show=False)
+
+            # set size
+            bnd_box = BBox(0, 0, int(-(-(w_tot/self.grid.resolution)//w_blk)*w_blk),
+                                  int(-(-(h_tot/self.grid.resolution)//h_blk)*h_blk))
+            self.array_box = (BBox(0, 0, int(-(-(w_tot/self.grid.resolution)//w_blk)*w_blk),
+                                  int(-(-(h_tot/self.grid.resolution)//h_blk)*h_blk)))
+            self.set_size_from_bound_box(max(top_layer, bot_layer), bnd_box)
+
         else:
-            self.add_rect_array(cap_lay, BBox(int(bot_ext/lay_res), int((bot_sp+cap_bound)/lay_res),
-                                         int((bot_ext+width)/lay_res), int((height+cap_bound+bot_sp)/lay_res)))
-            self.add_via( BBox(int((bot_ext+via_bnd)/lay_res), int((bot_sp+cap_bound+via_bnd)/lay_res),
-                                int((bot_ext+width-via_bnd)/lay_res), int((height+bot_sp)/lay_res)),
-                            bot_metal, top_metal, 
-                            bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
-        w_tot = bot_ext+width+top_ext
-        h_tot = bot_sp+2*cap_bound+height
-        pin_boty=bot_sp
-        pin_botx=botm_wid
-        pin_topx = bot_ext+width+cap_bound
-        pin_topy =bot_sp
+            self.add_rect_array(bot_metal, BBox(0, int(bot_sp/lay_res), 
+                                        int((width+bot_ext+cap_bound)/lay_res), int((height+2*cap_bound+bot_sp)/lay_res)))
+            self.add_rect_array(top_metal, BBox(int((cap_bound+botm_wid)/lay_res), int((bot_sp+cap_bound)/lay_res), 
+                                    int((width+(top_ext+bot_ext))/lay_res), int((height+bot_sp+cap_bound)/lay_res)))
+            if (width/height > ratio): #TODO: make it possible to have multiblock vertically
+                num_blocks = int(math.ceil(max(width, height)/(20*min(width, height))))
+                block_w = (width-(num_blocks-1)*cap_off)/num_blocks
+                for n in range(0, num_blocks):
+                    self.add_rect_array(cap_lay, BBox(int((bot_ext+(n)*(block_w+cap_off))/lay_res), int((bot_sp+cap_bound)/lay_res),
+                                                            int((bot_ext+(n+1)*(block_w)+(n)*cap_off)/lay_res), int((height+cap_bound+bot_sp)/lay_res)))
+                    self.add_via(  BBox(int(((bot_ext+via_bnd)+n*(block_w+cap_off))/lay_res), int((bot_sp+2*cap_bound)/lay_res),
+                                        int((bot_ext-via_bnd+(n+1)*(block_w)+n*cap_off)/lay_res), int((height+cap_bound+bot_sp-via_bnd)/lay_res)),
+                                bot_metal, top_metal, 
+                                bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
+                
+            else:
+                self.add_rect_array(cap_lay, BBox(int(bot_ext/lay_res), int((bot_sp+cap_bound)/lay_res),
+                                            int((bot_ext+width)/lay_res), int((height+cap_bound+bot_sp)/lay_res)))
+                self.add_via( BBox(int((bot_ext+via_bnd)/lay_res), int((bot_sp+cap_bound+via_bnd)/lay_res),
+                                    int((bot_ext+width-via_bnd)/lay_res), int((height+bot_sp)/lay_res)),
+                                bot_metal, top_metal, 
+                                bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
+            w_tot = bot_ext+width+top_ext
+            h_tot = bot_sp+2*cap_bound+height
+            pin_boty=bot_sp
+            pin_botx=botm_wid
+            pin_topx = bot_ext+width+cap_bound
+            pin_topy =bot_sp
+
+            self.add_rect_array( top_metal, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)))
+            self.add_rect_array( bot_metal, BBox(int((width_total-width+(num_dum)*cap_off-botm_wid)/lay_res), int(pin_boty//lay_res), 
+                                                            int(pin_botx//lay_res), int(h_tot//lay_res)))
+
+            self.add_pin_primitive('minus', top_layer, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)), show=True)
+            self.add_pin_primitive('plus', bot_layer, BBox(0, int(pin_boty//lay_res), int(pin_botx//lay_res), int(h_tot//lay_res)), show=True)
         
 
-        # set size
-        bnd_box = BBox(0, 0, int(-(-(width/self.grid.resolution)//w_blk)*w_blk), int(-(-(height/self.grid.resolution)//h_blk)*h_blk))  #not adding the boxes still
-        self.array_box = (BBox(0, 0, int(-(-(w_tot/self.grid.resolution)//w_blk)*w_blk),
-                              int(-(-(h_tot/self.grid.resolution)//h_blk)*h_blk)))
-        self.set_size_from_bound_box(max(top_layer, bot_layer), bnd_box)
-
-            
-        self.add_pin_primitive('minus', top_layer, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)), show=False)
-        self.add_pin_primitive('plus', bot_layer, BBox(0, int(pin_boty//lay_res), int(pin_botx//lay_res), int(h_tot//lay_res)), show=False)
-        #self.add_pin('minus', top)
-        #self.add_pin('plus', bot, mode=PinMode.LOWER)
-
+            # set size
+            bnd_box = BBox(0, 0, int(-(-(width/self.grid.resolution)//w_blk)*w_blk), int(-(-(height/self.grid.resolution)//h_blk)*h_blk))  #not adding the boxes still
+            self.array_box = (BBox(0, 0, int(-(-(w_tot/self.grid.resolution)//w_blk)*w_blk),
+                                int(-(-(h_tot/self.grid.resolution)//h_blk)*h_blk)))
+            self.set_size_from_bound_box(max(top_layer, bot_layer), bnd_box)
 
 # Need another class to actually call CapMIMUnitCore as a template 
 class CapMIMCore(TemplateBase):
@@ -1660,7 +1739,7 @@ class CapMIMCore(TemplateBase):
         height = cap_config['height']
 
         capMIM_master: TemplateBase = self.new_template(CapMIMUnitCore, params=dict(cap_config=self.params['cap_config'], 
-                                            width=width,tr_w=self.params['tr_w'], tr_sp=self.params['tr_w'], ))
+                                            width=width,tr_w=self.params['tr_w'], tr_sp=self.params['tr_w']))
         capMIM = self.add_instance(capMIM_master, inst_name='CMIM', xform=Transform(0, 0))
         lay_top_layer = capMIM_master.top_layer
         w_blk, h_blk = grid.get_block_size(lay_top_layer, half_blk_x=True, half_blk_y=True)
@@ -1691,14 +1770,13 @@ class CapMIMCore(TemplateBase):
         self.add_pin('minus', cap_top, show=self.show_pins)
         self.top_pin_idx = idx_t
 
-        width = int(width/self.grid.resolution)
-        height = int((height+cap_config['cap_sp'])/self.grid.resolution)
-        w_tot = -(-width // w_blk) * w_blk
-        h_tot = -(-height // h_blk) * h_blk
+        #width = int(width/self.grid.resolution)
+        #height = int((height+cap_config['cap_sp'])/self.grid.resolution)
+        w_tot = capMIM.array_box.xh #-(-width // w_blk) * w_blk
+        h_tot = capMIM.array_box.yh #-(-height // h_blk) * h_blk
         bbox = BBox(0, 0, int(w_tot), int(h_tot))
         self.set_size_from_bound_box(max(cap_config['top_layer'], cap_config['bot_layer']), bbox)
-        self.array_box = BBox(0, 0, capMIM.array_box.xh, int(h_tot))
-        
+        self.array_box = BBox(0, 0, int(w_tot), int(h_tot))
         #schematic things
         has_rmetal = cap_config.get('has_rmetal', True)
         if has_rmetal:

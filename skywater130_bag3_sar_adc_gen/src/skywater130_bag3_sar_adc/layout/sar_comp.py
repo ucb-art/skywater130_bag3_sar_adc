@@ -909,11 +909,11 @@ class SAHalf(MOSBase):
         # placement
         ridx_in = ridx_n + 1
         ridx_nfb = ridx_in + 1
-        m_in = self.add_mos(ridx_in, 0, seg_in, w=w_in)
+        m_in = self.add_mos(ridx_n, 0, seg_in, w=w_in, wire_idx=-1)
         m_nfb = self.add_mos(ridx_nfb, 0, seg_nfb, w=w_nfb)
         m_pfb = self.add_mos(ridx_p, 0, seg_pfb, w=w_pfb)
 
-        m_tail = self.add_mos(ridx_n, 0, seg_tail, w=w_tail)
+        m_tail = self.add_mos(ridx_in, 0, seg_tail, w=w_tail)
         m_swo = self.add_mos(ridx_p, seg_pfb, seg_swo, w=w_pfb)
         m_swm = self.add_mos(ridx_p, seg_pfb + seg_swo, seg_swm, w=w_pfb)
 
@@ -921,7 +921,7 @@ class SAHalf(MOSBase):
         mid_tid = self.get_track_id(ridx_nfb, MOSWireType.DS, wire_name='sig')
         pg_tid = self.get_track_id(ridx_p, MOSWireType.G, wire_name='sig')
         pclk_tid = pg_tid
-        nclk_tid = self.get_track_id(ridx_n, MOSWireType.G, wire_name='sig', wire_idx=-1)
+        nclk_tid = self.get_track_id(ridx_in, MOSWireType.G, wire_name='sig')
 
         vss_conn = m_tail.s
         vdd_conn = [m_pfb.s, m_swo.s, m_swm.s]
@@ -1076,9 +1076,9 @@ class SA(MOSBase):
         # routing
         ridx_in = ridx_n + 1
         ridx_nfb = ridx_in + 1
-        inn_tidx, hm_w = self.get_track_info(ridx_in, MOSWireType.G, wire_name='sig', wire_idx=0,
+        inn_tidx, hm_w = self.get_track_info(ridx_n, MOSWireType.G, wire_name='sig', wire_idx=0,
                                              tile_idx=inst_tile_idx)
-        inp_tidx = self.get_track_index(ridx_in, MOSWireType.G, wire_name='sig', wire_idx=-1, tile_idx=inst_tile_idx)
+        inp_tidx = self.get_track_index(ridx_n, MOSWireType.G, wire_name='sig', wire_idx=-1, tile_idx=inst_tile_idx)
         outn_tidx = self.get_track_index(ridx_nfb, MOSWireType.DS, wire_name='sig', wire_idx=-1,
                                          tile_idx=inst_tile_idx)
         outp_tidx = self.get_track_index(ridx_p, MOSWireType.DS, wire_name='sig', wire_idx=0, tile_idx=inst_tile_idx)
@@ -1672,15 +1672,15 @@ class SARComp(MOSBase, TemplateBaseZL):
         # self.reexport(bufn.get_port('outb'), net_name='outn')
         # self.reexport(bufp.get_port('outb'), net_name='outp')
         outn_hm = bufn.get_all_port_pins('out', layer=hm_layer)
-        outn_bbox = BBox(outn_hm[0].bound_box.xl + outn_hm[0].bound_box.w//3, outn_hm[0].bound_box.yl, #swapped 0 and 1 index
-                        outn_hm[0].bound_box.xh - outn_hm[0].bound_box.w//3, outn_hm[1].bound_box.yh)
-        outn_viaup = self.via_stack_up(tr_manager, outn_hm, hm_layer, vm_layer, 'ana_sig', RoundMode.GREATER,
-                          bbox=outn_bbox)  ##FIXME?? changed ym_layer+2 to vm_layer
+        # outn_bbox = BBox(outn_hm[0].bound_box.xl + outn_hm[0].bound_box.w//3, outn_hm[0].bound_box.yl, #swapped 0 and 1 index
+        #                 outn_hm[0].bound_box.xh - outn_hm[0].bound_box.w//3, outn_hm[1].bound_box.yh)
+        # outn_viaup = self.via_stack_up(tr_manager, outn_hm, hm_layer, vm_layer, 'ana_sig', RoundMode.GREATER,
+        #                   bbox=outn_bbox)  ##FIXME?? changed ym_layer+2 to vm_layer
         outp_hm = bufp.get_all_port_pins('out', layer=hm_layer)
-        outp_bbox = BBox(outp_hm[0].bound_box.xl + outp_hm[0].bound_box.w//3, outp_hm[0].bound_box.yl, #swapped 0 and 1 index
-                        outp_hm[0].bound_box.xh - outp_hm[0].bound_box.w//3, outp_hm[1].bound_box.yh)
-        outp_viaup = self.via_stack_up(tr_manager, outp_hm, hm_layer, vm_layer, 'ana_sig', RoundMode.GREATER,
-                          bbox=outp_bbox, align_higher_x=True)
+        # outp_bbox = BBox(outp_hm[0].bound_box.xl + outp_hm[0].bound_box.w//3, outp_hm[0].bound_box.yl, #swapped 0 and 1 index
+        #                 outp_hm[0].bound_box.xh - outp_hm[0].bound_box.w//3, outp_hm[1].bound_box.yh)
+        # outp_viaup = self.via_stack_up(tr_manager, outp_hm, hm_layer, vm_layer, 'ana_sig', RoundMode.GREATER,
+        #                   bbox=outp_bbox, align_higher_x=True)
 
         for pinname in ['inn', 'inp']:
             pin = comp.get_all_port_pins(pinname)
@@ -1744,8 +1744,8 @@ class SARComp(MOSBase, TemplateBaseZL):
             self.reexport(clkgen.get_port('stop'))
         else:
             self.add_pin('clk', clk_vm) #clk_viaup[vm_layer])
-        self.add_pin('outn', outn_viaup[vm_layer]) #change from vm_layer + 2
-        self.add_pin('outp', outp_viaup[vm_layer])
+        self.add_pin('outn', outn_hm) #outn_viaup[vm_layer]) #change from vm_layer + 2
+        self.add_pin('outp', outp_hm)
 
         if side_sup:
             # port_mode = SubPortMode.EVEN if tot_ncol % 4 != 0 else SubPortMode.ODD

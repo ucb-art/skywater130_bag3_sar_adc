@@ -119,15 +119,19 @@ class SARSlice(TemplateBase):
         coord_dig_tr = self.grid.track_to_coord(xm_layer, num_dig_tr)
 
         w_tot = max(w_logic, w_comp, 2 * w_dac)
-        w_tot = -(-w_tot // w_blk//2) * w_blk * 2
+        # w_tot = -(-w_tot // w_blk//2) * w_blk * 2
+        w_tot = -(-w_tot//2)*2
         h_tot = -(-h_logic // h_blk) * h_blk + h_comp + coord_dig_tr
 
         comp_y = -(-h_tot // h_blk) * h_blk
         h_tot = -(-comp_y // h_blk) * h_blk + h_dac
 
-        logic_x = -(-(w_tot - w_logic) // 2 // w_blk) * w_blk
-        comp_x = -(-(w_tot - w_comp) // 2 // w_blk) * w_blk
-        dac_x = -(-(w_tot - 2 * w_dac) // 2 // w_blk) * w_blk
+        # logic_x = -(-(w_tot - w_logic) // 2 // w_blk) * w_blk
+        # comp_x = -(-(w_tot - w_comp) // 2 // w_blk) * w_blk
+        # dac_x = -(-(w_tot - 2 * w_dac) // 2 // w_blk) * w_blk
+        logic_x = -(-(w_tot - w_logic)//2)
+        comp_x = -(-(w_tot - w_comp) // 2)
+        dac_x = -(-(w_tot - 2 * w_dac) // 2)
         clkgen_x = -(-(w_clkgen) // w_blk) * w_blk
         clkgen_y = -(-(h_clkgen) // h_blk) * h_blk
 
@@ -135,7 +139,7 @@ class SARSlice(TemplateBase):
         comp = self.add_instance(comp_master, inst_name='XCOMP', xform=Transform(comp_x, comp_y-2*h_blk, mode=Orientation.MX))
         cdac_n = self.add_instance(cdac_master, inst_name='XDAC_N', xform=Transform(dac_x, comp_y, mode=Orientation.R0))
         cdac_p = self.add_instance(cdac_master, inst_name='XDAC_P',
-                                   xform=Transform(w_tot - dac_x+2*w_blk, comp_y, mode=Orientation.MY))
+                                   xform=Transform(w_tot - dac_x, comp_y, mode=Orientation.MY))
         clkgen = self.add_instance(clkgen_master, inst_name='XCLK', xform=Transform(logic_x - clkgen_x - 2*w_blk,
                                                                                          clkgen_y, mode=Orientation.MX))
 
@@ -271,18 +275,32 @@ class SARSlice(TemplateBase):
         comp_dir = Direction.LOWER if lower_layer_routing else Direction.UPPER
         logic_dir = Direction.LOWER if lower_layer_routing else Direction.UPPER
         
+        tidx_comp_lo = self.grid.coord_to_track(xm_layer, (logic.bound_box.yh + comp.bound_box.yl- h_blk*2)//2 , mode=RoundMode.GREATER)
+        tidx_comp_hi = self.grid.coord_to_track(xm_layer, comp.bound_box.yl, mode=RoundMode.LESS)
+        tidx_comp_list = self.get_available_tracks(xm_layer, tidx_comp_lo, tidx_comp_hi,  cdac_n.bound_box.xl,  cdac_p.bound_box.xh,
+                                    width=tr_w_vm_sig, sep=tr_w_vm_sig)
         comp_p_xm = self.connect_bbox_to_tracks(comp_dir, (logic.get_port('comp_p').get_single_layer(), 'drawing'),
                                                 logic.get_pin('comp_p'),
-                                                TrackID(xm_layer, comp_out_locs[-3], tr_w_sig_xm))
+                                                TrackID(xm_layer, tidx_comp_list[0], tr_w_sig_xm))  #comp_out_locs[-3]
         comp_n_xm = self.connect_bbox_to_tracks(comp_dir, (logic.get_port('comp_n').get_single_layer(), 'drawing'),
                                                 logic.get_pin('comp_n'),
-                                                TrackID(xm_layer, comp_out_locs[-4], tr_w_sig_xm))
+                                                TrackID(xm_layer, tidx_comp_list[0], tr_w_sig_xm)) #comp_out_locs[-4]
         # comp_p_xm = self.grid.coord_to_track(xm_layer, comp.get_pin('outn').yh, mode=RoundMode.NEAREST)
         # comp_n_xm = self.grid.coord_to_track(xm_layer, comp.get_pin('outp').yh, mode=RoundMode.NEAREST)
-        comp_n = self.connect_bbox_to_track_wires(Direction.LOWER, (comp.get_port('outn').get_single_layer(), 'drawing'),
-                                         comp.get_pin('outn'), comp_n_xm) #TrackID(xm_layer, comp_n_xm, tr_w_sig_xm))
-        comp_p = self.connect_bbox_to_track_wires(Direction.LOWER, (comp.get_port('outp').get_single_layer(), 'drawing'),
-                                         comp.get_pin('outp'), comp_p_xm)  #TrackID(xm_layer, comp_p_xm, tr_w_sig_xm))
+        comp_p_tidx_vm = self.grid.coord_to_track(vm_layer, (comp.get_pin('outp').lower + comp.get_pin('outp').upper)//2,
+                                mode=RoundMode.NEAREST)
+        comp_n_tidx_vm = self.grid.coord_to_track(vm_layer, (comp.get_pin('outn').lower + comp.get_pin('outn').upper)//2,
+                                        mode=RoundMode.NEAREST)
+        comp_p_vm = self.connect_to_tracks(comp_p_xm, TrackID(vm_layer, comp_p_tidx_vm, tr_w_vm_sig))
+        comp_n_vm = self.connect_to_tracks(comp_n_xm, TrackID(vm_layer, comp_n_tidx_vm, tr_w_vm_sig))
+        
+        for idx in range(0, len(comp.get_all_port_pins('outn'))):
+            comp_n = self.connect_to_track_wires(comp.get_all_port_pins('outn')[idx], comp_n_vm) #TrackID(xm_layer, comp_n_xm, tr_w_sig_xm))
+            comp_p = self.connect_to_track_wires(comp.get_all_port_pins('outp')[idx], comp_p_vm)
+        # comp_n = self.connect_bbox_to_track_wires(Direction.LOWER, (comp.get_port('outn').get_single_layer(), 'drawing'),
+        #                                  comp.get_pin('outn'), comp_n_vm) #TrackID(xm_layer, comp_n_xm, tr_w_sig_xm))
+        # comp_p = self.connect_bbox_to_track_wires(Direction.LOWER, (comp.get_port('outp').get_single_layer(), 'drawing'),
+        #                                  comp.get_pin('outp'), comp_p_vm)  #TrackID(xm_layer, comp_p_xm, tr_w_sig_xm))
         # self.connect_wires([comp_n, logic.get_pin('comp_n')])
         # self.connect_wires([comp_p, logic.get_pin('comp_p')])
         # self.connect_bbox_to_track_wires(Direction.LOWER, (comp.get_port('outn').get_single_layer(), 'drawing'),

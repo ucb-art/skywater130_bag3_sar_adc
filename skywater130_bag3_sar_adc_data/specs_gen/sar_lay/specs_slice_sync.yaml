@@ -1,4 +1,4 @@
-impl_lib: AAA_SAR_lay_sky
+impl_lib: AAA_SAR_lay_sky2
 impl_cell: AAA_Slice_sync
 root_dir: gen_outputs/bag_sar
 lay_class: skywater130_bag3_sar_adc.layout.sar_sync.SARSlice
@@ -275,12 +275,12 @@ params:
         nfb: [1, 1, 1, 1]
         pfb: [1, 1, 1, 1]
       w_dict:
-        nin: [168, 252, 168, 336] #[200, 336, 200, 400]
-        pin: [224, 330, 224, 400] #[168, 252, 168, 336]
-        ptail: [224, 330, 224, 400] #[224, 224, 224, 400]
-        ntail: [168, 252, 168, 336] #[168, 168, 168, 336]
-        nfb: [168, 252, 168, 336] #[84 , 252, 252, 336]
-        pfb: [224, 330, 224, 400] #[110, 330, 330, 440]
+        nin: [84, 84, 84, 84] #[168, 252, 168, 336] #[200, 336, 200, 400]
+        pin: [110, 110, 110, 110] #[224, 330, 224, 400] #[168, 252, 168, 336]
+        ptail: [110, 110, 110, 110] #[224, 330, 224, 400] #[224, 224, 224, 400]
+        ntail: [84, 84, 84, 84] #[168, 252, 168, 336] #[168, 168, 168, 336]
+        nfb: [84, 84, 84, 84] #[168, 252, 168, 336] #[84 , 252, 252, 336]
+        pfb: [110, 110, 110, 110] #[224, 330, 224, 400] #[110, 330, 330, 440]
     pinfo:
       tiles:
         - name: cnter_tile
@@ -304,7 +304,7 @@ params:
               same_col_sub: True
             row_specs:
               - mos_type: nch
-                width: 336
+                width: 84
                 threshold: standard
                 bot_wires:
                   data: ['sup', 'sig<0:1>']
@@ -312,7 +312,7 @@ params:
                 top_wires: ['sig<0:3>']
                 flip: True
               - mos_type: pch
-                width: 400
+                width: 110
                 threshold: standard
                 bot_wires: ['sig<2:0>']
                 top_wires:
@@ -353,8 +353,11 @@ params:
       sp: 1
       sp_le: 0 # in resolution
       ismim: True
+      unit_cap: True
       height: 5 #unit mim cap height
+      unit_height: 5
       unit_width: 45 # specify
+      width_total: 180
       cap_sp: 2 #in um
       has_rmetal: False
       #cap: 317e-18

@@ -35,8 +35,11 @@ params:
     sp: 1
     sp_le: 0 # in resolution
     ismim: True
+    unit_cap: True
     height: 5 #unit mim cap height
+    unit_height: 5
     unit_width: 45 # specify
+    width_total: 180
     cap_sp: 2 #in um
     has_rmetal: False
     #cap: 317e-18

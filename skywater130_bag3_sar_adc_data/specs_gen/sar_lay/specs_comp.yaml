@@ -5,9 +5,10 @@ lay_class: xbase.layout.mos.top.GenericWrapper
 #lay_class: bag3_digital.layout.stdcells.util.STDCellWrapper
 
 params:
-  cls_name: skywater130_bag3_sar_adc.layout.sar.sar_comp.SARComp
+  cls_name: skywater130_bag3_sar_adc.layout.sar_comp.SARComp
   params:
-    cls_name: skywater130_bag3_sar_adc.layout.sar.sar_comp.SA
+    cls_name: skywater130_bag3_sar_adc.layout.sar_comp.SA
+    sch_cls: strongarm_core
     sup_top_layer: 3
     ncols_tot: 100
     num_comp_tiles: 3
