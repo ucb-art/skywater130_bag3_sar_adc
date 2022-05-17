@@ -1,0 +1,397 @@
+impl_lib: AAA_SAR
+impl_cell: sar_slice
+
+dut_class: skywater130_bag3_sar_adc.schematic.sar_slice.skywater130_bag3_sar_adc__sar_slice
+root_dir: gen_outputs/sar
+
+params:
+  nbits: 9
+  comp:
+    buf_params:
+      lch: 80
+      w_n: 4
+      w_p: 4
+      seg_n: 2
+      seg_p: 2
+      th_n: standard
+      th_p: standard
+    sa_params:
+      lch: 80
+      has_bridge: True
+      w_dict:
+        os: 4
+        in: 4
+        tail: 4
+        nfb: 4
+        pfb: 4
+        swo: 4
+        swm: 4
+        br: 4
+      th_dict:
+        os: &sa_type standard
+        in: *sa_type
+        tail: *sa_type
+        nfb: *sa_type
+        pfb: *sa_type
+        swo: *sa_type
+        swm: *sa_type
+        br: *sa_type
+      seg_dict:
+        os: 2
+        in: 8
+        tail: 8
+        nfb: 2
+        pfb: 2
+        swo: 4
+        swm: 4
+        br: 2
+  cdac:
+    bot_probe: True
+    m_list: [1, 2, 4, 8, 16, 32, 64, 128]
+    unit_params:
+      drv:
+        lch: 80
+        w: 4
+        seg: 2
+        intent: standard
+      cap:
+        res_plus:
+          w: 44
+          l: 44
+          layer: 4
+        res_minus:
+          w: 44
+          l: 44
+          layer: 4
+        cap:
+          c: 100.0e-18
+  logic:
+    nbits: 9
+    en_fast_bit: 6
+    fsm:
+      nbits: 9
+      rst_flop: &flop
+        dual_output: False
+        inv_params:
+          lch: 80
+          w_p: 4
+          w_n: 4
+          th_p: standard
+          th_n: standard
+          seg: 2
+        m_params:
+          scan: True
+          dual_output: True
+          tfb:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          tin:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          nor:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          pg:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          inv:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+        s_params:
+          scan: True
+          dual_output: True
+          tfb:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          tin:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          nor:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          pg:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          inv:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+      rst_state: *flop
+      inv:
+        lch: 80
+        w_p: 4
+        w_n: 4
+        th_p: standard
+        th_n: standard
+        seg: 2
+    sar_logic:
+      nbits: 9
+      logic:
+        oai:
+          lch: 80
+          seg: 2
+          th_n: standard
+          th_p: standard
+          w_n: 4
+          w_p: 4
+        oai_inv0:
+          lch: 80
+          seg: 2
+          th_n: standard
+          th_p: standard
+          w_n: 4
+          w_p: 4
+        oai_inv1:
+          lch: 80
+          seg: 2
+          th_n: standard
+          th_p: standard
+          w_n: 4
+          w_p: 4
+        nor:
+          lch: 80
+          seg: 2
+          th_n: standard
+          th_p: standard
+          w_n: 4
+          w_p: 4
+        latch:
+          lch: 80
+          seg_dict:
+            tin: 2
+            tfb: 2
+            buf: 2
+          th_n: standard
+          th_p: standard
+          w_n: 4
+          w_p: 4
+        ret_inv:
+          lch: 80
+          seg: 2
+          th_n: standard
+          th_p: standard
+          w_n: 4
+          w_p: 4
+      ret:
+        latch:
+          lch: 80
+          w_p: 4
+          w_n: 4
+          th_p: standard
+          th_n: standard
+          seg_dict:
+            tin: 2
+            tfb: 2
+            buf: 2
+        inv:
+          lch: 80
+          w_p: 4
+          w_n: 4
+          th_p: standard
+          th_n: standard
+          seg: 2
+        buf:
+          dual_output: False
+          inv_params:
+            - lch: 80
+              w_p: 4
+              w_n: 4
+              th_p: standard
+              th_n: standard
+              seg: 2
+            - lch: 80
+              w_p: 4
+              w_n: 4
+              th_p: standard
+              th_n: standard
+              seg: 2
+      buf:
+        dual_output: False
+        inv_params:
+          - lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          - lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+      buf_out:
+        dual_output: False
+        inv_params:
+          - lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          - lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+    clkgen:
+      tri:
+        lch: 80
+        w_p: 4
+        w_n: 4
+        seg: 2
+        th_p: standard
+        th_n: standard
+      nand:
+        lch: 80
+        w_p: 4
+        w_n: 4
+        seg: 2
+        th_p: standard
+        th_n: standard
+      inv:
+        lch: 80
+        w_p: 4
+        w_n: 4
+        seg: 2
+        th_p: standard
+        th_n: standard
+      pulse:
+        seg_rstp: 2
+        seg_rstn: 2
+        seg_nandp: 2
+        seg_nandn: 2
+        intent: standard
+        wn: 4
+        wp: 4
+        lch: 80
+        buf:
+          dual_output: True
+          inv_params:
+            - lch: 80
+              w_p: 4
+              w_n: 4
+              th_p: standard
+              th_n: standard
+              seg: 2
+            - lch: 80
+              w_p: 4
+              w_n: 4
+              th_p: standard
+              th_n: standard
+              seg: 2
+      delay:
+        nor:
+          lch: 80
+          w_p: 4
+          w_n: 4
+          seg: 2
+          th_p: standard
+          th_n: standard
+        inv:
+          lch: 80
+          w_p: 4
+          w_n: 4
+          seg: 2
+          th_p: standard
+          th_n: standard
+        mux:
+          inv_params:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          tri_params:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+        delay:
+          mux:
+            inv_params:
+              lch: 80
+              w_p: 4
+              w_n: 4
+              th_p: standard
+              th_n: standard
+              seg: 2
+            tri_params:
+              lch: 80
+              w_p: 4
+              w_n: 4
+              th_p: standard
+              th_n: standard
+              seg: 2
+          inv_out:
+            lch: 80
+            seg: 2
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+          inv_sel:
+            lch: 80
+            w_p: 4
+            w_n: 4
+            th_p: standard
+            th_n: standard
+            seg: 2
+          delay:
+            dual_output: False
+            inv_params:
+              - lch: 80
+                w_p: 4
+                w_n: 4
+                th_p: standard
+                th_n: standard
+                seg: 2
+              - lch: 80
+                w_p: 4
+                w_n: 4
+                th_p: standard
+                th_n: standard
+                seg: 2
