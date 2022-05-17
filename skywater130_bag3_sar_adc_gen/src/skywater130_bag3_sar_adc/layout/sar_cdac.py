@@ -1592,6 +1592,8 @@ class CapMIMUnitCore(TemplateBase):
                                         int((bot_ext-via_bnd+(n+1)*(block_w)+n*cap_off)/lay_res), y_bot+int((unit_height-via_bnd)/lay_res)),
                                 bot_metal, top_metal, 
                                 bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
+                    # self.add_rect_array(bot_metal, BBox(int((bot_ext+(n)*(block_w+cap_off)-cap_bound)/lay_res), y_bot-int(cap_bound/lay_res),
+                    #                         int((bot_ext+(n+1)*(block_w)+(n)*cap_off+cap_bound)/lay_res), y_bot+int((cap_bound+unit_height)/lay_res)))
             if (width<width_total):
                 # for the actual cap
                 self.add_rect_array(bot_metal, BBox(int((width_total-width+(num_dum)*cap_off)/lay_res), int(bot_sp/lay_res), 
@@ -1618,12 +1620,12 @@ class CapMIMUnitCore(TemplateBase):
             w_tot = bot_ext+width_total+(num_hor-1)*cap_off +top_ext
             h_tot = bot_sp+cap_bound+height+(num_vert-1)*cap_off
             pin_boty = bot_sp
-            pin_botx = (width_total-width+(num_dum)*cap_off)+botm_wid
+            pin_botx = (width_total-width+(num_dum)*cap_off)+botm_wid+cap_bound
             pin_topx = bot_ext+width_total+(num_hor-1)*cap_off+cap_bound
             pin_topy = bot_sp+cap_bound
 
             self.add_rect_array(top_metal, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)))
-            self.add_rect_array(bot_metal, BBox(int((width_total-width+(num_dum)*cap_off-botm_wid)/lay_res), int(pin_boty//lay_res), 
+            self.add_rect_array(bot_metal, BBox(int((width_total-width+(num_dum)*cap_off-botm_wid+cap_bound/2)/lay_res), int(pin_boty//lay_res), 
                                                             int(pin_botx//lay_res), int(h_tot//lay_res)))
 
 
@@ -1664,13 +1666,13 @@ class CapMIMUnitCore(TemplateBase):
             w_tot = bot_ext+width+top_ext
             h_tot = bot_sp+2*cap_bound+height
             pin_boty=bot_sp
-            pin_botx=botm_wid
-            pin_topx = bot_ext+width+cap_bound
+            pin_botx=botm_wid+cap_bound
+            pin_topx = bot_ext+width
             pin_topy =bot_sp
 
             self.add_rect_array( top_metal, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)))
             self.add_rect_array( bot_metal, BBox(int((width_total-width+(num_dum)*cap_off-botm_wid)/lay_res), int(pin_boty//lay_res), 
-                                                            int(pin_botx//lay_res), int(h_tot//lay_res)))
+                                                            int((pin_botx+cap_bound)//lay_res), int(h_tot//lay_res)))
 
             self.add_pin_primitive('minus', top_layer, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)), show=True)
             self.add_pin_primitive('plus', bot_layer, BBox(0, int(pin_boty//lay_res), int(pin_botx//lay_res), int(h_tot//lay_res)), show=True)

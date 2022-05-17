@@ -22,7 +22,7 @@ params:
     has_rmetal: False
     unit_cap: True
 #    cap: 317e-18
-  width: 160 # in um
+  width: 40 # in um
   ratio: 1
 #  add_tap: True
 

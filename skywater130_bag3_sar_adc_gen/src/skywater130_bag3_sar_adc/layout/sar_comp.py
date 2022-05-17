@@ -922,11 +922,14 @@ class SAHalf(MOSBase):
         pg_tid = self.get_track_id(ridx_p, MOSWireType.G, wire_name='sig')
         pclk_tid = pg_tid
         nclk_tid = self.get_track_id(ridx_in, MOSWireType.G, wire_name='sig')
+        nclk_vss = self.get_track_id(ridx_in, MOSWireType.G, wire_name='sig', wire_idx=-1)
+        in_mid_tid = self.get_track_id(ridx_n, MOSWireType.DS, wire_name='sig', wire_idx=-1)
 
-        vss_conn = m_tail.s
+        vss_hm = self.connect_to_tracks(m_tail.s, nclk_vss)
         vdd_conn = [m_pfb.s, m_swo.s, m_swm.s]
         tail_conn = m_tail.d
         clk_conn = m_tail.g
+        mid_in_conn = self.connect_to_tracks(m_in.s, in_mid_tid)
 
         # NOTE: force even number of columns to make sure VDD conn_layer wires are on even columns.
         ncol_tot = self.num_cols
@@ -943,7 +946,9 @@ class SAHalf(MOSBase):
         tail = self.connect_to_tracks(tail_conn, tail_in_tid)
         _tail_in = self.connect_to_tracks(m_in.d, tail_in_tid)
         out = self.connect_wires([m_nfb.d, m_pfb.d, m_swo.d])
-        mid = self.connect_to_tracks([m_in.s, m_nfb.s, m_swm.d], mid_tid)
+        #mid_tidx_vm = grid.coord_to_track(vm_layer, m_in.d.track_id.base_index)
+        mid_hm = self.connect_to_tracks([m_nfb.s, m_swm.d], mid_tid)
+        mid = self.connect_to_tracks([mid_hm, mid_in_conn], TrackID(vm_layer, m_in.d.track_id.base_index+2, width=vm_w))
 
         nclk = self.connect_to_tracks(clk_conn, nclk_tid)
         nout = self.connect_to_tracks(m_nfb.g, ng_tid)
@@ -957,7 +962,7 @@ class SAHalf(MOSBase):
 
         xout = grid.track_to_coord(conn_layer, m_pfb.g.track_id.base_index)
         vm_tidx = grid.coord_to_track(vm_layer, xout, mode=RoundMode.GREATER_EQ)
-
+        
         if vertical_out:
             out_vm = self.connect_to_tracks([nout, pout], TrackID(vm_layer, vm_tidx, width=vm_w))
             self.add_pin('out_vm', out_vm)
@@ -966,14 +971,26 @@ class SAHalf(MOSBase):
             self.add_pin('nout', nout)
 
         if vertical_sup:
+            #vss_conn = m_tail.s
             vdd = vdd_conn
-            vss = vss_conn
+            #vss = vss_conn
+            w_conn, h_conn = grid.get_block_size(conn_layer, half_blk_x=True, half_blk_y=True)
+            vss_tid_conn = grid.coord_to_track(conn_layer, mid_hm.upper//w_conn*w_conn)
+            vss_tid = self.get_track_id(ridx_n, MOSWireType.G, wire_name='sup')
+            vss_conn = self.connect_to_tracks(vss_hm, TrackID(conn_layer, vss_tid_conn, width=vm_w))
+            vss = vss_conn #self.connect_to_tracks(vss_conn, vss_tid)
+
         else:
             vdd_tid = self.get_track_id(ridx_p, MOSWireType.G, wire_name='sup')
             vdd = self.connect_to_tracks(vdd_conn, vdd_tid)
+            vss_conn = m_tail.s
             vss_tid = self.get_track_id(ridx_n, MOSWireType.G, wire_name='sup')
             vss = self.connect_to_tracks(vss_conn, vss_tid)
-
+            # vss_tid_conn = grid.coord_to_track(conn_layer, m_in.d.track_id.base_index+10)
+            # vss_tid = self.get_track_id(ridx_n, MOSWireType.G, wire_name='sup')
+            # vss_conn = self.connect_to_tracks(vss_hm, TrackID(conn_layer, vss_tid_conn, width=vm_w))
+            # vss = self.connect_to_tracks(vss_conn, vss_tid)
+            
         self.add_pin('VSS', vss)
         self.add_pin('VDD', vdd)
         self.add_pin('tail', tail)
@@ -1083,6 +1100,7 @@ class SA(MOSBase):
                                          tile_idx=inst_tile_idx)
         outp_tidx = self.get_track_index(ridx_p, MOSWireType.DS, wire_name='sig', wire_idx=0, tile_idx=inst_tile_idx)
 
+
         hm_layer = self.conn_layer + 1
         inp, inn = self.connect_differential_tracks(corel.get_pin('in'), corer.get_pin('in'),
                                                     hm_layer, inp_tidx, inn_tidx, width=hm_w)
@@ -1115,6 +1133,12 @@ class SA(MOSBase):
         clk = self.connect_wires([corel.get_pin('clk'), corer.get_pin('clk')])
         _tail = self.connect_wires([corel.get_pin('tail'), corer.get_pin('tail')])
         vss = self.connect_wires(corel.get_all_port_pins('VSS') + corer.get_all_port_pins('VSS'))
+        #connect horizontal section of vss
+        w_hm, h_hm = self.grid.get_block_size(hm_layer, half_blk_x=True, half_blk_y=True)
+        vss_tidx_hm = self.grid.coord_to_track(hm_layer, corel.get_all_port_pins('VSS')[0].upper//h_hm * h_hm)
+        self.connect_to_tracks([corel.get_all_port_pins('VSS')[0], corer.get_all_port_pins('VSS')[0]], 
+                                        TrackID(hm_layer, vss_tidx_hm, hm_w))
+        
         vdd = self.connect_wires(corel.get_all_port_pins('VDD') + corer.get_all_port_pins('VDD'))
         if add_tap:
             ncols, nrows = master.num_cols, master.num_rows

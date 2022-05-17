@@ -334,7 +334,7 @@ class SARSlice(TemplateBase):
         # #self.connect_wires(comp_clkb_xm)
         self.connect_wires(comp_clk_xm)
     
-        self.set_size_from_bound_box(top_layer, BBox(0, 0, w_tot, h_tot))
+        self.set_size_from_bound_box(top_layer, BBox(0, 0, -(-w_tot // w_blk//2) * w_blk * 2, -(-h_tot // h_blk//2) * h_blk * 2))
 
 
         # Route digital logic outputs to CDAC switches
