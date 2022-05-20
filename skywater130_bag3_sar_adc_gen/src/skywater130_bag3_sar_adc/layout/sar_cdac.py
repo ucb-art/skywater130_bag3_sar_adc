@@ -1642,7 +1642,7 @@ class CapMIMUnitCore(TemplateBase):
 
         else:
             self.add_rect_array(bot_metal, BBox(0, int(bot_sp/lay_res), 
-                                        int((width+bot_ext+cap_bound)/lay_res), int((height+2*cap_bound+bot_sp)/lay_res)))
+                                    int((width+bot_ext+cap_bound)/lay_res), int((height+2*cap_bound+bot_sp)/lay_res)))
             self.add_rect_array(top_metal, BBox(int((cap_bound+botm_wid)/lay_res), int((bot_sp+cap_bound)/lay_res), 
                                     int((width+(top_ext+bot_ext))/lay_res), int((height+bot_sp+cap_bound)/lay_res)))
             if (width/height > ratio): #TODO: make it possible to have multiblock vertically
@@ -1666,23 +1666,66 @@ class CapMIMUnitCore(TemplateBase):
             w_tot = bot_ext+width+top_ext
             h_tot = bot_sp+2*cap_bound+height
             pin_boty=bot_sp
-            pin_botx=botm_wid+cap_bound
-            pin_topx = bot_ext+width
+            pin_botx=botm_wid
+            pin_topx = bot_ext+width+cap_bound
             pin_topy =bot_sp
-
-            self.add_rect_array( top_metal, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)))
-            self.add_rect_array( bot_metal, BBox(int((width_total-width+(num_dum)*cap_off-botm_wid)/lay_res), int(pin_boty//lay_res), 
-                                                            int((pin_botx+cap_bound)//lay_res), int(h_tot//lay_res)))
-
-            self.add_pin_primitive('minus', top_layer, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)), show=True)
-            self.add_pin_primitive('plus', bot_layer, BBox(0, int(pin_boty//lay_res), int(pin_botx//lay_res), int(h_tot//lay_res)), show=True)
-        
+            
 
             # set size
             bnd_box = BBox(0, 0, int(-(-(width/self.grid.resolution)//w_blk)*w_blk), int(-(-(height/self.grid.resolution)//h_blk)*h_blk))  #not adding the boxes still
             self.array_box = (BBox(0, 0, int(-(-(w_tot/self.grid.resolution)//w_blk)*w_blk),
                                 int(-(-(h_tot/self.grid.resolution)//h_blk)*h_blk)))
             self.set_size_from_bound_box(max(top_layer, bot_layer), bnd_box)
+
+                
+            self.add_pin_primitive('minus', top_layer, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)), show=False)
+            self.add_pin_primitive('plus', bot_layer, BBox(0, int(pin_boty//lay_res), int(pin_botx//lay_res), int(h_tot//lay_res)), show=False)
+            
+            # width_total = cap_config['width_total']
+            # self.add_rect_array(bot_metal, BBox(0, int(bot_sp/lay_res), 
+            #                             int((width+bot_ext+cap_bound)/lay_res), int((height+2*cap_bound+bot_sp)/lay_res)))
+            # self.add_rect_array(top_metal, BBox(int((cap_bound+botm_wid)/lay_res), int((bot_sp+cap_bound)/lay_res), 
+            #                         int((width+(top_ext+bot_ext))/lay_res), int((height+bot_sp+cap_bound)/lay_res)))
+            # if (width/height > ratio): #TODO: make it possible to have multiblock vertically
+            #     num_blocks = int(math.ceil(max(width, height)/(20*min(width, height))))
+            #     block_w = (width-(num_blocks-1)*cap_off)/num_blocks
+            #     for n in range(0, num_blocks):
+            #         self.add_rect_array(cap_lay, BBox(int((bot_ext+(n)*(block_w+cap_off))/lay_res), int((bot_sp+cap_bound)/lay_res),
+            #                                                 int((bot_ext+(n+1)*(block_w)+(n)*cap_off)/lay_res), int((height+cap_bound+bot_sp)/lay_res)))
+            #         self.add_via(  BBox(int(((bot_ext+via_bnd)+n*(block_w+cap_off))/lay_res), int((bot_sp+2*cap_bound)/lay_res),
+            #                             int((bot_ext-via_bnd+(n+1)*(block_w)+n*cap_off)/lay_res), int((height+cap_bound+bot_sp-via_bnd)/lay_res)),
+            #                     bot_metal, top_metal, 
+            #                     bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
+                
+            # else:
+            #     num_blocks=0
+            #     self.add_rect_array(cap_lay, BBox(int(bot_ext/lay_res), int((bot_sp+cap_bound)/lay_res),
+            #                                 int((bot_ext+width)/lay_res), int((height+cap_bound+bot_sp)/lay_res)))
+            #     self.add_via( BBox(int((bot_ext+via_bnd)/lay_res), int((bot_sp+cap_bound+via_bnd)/lay_res),
+            #                         int((bot_ext+width-via_bnd)/lay_res), int((height+bot_sp)/lay_res)),
+            #                     bot_metal, top_metal, 
+            #                     bot_dir=self.grid.get_direction(top_layer), extend=False, add_layers=False)
+            # w_tot = bot_ext+width+top_ext
+            # h_tot = bot_sp+2*cap_bound+height
+            # pin_boty=bot_sp
+            # pin_botx=botm_wid+cap_bound
+            # pin_topx = bot_ext+width
+            # pin_topy =bot_sp
+
+            # self.add_rect_array( top_metal, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)))
+            # self.add_rect_array( bot_metal, BBox(int((width_total-width+(num_blocks)*cap_off-botm_wid)/lay_res), int(pin_boty//lay_res), 
+            #                                                 int((pin_botx+cap_bound)//lay_res), int(h_tot//lay_res)))
+
+            # self.add_pin_primitive('minus', top_layer, BBox(int(pin_topx//lay_res), int(pin_topy//lay_res), int(w_tot//lay_res), int(h_tot//lay_res)), show=True)
+            # self.add_pin_primitive('plus', bot_layer, BBox(0, int(pin_boty//lay_res), int(pin_botx//lay_res), int(h_tot//lay_res)), show=True)
+        
+
+            # set size
+            # bnd_box = BBox(0, 0, int(-(-(width/self.grid.resolution)//w_blk)*w_blk), int(-(-(height/self.grid.resolution)//h_blk)*h_blk))  #not adding the boxes still
+            # self.array_box = (BBox(0, 0, int(-(-(w_tot/self.grid.resolution)//w_blk)*w_blk),
+            #                     int(-(-(h_tot/self.grid.resolution)//h_blk)*h_blk)))
+            # self.set_size_from_bound_box(max(top_layer, bot_layer), bnd_box)
+            # print("made boxes???")
 
 # Need another class to actually call CapMIMUnitCore as a template 
 class CapMIMCore(TemplateBase):
