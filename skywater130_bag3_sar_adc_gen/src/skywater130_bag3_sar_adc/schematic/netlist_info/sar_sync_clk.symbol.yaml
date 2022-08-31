@@ -85,6 +85,19 @@ terminals:
           - -16
     stype: 0
     ttype: 1
+  clk_out_b:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 336
+          - 6
+          - 344
+          - 14
+    stype: 0
+    ttype: 1
 shapes:
   -
     - 5
@@ -490,32 +503,60 @@ shapes:
       drafting: true
       text: "%16"
       evaluator: cdsNLPEvalText
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 340
+          - 10
+        -
+          - 260
+          - 10
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 334
+        - 20
+      alignment: 7
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: clk_out_b
 instances:
   {}
 props:
   interfaceLastChanged:
     - 4
-    - time_val: 1646352136
+    - time_val: 1653898026
   partName:
     - 3
     - sar_sync_clk
   pin#:
     - 0
-    - 6
+    - 7
   portOrder:
     - 5
     - name: ILList
-      bin_val: ("clk_comp" "clk_compn" "clk_out" "VDD" "VSS" "clk_in")
+      bin_val: ("clk_comp" "clk_compn" "clk_out" "clk_out_b" "VDD" "VSS" "clk_in")
   vendorName:
     - 3
     - ""
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 174
+    - 204
   _dbvCvTimeStamp:
     - 0
-    - 174
+    - 204
   cdbRevision:
     - 0
     - 227612

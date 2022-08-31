@@ -66,7 +66,7 @@ class SyncClkGen(MOSBase):
         buf_in_params = dict(pinfo=pinfo, seg_list=seg_buf_in, w_p=w_p, w_n=w_n, ridx_n=ridx_n, ridx_p=ridx_p,
                              vertical_sup=False, dual_output=True, sig_locs={})
         buf_out_params = dict(pinfo=pinfo, seg_list=seg_buf_out, w_p=w_p, w_n=w_n, ridx_n=ridx_n, ridx_p=ridx_p,
-                              vertical_sup=False, dual_output=False, sig_locs={})
+                              vertical_sup=False, dual_output=True, sig_locs={})
         buf_comp_clk_params = dict(pinfo=pinfo, seg_list=seg_buf_comp_clk, w_p=w_p, w_n=w_n,
                                    ridx_n=ridx_n, ridx_p=ridx_p, vertical_sup=False, dual_output=True,
                                    sig_locs={'nin0': pg0_tidx, 'nin1': pg1_tidx})
@@ -156,6 +156,7 @@ class SyncClkGen(MOSBase):
 
 
         self.add_pin('clk_out', buf_out.get_pin('out'))
+        self.add_pin('clk_out_b', buf_out.get_pin('outb'))
         self.add_pin('clk_comp', buf_comp_clk.get_pin('outb'))
         self.add_pin('clk_compn', buf_comp_clk.get_pin('out'))
         self.add_pin('clk_in', clk_in_vm)

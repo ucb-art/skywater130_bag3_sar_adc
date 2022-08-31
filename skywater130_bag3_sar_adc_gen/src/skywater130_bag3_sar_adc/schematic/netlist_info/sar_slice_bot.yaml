@@ -2177,6 +2177,7 @@ instances:
       dp: dp
       dp_b: dp_b
       rst: clk
+      rst_comp_clk: net1
       state: state
     params:
       {}
@@ -2184,22 +2185,22 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 94754
+    - 97511
   instance#:
     - 0
     - 19
   lastSchematicExtraction:
     - 4
-    - time_val: 1614633119
+    - time_val: 1653956671
   net#:
     - 0
-    - 0
+    - 1
   pin#:
     - 0
     - 26
   schGeometryLastUpdated:
     - 0
-    - 94754
+    - 97536
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -2209,10 +2210,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 94754
+    - 97536
   _dbvCvTimeStamp:
     - 0
-    - 94754
+    - 97536
   cdbRevision:
     - 0
     - 227612

@@ -1,4 +1,4 @@
-impl_lib: AAA_SAR_lay_sky2
+impl_lib: AAA_SAR_lay_sky3
 impl_cell: AAA_Slice_sync
 root_dir: gen_outputs/bag_sar
 lay_class: skywater130_bag3_sar_adc.layout.sar_sync.SARSlice

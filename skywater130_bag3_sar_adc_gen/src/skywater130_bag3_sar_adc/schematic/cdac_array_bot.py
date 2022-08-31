@@ -63,6 +63,7 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
             sw_m_list='Number of switches',
             cap_m_list='Number of capacitor',
             remove_cap='True to remove capacitor, use it when doesnt have rmetal',
+            has_cm_sw='has the common mode switch',
         )
 
     @classmethod
@@ -70,11 +71,12 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
         return dict(
             bot_probe=True,
             remove_cap=False,
+            has_cm_sw = True
         )
 
     def design(self, cm: int, cm_sw: Param, cm_unit_params: Param, sw_params_list: List[Param],
                unit_params_list: List[Param], sw_m_list: List[int], cap_m_list: List[int],
-               bot_probe: bool, remove_cap: bool) -> None:
+               bot_probe: bool, remove_cap: bool, has_cm_sw:bool) -> None:
         remove_cap = self.params['remove_cap']
         nbits = len(unit_params_list)
         # check length of switch params and cap params list:
@@ -124,7 +126,10 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
             self.reconnect_instance_terminal(cm_name, 'top', 'top')
 
         # Design cm sw
-        self.rename_pin('ctrl_s', 'sam')
-        self.reconnect_instance_terminal('XSW_CM', 'S', 'vref<1>')
-        self.reconnect_instance_terminal('XSW_CM', 'G', 'sam')
-        self.instances['XSW_CM'].design(**cm_sw)
+        if has_cm_sw:
+            self.rename_pin('ctrl_s', 'sam')
+            self.reconnect_instance_terminal('XSW_CM', 'S', 'vref<1>')
+            self.reconnect_instance_terminal('XSW_CM', 'G', 'sam')
+            self.instances['XSW_CM'].design(**cm_sw)
+        else:
+            self.remove_instance('XSW_CM')

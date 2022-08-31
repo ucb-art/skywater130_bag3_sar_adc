@@ -793,6 +793,7 @@ class CapDacColCore(TemplateBase):
             lower_layer_routing='only use up to m4',
             tr_widths='Track width dictionary',
             tr_spaces='Track space dictionary',
+            has_cm_sw='has a cm sw in the cdac layout'
         )
 
     @classmethod
@@ -805,6 +806,7 @@ class CapDacColCore(TemplateBase):
             w_p=4,
             w=4,
             remove_cap=False,
+            has_cm_sw = True,
         )
         return ans
 
@@ -815,7 +817,7 @@ class CapDacColCore(TemplateBase):
         seg: int = self.params['seg']
         sp: int = self.params['sp']
         w_p: int = self.params['w_p']
-        w_n: int = self.params['w_p']
+        w_n: int = self.params['w_n']
         seg_cm: int = self.params['seg_cm']
         w_cm: int = self.params['w_cm']
         diff_idx: int = self.params['diff_idx']
@@ -826,7 +828,7 @@ class CapDacColCore(TemplateBase):
         tr_spaces: Mapping[Tuple[str, str], Mapping[int, Union[float, HalfInt]]] = self.params['tr_spaces']
         grid = self.grid
         tr_manager = TrackManager(self.grid, tr_widths, tr_spaces)
-        has_cm_sw = True
+        has_cm_sw = self.params['has_cm_sw']
 
         if nbits < 3:
             raise ValueError("[CDAC layout]: Less than 3-bit is not supported")
@@ -925,6 +927,7 @@ class CapDacColCore(TemplateBase):
             params=dict(pinfo=self.params['pinfo_cm'], seg=seg_cm, w=w_cm,
                         ncols_tot=ncols_tot - (ncols_tot & 1))
         )
+        
         cm_sw_master = self.new_template(GenericWrapper, params=cm_sw_gen_params)
         y_cm_sw_top = -(-cm_sw_master.bound_box.h // h_blk) * h_blk
 
@@ -1062,6 +1065,7 @@ class CapDacColCore(TemplateBase):
                     capmim_y.append(sw_y)
                 
                 #might be a bit hacky, have to connect with boxes because of the ports returned
+                vref1_tidx = self.grid.coord_to_track(vm_layer, vref0_xm[0].xm)
                 self.add_rect_array((f'met{vm_layer}', 'drawing'), BBox(vref0_xm[0].xl, vref0_xm[0].yl, vref0_xm[-1].xh, vref0_xm[-1].yh))
                 self.add_rect_array((f'met{vm_layer}', 'drawing'), BBox(vref1_xm[0].xl, vref1_xm[0].yl, vref1_xm[-1].xh, vref1_xm[-1].yh))
                 self.add_rect_array((f'met{vm_layer}', 'drawing'), BBox(vref2_xm[0].xl, vref2_xm[0].yl, vref2_xm[-1].xh, vref2_xm[-1].yh))
@@ -1220,7 +1224,6 @@ class CapDacColCore(TemplateBase):
         sig_tidx_start = grid.find_next_track(vm_layer, sw_right_coord, tr_width=tr_w_sig_vm)
         sig_tidx_used, sig_tidx_locs = tr_manager.place_wires(vm_layer, ['sig'] * nbits, align_idx=0,
                                                               align_track=sig_tidx_start)
-        print(sig_tidx_locs)
         sig_tidx_used, sig_tidx_locs = tr_manager.place_wires(vm_layer, ['sig'] * nbits + ['cap'], align_idx=0,
                                                               align_track=sig_tidx_start)
         cap_x = self.grid.track_to_coord(vm_layer, sig_tidx_locs[-1])
@@ -1285,7 +1288,8 @@ class CapDacColCore(TemplateBase):
         else:
             cm_sw_x = cap_x
 
-        cm_sw = self.add_instance(cm_sw_master, inst_name='XSW_CM', xform=Transform(cm_sw_x, 0))
+        if has_cm_sw:
+            cm_sw = self.add_instance(cm_sw_master, inst_name='XSW_CM', xform=Transform(cm_sw_x, 0))
 
         # left space for clock routing
         num_tr, _ = tr_manager.place_wires(vm_layer, ['cap', 'clk', 'clk'], align_idx=0)
@@ -1325,15 +1329,16 @@ class CapDacColCore(TemplateBase):
         tr_w_cap_hm = tr_manager.get_width(hm_layer, 'cap')
         tr_w_cap_vm = tr_manager.get_width(vm_layer, 'cap')
         tr_w_cap_xm = tr_manager.get_width(xm_layer, 'cap')
-        if (cap_config['ismim']):
-            for (vrefm, vrefm_pin) in zip(vrefm_single, vrefm_pin_single):
+        if has_cm_sw:
+            if (cap_config['ismim']):
+                for (vrefm, vrefm_pin) in zip(vrefm_single, vrefm_pin_single):
+                    self.connect_bbox_to_track_wires(Direction.LOWER, (vrefm.get_single_layer(), 'drawing'),
+                                            vrefm_pin, cm_sw.get_all_port_pins('ref'))
+                vrefm = vrefm_single[0]
+                vrefm_pin = vrefm_pin_single[0]
+            else:
                 self.connect_bbox_to_track_wires(Direction.LOWER, (vrefm.get_single_layer(), 'drawing'),
-                                         vrefm_pin, cm_sw.get_all_port_pins('ref'))
-            vrefm = vrefm_single[0]
-            vrefm_pin = vrefm_pin_single[0]
-        else:
-            self.connect_bbox_to_track_wires(Direction.LOWER, (vrefm.get_single_layer(), 'drawing'),
-                                         vrefm_pin, cm_sw.get_all_port_pins('ref'))
+                                            vrefm_pin, cm_sw.get_all_port_pins('ref'))
 
         cap_top_vm_tidx = tr_manager.get_next_track(vm_layer, sig_tidx_locs[-1], 'sig', 'cap', up=True)
         #cap_top_vm = self.connect_to_tracks(cm_sw.get_pin('sig'),
@@ -1343,14 +1348,15 @@ class CapDacColCore(TemplateBase):
         #cap_top_xm_tidx = self.grid.coord_to_track(xm_layer, cap_top_vm.middle, mode=RoundMode.NEAREST)
         #cap_top_xm = self.connect_to_tracks(cap_top_vm, TrackID(xm_layer, cap_top_xm_tidx, tr_w_cap_xm))
         
-        if(cap_top[0].layer_id > 4):
-            pins = cm_sw.get_all_port_pins('sig')
-            wire = self.add_wires(pins[0].track_id.layer_id, pins[0].track_id.base_index, lower=(cap_list[0].array_box.xh-w_blk),
-                                    upper=cap_list[0].array_box.xh, width=6)
-            self.extend_wires(cm_sw.get_all_port_pins('sig'), upper=cap_list[0].array_box.xh)
-            self.connect_to_track_wires(wire, cap_top)
-        else:
-            self.connect_to_track_wires(cm_sw.get_all_port_pins('sig'), cap_top)
+        if has_cm_sw:
+            if(cap_top[0].layer_id > 4):
+                pins = cm_sw.get_all_port_pins('sig')
+                wire = self.add_wires(pins[0].track_id.layer_id, pins[0].track_id.base_index, lower=(cap_list[0].array_box.xh-w_blk),
+                                        upper=cap_list[0].array_box.xh, width=6)
+                self.extend_wires(cm_sw.get_all_port_pins('sig'), upper=cap_list[0].array_box.xh)
+                self.connect_to_track_wires(wire, cap_top)
+            else:
+                self.connect_to_track_wires(cm_sw.get_all_port_pins('sig'), cap_top)
 
         # Group pins for each bit
         ctrl_bit_temp = dict(
@@ -1390,8 +1396,14 @@ class CapDacColCore(TemplateBase):
         for _cap_cm in cap_cm_list:
             hm_tidx = self.grid.coord_to_track(hm_layer, _cap_cm.middle, mode=RoundMode.NEAREST)
             hm_w = self.connect_to_tracks(_cap_cm, TrackID(hm_layer, hm_tidx, tr_w_cap_hm))
-            self.connect_bbox_to_track_wires(Direction.UPPER, (vrefm.get_single_layer(), 'drawing'),
+            if has_cm_sw:
+                self.connect_bbox_to_track_wires(Direction.UPPER, (vrefm.get_single_layer(), 'drawing'),
                                              vrefm_pin, hm_w)  #FIXME
+            elif (not has_cm_sw and cap_config['ismim']==True):
+                self.connect_to_tracks(hm_w, TrackID(vm_layer, vref1_tidx, tr_w_cap_hm))
+            else:
+                self.connect_bbox_to_track_wires(Direction.UPPER, (vrefm_single.get_single_layer(), 'drawing'),
+                                             vrefm_pin_single[0], hm_w)
 
         # connect bot pins   
         # want to space out bottom pins so less parasitic
@@ -1423,16 +1435,18 @@ class CapDacColCore(TemplateBase):
             self.add_pin(f'ctrl_n<{idx}>', p, mode=PinMode.LOWER)
             self.add_pin(f'ctrl_p<{idx}>', n, mode=PinMode.LOWER)
 
-        tr_sp_sig_cap_vm = tr_manager.get_sep(vm_layer, ('sig', 'cap'))
-        vm_tidx_stop = self.grid.coord_to_track(vm_layer, cm_sw.bound_box.xh, mode=RoundMode.NEAREST)
-        vm_tidx_start = self.grid.coord_to_track(vm_layer, cm_sw.bound_box.xl, mode=RoundMode.NEAREST)
+        if has_cm_sw:
+            tr_sp_sig_cap_vm = tr_manager.get_sep(vm_layer, ('sig', 'cap'))
+            vm_tidx_stop = self.grid.coord_to_track(vm_layer, cm_sw.bound_box.xh, mode=RoundMode.NEAREST)
+            vm_tidx_start = self.grid.coord_to_track(vm_layer, cm_sw.bound_box.xl, mode=RoundMode.NEAREST)
 
         if not self.params['lower_layer_routing']:
             self.connect_to_track_wires(cm_sw.get_all_port_pins('VSS'), vss_ym_list)
 
         # TODO: fix VSS
         self.reexport(sw_n.get_port('VSS'), connect=True)
-        self.reexport(cm_sw.get_port('sam'))
+        if has_cm_sw: 
+            self.reexport(cm_sw.get_port('sam'))
         # for vss_bbox in sw_vss_bbox + cm_bbox:
         #     self.add_pin_primitive('VSS', f'm{conn_layer}', vss_bbox, connect=True)
 
@@ -1451,7 +1465,8 @@ class CapDacColCore(TemplateBase):
             cap_m_list=m_list,
             sw_m_list=sw_list,
             cm=ny_list[nbits - 1],
-            cm_sw=cm_sw_master.sch_params,
+            cm_sw=cm_sw_master.sch_params, 
+            has_cm_sw = has_cm_sw,
             remove_cap=self.params['remove_cap'],
         )
 
@@ -1667,7 +1682,7 @@ class CapMIMUnitCore(TemplateBase):
             h_tot = bot_sp+2*cap_bound+height
             pin_boty=bot_sp
             pin_botx=botm_wid
-            pin_topx = bot_ext+width+cap_bound
+            pin_topx = bot_ext+width+top_ext
             pin_topy =bot_sp
             
 
@@ -1726,7 +1741,10 @@ class CapMIMUnitCore(TemplateBase):
             #                     int(-(-(h_tot/self.grid.resolution)//h_blk)*h_blk)))
             # self.set_size_from_bound_box(max(top_layer, bot_layer), bnd_box)
             # print("made boxes???")
-
+        self.sch_params = dict(
+            res_p=None,
+            res_m=None,
+        )
 # Need another class to actually call CapMIMUnitCore as a template 
 class CapMIMCore(TemplateBase):
     """MIMCap core

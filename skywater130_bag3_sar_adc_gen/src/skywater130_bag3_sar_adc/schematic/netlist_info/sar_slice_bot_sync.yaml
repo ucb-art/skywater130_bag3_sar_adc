@@ -2,7 +2,7 @@ lib_name: skywater130_bag3_sar_adc
 cell_name: sar_slice_bot_sync
 view_name: schematic
 bbox:
-  - -481
+  - -488
   - -260
   - 980
   - 810
@@ -230,6 +230,45 @@ terminals:
           origin:
             - -430
             - 160
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 0
+  clk16_b:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: ipin
+          view_name: symbol
+          xform:
+            - -400
+            - 140
+            - R0
+          bbox:
+            - -457
+            - 114
+            - -400
+            - 150
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -430
+            - 140
           alignment: 7
           orient: R0
           font: 5
@@ -1227,6 +1266,18 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
+      net: clk16_b
+      points:
+        -
+          - 840
+          - 130
+        -
+          - 900
+          - 130
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
       net: comp_n_m
       points:
         -
@@ -1491,6 +1542,22 @@ shapes:
         -
           - -90
           - 370
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: clk16_b
+      origin:
+        - 880
+        - 137
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: clk16_b
   -
     - 7
     - layer: 228
@@ -2234,6 +2301,7 @@ instances:
       clk_compn: net07
       clk_in: clk
       clk_out: clk16
+      clk_out_b: clk16_b
     params:
       {}
     is_primitive: false
@@ -2352,7 +2420,7 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 126267
+    - 128400
   instance#:
     - 0
     - 32
@@ -2361,16 +2429,16 @@ props:
     - time_val: 1625163692
   lastSchematicExtraction:
     - 4
-    - time_val: 1650179863
+    - time_val: 1653898230
   net#:
     - 0
     - 4
   pin#:
     - 0
-    - 38
+    - 39
   schGeometryLastUpdated:
     - 0
-    - 126267
+    - 128400
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -2380,10 +2448,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 126267
+    - 128400
   _dbvCvTimeStamp:
     - 0
-    - 126267
+    - 128400
   cdbRevision:
     - 0
     - 227612

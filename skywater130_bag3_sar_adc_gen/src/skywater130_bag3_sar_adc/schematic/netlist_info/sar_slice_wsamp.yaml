@@ -3,7 +3,7 @@ cell_name: sar_slice_wsamp
 view_name: schematic
 bbox:
   - -858
-  - -26
+  - -186
   - 636
   - 600
 terminals:
@@ -202,6 +202,84 @@ terminals:
           format: 1
     stype: 0
     ttype: 0
+  clk16:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -710
+            - -50
+            - R0
+          bbox:
+            - -710
+            - -76
+            - -653
+            - -40
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -685
+            - -50
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
+  clk16_b:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -710
+            - -70
+            - R0
+          bbox:
+            - -710
+            - -96
+            - -653
+            - -60
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -685
+            - -70
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
   clk_b:
     obj:
       - 1
@@ -865,6 +943,123 @@ terminals:
           format: 1
     stype: 0
     ttype: 2
+  vg_cm:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -710
+            - -160
+            - R0
+          bbox:
+            - -710
+            - -186
+            - -653
+            - -150
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -685
+            - -160
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
+  vg_n:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -710
+            - -120
+            - R0
+          bbox:
+            - -710
+            - -146
+            - -653
+            - -110
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -685
+            - -120
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
+  vg_p:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -710
+            - -140
+            - R0
+          bbox:
+            - -710
+            - -166
+            - -653
+            - -130
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -685
+            - -140
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
   vref:
     obj:
       - 1
@@ -1716,7 +1911,7 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 56092
+    - 61451
   instance#:
     - 0
     - 18
@@ -1725,16 +1920,16 @@ props:
     - time_val: 1616038636
   lastSchematicExtraction:
     - 4
-    - time_val: 1616040125
+    - time_val: 1654410673
   net#:
     - 0
-    - 2
+    - 1
   pin#:
     - 0
-    - 28
+    - 34
   schGeometryLastUpdated:
     - 0
-    - 56092
+    - 61451
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -1744,10 +1939,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 56092
+    - 61451
   _dbvCvTimeStamp:
     - 0
-    - 56092
+    - 61451
   cdbRevision:
     - 0
     - 227612

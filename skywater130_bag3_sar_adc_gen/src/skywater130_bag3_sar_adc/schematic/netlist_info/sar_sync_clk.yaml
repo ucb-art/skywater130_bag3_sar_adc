@@ -5,7 +5,7 @@ bbox:
   - -1031
   - -180
   - 368
-  - 320
+  - 360
 terminals:
   VDD:
     obj:
@@ -241,12 +241,51 @@ terminals:
           format: 1
     stype: 0
     ttype: 1
+  clk_out_b:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -820
+            - 350
+            - R0
+          bbox:
+            - -820
+            - 324
+            - -763
+            - 360
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -795
+            - 350
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
 shapes:
   -
     - 5
     - layer: 228
       purpose: 4294967295
-      net: net11
+      net: clk_out_b
       points:
         -
           - 280
@@ -770,6 +809,22 @@ shapes:
       visible: true
       drafting: true
       text: VDD
+  -
+    - 7
+    - layer: 228
+      purpose: 237
+      net: clk_out_b
+      origin:
+        - 310
+        - 147
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: clk_out_b
 instances:
   XBUF_COMP:
     lib_name: bag3_digital
@@ -833,7 +888,7 @@ instances:
       VSS: VSS
       in: clk_div_int
       out: clk_out
-      outb: net11
+      outb: clk_out_b
     params:
       {}
     is_primitive: false
@@ -863,22 +918,22 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 1846
+    - 2629
   instance#:
     - 0
     - 4
   lastSchematicExtraction:
     - 4
-    - time_val: 1648760676
+    - time_val: 1653898087
   net#:
     - 0
-    - 2
+    - 1
   pin#:
     - 0
-    - 6
+    - 7
   schGeometryLastUpdated:
     - 0
-    - 1855
+    - 2629
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -888,10 +943,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 1855
+    - 2629
   _dbvCvTimeStamp:
     - 0
-    - 1855
+    - 2629
   cdbRevision:
     - 0
     - 227612

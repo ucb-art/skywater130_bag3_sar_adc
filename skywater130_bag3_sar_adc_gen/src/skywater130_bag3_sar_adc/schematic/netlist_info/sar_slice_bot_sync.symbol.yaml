@@ -85,6 +85,19 @@ terminals:
           - 324
     stype: 0
     ttype: 0
+  clk16_b:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 336
+          - 4
+          - 344
+    stype: 0
+    ttype: 0
   clk_out:
     obj:
       - 0
@@ -1777,6 +1790,22 @@ shapes:
       drafting: true
       text: clk16
   -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 6
+        - 340
+      alignment: 1
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: clk16_b
+  -
     - 5
     - layer: 231
       purpose: 4294967295
@@ -1860,27 +1889,27 @@ instances:
 props:
   interfaceLastChanged:
     - 4
-    - time_val: 1650179875
+    - time_val: 1653898188
   partName:
     - 3
     - sar_slice_bot_sync
   pin#:
     - 0
-    - 49
+    - 50
   portOrder:
     - 5
     - name: ILList
-      bin_val: ("clk_out" "comp_clk" "comp_n" "comp_p" "data_out" "dm" "dn" "done" "dp" "VDD" "VSS" "top_n" "top_p" "vref" "bot_n" "bot_p" "clk" "clk16" "clk_sel" "osn" "osp")
+      bin_val: ("clk_out" "comp_clk" "comp_n" "comp_p" "data_out" "dm" "dn" "done" "dp" "VDD" "VSS" "top_n" "top_p" "vref" "bot_n" "bot_p" "clk" "clk16" "clk16_b" "clk_sel" "osn" "osp")
   vendorName:
     - 3
     - ""
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 3310
+    - 3353
   _dbvCvTimeStamp:
     - 0
-    - 3310
+    - 3353
   cdbRevision:
     - 0
     - 227612

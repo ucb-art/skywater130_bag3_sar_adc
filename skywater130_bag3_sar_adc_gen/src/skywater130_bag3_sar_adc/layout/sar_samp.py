@@ -1,3 +1,4 @@
+from queue import Empty
 from typing import Any, Dict, Optional, Type
 
 from bag.design.database import ModuleDB
@@ -182,6 +183,151 @@ class Sampler(MOSBase):
             m_list='',
             nbits='',
             sampler_unit_params='',
+            unit_pinfo=True,
+            pinfo='',
+        )
+
+    @classmethod
+    def get_default_param_values(cls) -> Dict[str, Any]:
+        return dict(
+            m_list=[],
+            nbits=1,
+            unit_pinfo=True,
+            pinfo='',
+        )
+
+    def get_schematic_class(self) -> Optional[Type[Module]]:
+        # noinspection PyTypeChecker
+        return ModuleDB.get_schematic_class('skywater130_bag3_sar_adc', 'nmos_sampler_diff')
+
+    def draw_layout(self):
+        if (self.params['unit_pinfo']):
+            place_info = MOSBasePlaceInfo.make_place_info(self.grid, self.params['sampler_unit_params']['pinfo'])
+            sampler_master = self.new_template(SamplerUnit, params=self.params['sampler_unit_params'])
+        else:
+            place_info = MOSBasePlaceInfo.make_place_info(self.grid, self.params['pinfo'])
+            sampler_master = self.new_template(SamplerUnit, params=self.params['sampler_unit_params'].copy(
+                                                            append=dict(pinfo=self.params['pinfo'])))
+        self.draw_base(place_info)
+        # print(self.params['pinfo'])
+
+
+        # by default use binary segments
+        sampler_params_list = []
+        nbits = self.params['nbits']
+        if self.params['m_list']:
+            m_list = self.params['m_list']
+        else:
+            m_list = [2 ** idx for idx in range(nbits)]
+
+        tap_n_cols = self.get_tap_ncol()
+        tap_sep_col = self.sub_sep_col
+        tap_vdd_list, tap_vss_list = [], []
+        #self.add_tap(0, tap_vdd_list, tap_vss_list, tile_idx=0)
+        cur_col = tap_n_cols + tap_sep_col
+        vm_col_l = cur_col
+        sampler_list, sampler_list_list = [], []
+        for s in m_list:
+            sampler_sub_list = []
+            for idx in range(s):
+                sampler_sub_list.append(self.add_tile(sampler_master, 0, cur_col))
+                cur_col += sampler_master.num_cols
+            sampler_list.extend(sampler_sub_list)
+            sampler_list_list.append(sampler_sub_list)
+
+        vm_col_r = self.num_cols
+        #self.add_tap(self.num_cols + tap_n_cols + tap_sep_col, tap_vdd_list, tap_vss_list, tile_idx=0, flip_lr=True)
+
+        self.set_mos_size()
+
+        in_warr = self.connect_wires([s.get_pin('in') for s in sampler_list])
+        self.add_pin('in', in_warr)
+
+        tr_manager = self.tr_manager
+        hm_layer = self.conn_layer + 1
+        vm_layer = hm_layer + 1
+        xm_layer = vm_layer + 1
+
+        tr_w_sig_vm = tr_manager.get_width(vm_layer, 'sig')
+        tr_w_sig_xm = tr_manager.get_width(xm_layer, 'sig')
+        # export output
+
+        for idx, s_list in enumerate(sampler_list_list):
+            for s in s_list:
+                out_vm_tid = self.grid.coord_to_track(vm_layer, s.get_pin('out').middle, mode=RoundMode.NEAREST)
+                self.connect_to_tracks(s.get_pin('out'), TrackID(vm_layer, out_vm_tid, tr_w_sig_vm))
+
+        # Collect vm tid list to export input
+        vm_tid_list = []
+        for idx in range(vm_col_l, vm_col_r + 1, 2):
+            vm_tid_list.append(self.arr_info.col_to_track(vm_layer, idx, mode=RoundMode.NEAREST))
+        tr_sp_sig_vm = tr_manager.get_sep(vm_layer, ('sig', 'sig'))
+        vm_tid_list = self.get_available_tracks(vm_layer, self.arr_info.col_to_track(vm_layer, vm_col_l),
+                                                self.arr_info.col_to_track(vm_layer, vm_col_r), self.bound_box.yl,
+                                                self.bound_box.yh, sep=tr_sp_sig_vm, sep_margin=tr_sp_sig_vm,
+                                                include_last=True)
+
+        in_vm_list = [self.connect_to_tracks(in_warr, TrackID(vm_layer, _tid, tr_w_sig_vm))
+                      for _tid in vm_tid_list]
+
+        in_xm_tid = self.grid.coord_to_track(xm_layer, in_vm_list[0].middle, mode=RoundMode.NEAREST)
+        in_vm_list_ret = []
+        in_xm = self.connect_to_tracks(in_vm_list, TrackID(xm_layer, in_xm_tid, tr_w_sig_xm),
+                                       ret_wire_list=in_vm_list_ret)
+
+        out_vm_upper = in_vm_list_ret[0].upper
+        for idx, s_list in enumerate(sampler_list_list):
+            _out_vm_list = []
+            for s in s_list:
+                out_vm_tid = self.grid.coord_to_track(vm_layer, s.get_pin('out').middle, mode=RoundMode.NEAREST)
+                _out_vm_list.append(self.connect_to_tracks(s.get_pin('out'),
+                                                           TrackID(vm_layer, out_vm_tid, tr_w_sig_vm),
+                                                           track_upper=out_vm_upper))
+            self.add_pin(f'out<{idx}>', _out_vm_list)
+        #self.add_pin('in', in_xm)
+
+        if sampler_list[0].has_port('in_c'):
+            inc_warr = self.connect_wires([s.get_pin('in_c') for s in sampler_list])
+            self.add_pin('in_c', inc_warr)
+            inc_vm_list = [self.connect_to_tracks(inc_warr, TrackID(vm_layer, _tid, tr_w_sig_vm))
+                           for _tid in vm_tid_list]
+            inc_xm_tid = self.grid.coord_to_track(xm_layer, inc_vm_list[0].middle, mode=RoundMode.NEAREST)
+            inc_xm = self.connect_to_tracks(inc_vm_list, TrackID(xm_layer, inc_xm_tid, tr_w_sig_xm))
+            self.add_pin('in_c', inc_xm)
+
+        if sampler_list[0].has_port('sam'):
+            clk = self.connect_wires([s.get_pin('sam') for s in sampler_list])
+            self.add_pin('sam', clk)
+            #FIXME
+            # clk_vm_list = [self.connect_to_tracks(clk, TrackID(vm_layer, _tid, tr_w_sig_vm))
+            #                for _tid in vm_tid_list]
+            # clk_xm_tid = self.grid.coord_to_track(xm_layer, clk_vm_list[0].middle, mode=RoundMode.NEAREST)
+            # clk_xm = self.connect_to_tracks(clk_vm_list, TrackID(xm_layer, clk_xm_tid, tr_w_sig_xm))
+            #self.add_pin('sam', clk_xm)
+        if sampler_list[0].has_port('sam_b'):
+            clkb = self.connect_wires([s.get_pin('sam_b') for s in sampler_list])
+            self.add_pin('sam_b', clkb)
+            clkb_vm_list = [self.connect_to_tracks(clkb, TrackID(vm_layer, _tid, tr_w_sig_vm))
+                            for _tid in vm_tid_list]
+            clkb_xm_tid = self.grid.coord_to_track(xm_layer, clkb_vm_list[0].middle, mode=RoundMode.NEAREST)
+            clkb_xm = self.connect_to_tracks(clkb_vm_list, TrackID(xm_layer, clkb_xm_tid, tr_w_sig_xm))
+            self.add_pin('sam_b', clkb_xm)
+
+        self._sch_params = dict(
+            m_list=m_list,
+            **sampler_master.sch_params
+        )
+
+class Sampler_orig(MOSBase):
+    def __init__(self, temp_db: TemplateDB, params: Param, **kwargs: Any) -> None:
+        MOSBase.__init__(self, temp_db, params, **kwargs)
+
+    @classmethod
+    def get_params_info(cls) -> Dict[str, str]:
+        return dict(
+            m_list='',
+            nbits='',
+            sampler_unit_params='',
         )
 
     @classmethod
@@ -273,7 +419,7 @@ class Sampler(MOSBase):
                                                            TrackID(vm_layer, out_vm_tid, tr_w_sig_vm),
                                                            track_upper=out_vm_upper))
             self.add_pin(f'out<{idx}>', _out_vm_list)
-        self.add_pin('in', in_xm)
+        #self.add_pin('in', in_xm)
 
         if sampler_list[0].has_port('in_c'):
             inc_warr = self.connect_wires([s.get_pin('in_c') for s in sampler_list])

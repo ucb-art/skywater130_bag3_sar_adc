@@ -5,7 +5,7 @@ bbox:
   - -4
   - -4
   - 284
-  - 246
+  - 300
 terminals:
   VDD:
     obj:
@@ -72,6 +72,32 @@ terminals:
           - 64
     stype: 0
     ttype: 0
+  clk16:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 276
+          - 256
+          - 284
+          - 264
+    stype: 0
+    ttype: 1
+  clk16_b:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 276
+          - 276
+          - 284
+          - 284
+    stype: 0
+    ttype: 1
   clk_b:
     obj:
       - 0
@@ -293,6 +319,45 @@ terminals:
           - 244
     stype: 0
     ttype: 2
+  vg_cm:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 26
+          - 236
+          - 34
+          - 244
+    stype: 0
+    ttype: 1
+  vg_n:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 46
+          - 236
+          - 54
+          - 244
+    stype: 0
+    ttype: 1
+  vg_p:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 66
+          - 236
+          - 74
+          - 244
+    stype: 0
+    ttype: 1
   vref:
     obj:
       - 0
@@ -1006,6 +1071,146 @@ shapes:
       drafting: true
       text: bot_n
   -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 280
+          - 280
+        -
+          - 240
+          - 280
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 274
+        - 290
+      alignment: 1
+      orient: R180
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: clk16_b
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 280
+          - 260
+        -
+          - 240
+          - 260
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 274
+        - 270
+      alignment: 1
+      orient: R180
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: clk16
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 70
+          - 240
+        -
+          - 70
+          - 200
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 60
+        - 234
+      alignment: 7
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: vg_p
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 50
+          - 240
+        -
+          - 50
+          - 200
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 40
+        - 234
+      alignment: 7
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: vg_n
+  -
+    - 5
+    - layer: 231
+      purpose: 4294967295
+      net: ""
+      points:
+        -
+          - 30
+          - 240
+        -
+          - 30
+          - 200
+  -
+    - 7
+    - layer: 229
+      purpose: 237
+      net: ""
+      origin:
+        - 20
+        - 234
+      alignment: 7
+      orient: R90
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: vg_cm
+  -
     - 7
     - layer: 229
       purpose: 237
@@ -1107,27 +1312,27 @@ instances:
 props:
   interfaceLastChanged:
     - 4
-    - time_val: 1616040201
+    - time_val: 1654410729
   partName:
     - 3
     - sar_slice_wsamp
   pin#:
     - 0
-    - 31
+    - 36
   portOrder:
     - 5
     - name: ILList
-      bin_val: ("clk_out" "comp_clk" "comp_n" "comp_p" "data_out" "dm" "dn" "done" "dp" "VDD" "VSS" "bot_n" "bot_p" "top_n" "top_p" "vref" "clk" "clk_b" "clk_e" "in_n" "in_p" "osn" "osp")
+      bin_val: ("clk16" "clk16_b" "clk_out" "comp_clk" "comp_n" "comp_p" "data_out" "dm" "dn" "done" "dp" "vg_cm" "vg_n" "vg_p" "VDD" "VSS" "bot_n" "bot_p" "top_n" "top_p" "vref" "clk" "clk_b" "clk_e" "in_n" "in_p" "osn" "osp")
   vendorName:
     - 3
     - ""
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 2056
+    - 2260
   _dbvCvTimeStamp:
     - 0
-    - 2056
+    - 2260
   cdbRevision:
     - 0
     - 227612

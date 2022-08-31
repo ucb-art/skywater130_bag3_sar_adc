@@ -67,14 +67,22 @@ class skywater130_bag3_sar_adc__sar_slice_wsamp(Module):
         return dict(
             slice_params='',
             sampler_params='',
-            sync=False
+            sync=False,
+            bootstrap=False
         )
 
-    def design(self, sampler_params, slice_params, sync) -> None:
+    def design(self, sampler_params, slice_params, sync, bootstrap) -> None:
         if sync:
             self.replace_instance_master('XSAR', 'skywater130_bag3_sar_adc', 
                         'sar_slice_bot_sync', keep_connections=True)
-            self.add_pin('clk16', TermType.output)
+            #self.add_pin('clk16', TermType.output)
+        if bootstrap:
+            self.replace_instance_master('XSAM', 'skywater130_bag3_sar_adc', 
+                    'sampler_top')
+            # self.add_pin('vcm', TermType.input)
+            # self.reconnect_instance_terminal('XSAM', 'vcm', 'vref<1>')
+            # self.reconnect_instance_terminal('XSAM', 'bot_n_bot', 'top_n')
+            # self.reconnect_instance_terminal('XSAM', 'out_p_bot', 'top_p')
         self.instances['XSAM'].design(**sampler_params)
         self.instances['XSAR'].design(**slice_params)
         sar_pins = list(self.instances['XSAR'].master.pins.keys())
@@ -83,7 +91,7 @@ class skywater130_bag3_sar_adc__sar_slice_wsamp(Module):
         sam_conn_list = [(p,p) for p in sam_pins]
         sam_conn_list_new = []
         for pin, ppin in sam_conn_list:
-            if 'out' in pin:
+            if 'out' in pin and not('bot' in pin) :
                 ppin=ppin.replace('out', 'bot')
             if 'sam' in pin:
                 if sync:
@@ -91,12 +99,22 @@ class skywater130_bag3_sar_adc__sar_slice_wsamp(Module):
                 else:
                     ppin=ppin.replace('sam', 'clk')
             sam_conn_list_new.append((pin, ppin))
-
         self.reconnect_instance('XSAR', sar_conn_list)
         self.reconnect_instance('XSAM', sam_conn_list_new)
+
+        if bootstrap:
+            self.reconnect_instance_terminal('XSAM', 'vcm', 'vref<1>')
+            self.reconnect_instance_terminal('XSAM', 'out_n_bot', 'top_n')
+            self.reconnect_instance_terminal('XSAM', 'out_p_bot', 'top_p')
+            self.reconnect_instance_terminal('XSAM', 'sig_n', 'in_n')
+            self.reconnect_instance_terminal('XSAM', 'sig_p', 'in_p')
         nbits=slice_params['nbits']
         for pname in ['dm', 'dn', 'dp', 'data_out']:
             self.rename_pin(pname, f"{pname}<{nbits - 1}:0>")
         for pname in ['bot_p', 'bot_n']:
             self.rename_pin(pname, f"{pname}<{nbits - 2}:0>")
         self.rename_pin('vref', 'vref<2:0>')
+        self.remove_pin('osn')
+        self.remove_pin('osp')
+        self.remove_pin('clk_e')
+        self.remove_pin('done')
