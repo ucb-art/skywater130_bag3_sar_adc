@@ -12,7 +12,8 @@ params:
   ratio_list: [1, 1, 2, 4, 8, 8, 8, 8, 8] 
   sw_type: ['n', 'n', 'p']
   diff_idx: 5
-  width: 120 #190 # in um
+  width: &cap_width 
+    120   #190 # in um
   seg: 32 #32  #changes switch size
   seg_cm: 16
   sp: 4 # how many tracks apart to space the switches
@@ -39,6 +40,7 @@ params:
     height: 2.5 #unit mim cap height
     unit_height: 2.5
     unit_width: 30 # specify
+    width: *cap_width
     width_total: 120
     cap_sp: 2 #in um
     has_rmetal: False

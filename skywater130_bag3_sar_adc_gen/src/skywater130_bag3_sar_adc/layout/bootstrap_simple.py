@@ -9,7 +9,6 @@ from bag.layout.template import TemplateDB, TemplateBase
 from bag.design.database import ModuleDB, Module
 from bag.layout.routing.base import TrackManager, TrackID, WireArray
 from bag.layout.routing.base import WDictType, SpDictType
-from skywater130_bag3_sar_adc.layout.sar_cdac import CapMIMUnitCore
 from skywater130_bag3_sar_adc.layout.sar_samp import Sampler
 from skywater130_bag3_sar_adc.layout.util.util import fill_conn_layer_intv
 
@@ -17,7 +16,7 @@ from xbase.layout.enum import MOSWireType, SubPortMode
 from xbase.layout.mos.placement.data import TilePatternElement, TilePattern
 from xbase.layout.mos.base import MOSBasePlaceInfo, MOSBase, MOSArrayPlaceInfo
 from xbase.layout.mos.top import GenericWrapper
-from xbase.layout.cap.core import MOMCapCore
+from xbase.layout.cap.mim import MIMCapCore
 
 
 class BootstrapNMOS_simple(MOSBase):
@@ -768,7 +767,7 @@ class Bootstrap_simple(TemplateBase):
 
         # cboot_params['height'] = cboot_height
         # cboot_params['width'] = w_cap
-        cboot_master: TemplateBase = self.new_template(CapMIMUnitCore, params=cboot_params)
+        cboot_master: TemplateBase = self.new_template(MIMCapCore, params=cboot_params['cap_config'])
         # cboot_master: TemplateBase = self.new_template(MOMCapCore, params=cboot_params)
         
         vmw_blk, vmh_blk = self.grid.get_block_size(vm_layer)
@@ -785,17 +784,17 @@ class Bootstrap_simple(TemplateBase):
             nwl = self.add_instance(nwl_master, inst_name='XNWL',
                     xform=Transform(cap_coord+vmw_blk//2+w_cap, h_nmos))
             capb_nwl = nwl.get_pin('cap_bot')
-            vm_layer = capb_nmos.layer_id + 1
-            cap_bot_coord = max(nwl.bound_box.yl, self.grid.track_to_coord(capb_nmos.layer_id, int(capb_nwl.track_id.base_index)))
-            cboot = self.add_instance(cboot_master, inst_name='CBOOT', xform=Transform(cap_coord+w_cap-vmw_blk//2, cap_bot_coord, mode=Orientation.R90))
+            vm_layer = capb_nmos.track_id.layer_id + 1
+            cap_bot_coord = max(int(nwl.bound_box.yl), self.grid.track_to_coord(capb_nwl.track_id.layer_id, capb_nwl.track_id.base_index))
+            cboot = self.add_instance(cboot_master, inst_name='CBOOT', xform=Transform(-(-(cap_coord+w_cap-vmw_blk//2)//vmw_blk )* vmw_blk, cap_bot_coord, mode=Orientation.R90))
         else:
             nwl = self.add_instance(nwl_master, inst_name='XNWL',
                                 xform=Transform(w_tot - w_nwl, h_nmos))
 
             capb_nwl = nwl.get_pin('cap_bot')
             vm_layer = capb_nmos.layer_id + 1
-            cap_bot_coord = max(nwl.bound_box.yl, self.grid.track_to_coord(capb_nmos.layer_id, int(capb_nwl.track_id.base_index)))
-            cboot = self.add_instance(cboot_master, inst_name='CBOOT', xform=Transform(nwl.bound_box.xl-vmw_blk//2, cap_bot_coord, mode=Orientation.R90))
+            cap_bot_coord = max(nwl.bound_box.yl, self.grid.track_to_coord(capb_nwl.track_id.layer_id, capb_nwl.track_id.base_index))
+            cboot = self.add_instance(cboot_master, inst_name='CBOOT', xform=Transform(-(-(nwl.bound_box.xl-vmw_blk//2)//vmw_blk )* vmw_blk, cap_bot_coord, mode=Orientation.R90)) 
         # if has_cap_aux:
         #     caux_params = copy.deepcopy(mom_params.to_dict())
         #     caux_height = h_cap_tot - cboot_height
@@ -847,6 +846,7 @@ class Bootstrap_simple(TemplateBase):
         capb_nmos = nmos.get_pin('cap_bot') 
         capb_nwl = nwl.get_pin('cap_bot')
         vm_layer = capb_nmos.layer_id + 1
+        print(capb_nmos)
         cap_bot_vm_coord = min(nwl.bound_box.xl, capb_nmos.upper)
         cap_bot_vm_tidx = self.grid.coord_to_track(vm_layer, cap_bot_vm_coord, mode=RoundMode.NEAREST)
         cap_bot_vm_tid = TrackID(vm_layer, cap_bot_vm_tidx, tr_mgr.get_width(vm_layer, 'cap'))
@@ -914,11 +914,12 @@ class Bootstrap_simple(TemplateBase):
         cap_bot_vm_list, cap_top_vm_list = [], []
         tr_w_cap_vm = tr_mgr.get_width(vm_layer, 'cap')
         tr_w_cap_ym = tr_mgr.get_width(ym_layer, 'cap')
+        print(cap_vm_tidx_list)
         # for idx in cap_vm_tidx_list:
         #     cap_bot_vm_list.append(self.connect_to_tracks(cap_bot_hm, TrackID(vm_layer, idx, tr_w_cap_vm)))
         #     cap_top_vm_list.append(self.connect_to_tracks(cap_top_hm, TrackID(vm_layer, idx, tr_w_cap_vm)))
 
-        # cap_top_xm_tidx = self.grid.coord_to_track(xm_layer, cap_top_vm_list[0].middle, mode=RoundMode.NEAREST) FIXME
+        # cap_top_xm_tidx = self.grid.coord_to_track(xm_layer, cap_top_vm_list[0].middle, mode=RoundMode.NEAREST) #FIXME
         if has_cap_aux:
             cap_top_aux_vm_list = []
             cap_top_aux_hm = nwl.get_pin('cap_top_aux')
@@ -931,27 +932,33 @@ class Bootstrap_simple(TemplateBase):
             cap_top_aux_vm_list = []
             cap_top_aux_xm_tidx = COORD_MAX
 
-        # cap_bot_xm_tidx = self.grid.coord_to_track(xm_layer, cap_bot_vm_list[0].middle, mode=RoundMode.NEAREST) FIXME
+        # cap_bot_xm_tidx = self.grid.coord_to_track(xm_layer, cap_bot_vm_list[0].middle, mode=RoundMode.NEAREST) 
         cap_top_layer = cboot_master.top_layer
         cap_bot_layer = cap_top_layer-1
-        mim_cap_top = BBoxArray(cboot.get_pin('minus', layer=cap_top_layer))
-        mim_cap_bot = BBoxArray(cboot.get_pin('plus', layer=cap_bot_layer))
+        mim_cap_top =  cboot.get_pin('top', layer=cap_top_layer) #BBoxArray(cboot.get_pin('top', layer=cap_top_layer))
+        mim_cap_bot = cboot.get_pin('bot', layer=cap_bot_layer)#BBoxArray(cboot.get_pin('bot', layer=cap_bot_layer))
 
+        #FIXME
         if ((cap_top_layer %2) == 0): 
-            idx_t = self.grid.find_next_track(cap_top_layer, int(mim_cap_top.yh), tr_width=1, half_track=True, mode=RoundMode.GREATER_EQ)
+            print(mim_cap_top, mim_cap_bot)
+            print(cap_top_layer)
+            idx_t = self.grid.find_next_track(cap_top_layer-1, int(mim_cap_top.yh), tr_width=1, half_track=True, mode=RoundMode.GREATER_EQ)
             idx_b = self.grid.find_next_track(cap_bot_layer-1, int(mim_cap_bot.yh), tr_width=1, half_track=True, mode=RoundMode.LESS_EQ)
-            cap_top = self.connect_bbox_to_tracks(Direction.LOWER, ('met3','drawing'), mim_cap_top,
-                                                      TrackID(cap_top_layer, idx_t, 1))
+            cap_top = self.connect_bbox_to_tracks(Direction.UPPER, ('met4','drawing'), mim_cap_top,
+                                                      TrackID(cap_top_layer-1, idx_t, 1))
             cap_bot = self.connect_bbox_to_tracks(Direction.UPPER, ('met3','drawing'), mim_cap_bot,
-                                                      TrackID(cap_bot_layer-1, idx_b, 1))
-            self.connect_wires([capb_nwl, cap_bot])
-
+                                                     TrackID(capb_nmos_vm.track_id.layer_id, 
+                                                            capb_nmos_vm.track_id.base_index, 1)) #TrackID(cap_bot_layer-1, idx_b, 1))
+            self.connect_wires([capb_nmos_vm, cap_bot])
+            self.connect_to_track_wires(capb_nwl, capb_nmos_vm) #FIXME
+        #     #FIXME
             cap_top_tr_w = round(self.grid.coord_to_track(vm_layer, w_cap, mode=RoundMode.LESS_EQ))*2
             self.extend_wires(cap_top_hm, lower=cap_top.lower)
             idx_vm_top = self.grid.coord_to_track(vm_layer, -(-(cap_top.lower+cap_top.upper)//(h_blk*2))*h_blk, mode=RoundMode.NEAREST)
-            self.connect_to_tracks(cap_top_hm, TrackID(vm_layer, idx_vm_top, int(cap_top_tr_w) ))
-             #cap_bot = self.add_wires(cap_bot_layer-1, idx_b, int(mim_cap_bot.xl+h_blk), int(mim_cap_bot.xh-h_blk), width=1)
-        # self.add_pin('plus', cap_bot, show=self.show_pins)
+            cap_top_mid = self.connect_to_tracks(cap_top_hm, TrackID(vm_layer, idx_vm_top, int(cap_top_tr_w) ))
+            self.connect_to_track_wires(cap_top_mid, cap_top)
+            #cap_bot = self.add_wires(cap_bot_layer-1, idx_b, int(mim_cap_bot.xl+h_blk), int(mim_cap_bot.xh-h_blk), width=1)
+        # self.add_pin('plus', capb_nmos_vm, show=self.show_pins)
         # self.add_pin('minus', cap_top, show=self.show_pins)
 
         tr_w_cap_xm = tr_mgr.get_width(xm_layer, 'cap')

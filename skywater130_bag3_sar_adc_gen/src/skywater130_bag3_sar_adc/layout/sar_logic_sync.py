@@ -1094,15 +1094,15 @@ class SARLogicArray(MOSBase):
             if has_pmos_sw:
                 for jdx, inst in enumerate(inst_row):
                     dm_xm_list.append(self.connect_to_tracks(inst.get_pin('dm'),
-                                                             TrackID(xm_layer, tidx_list[6 * jdx], tr_w_xm_sig)))
+                                                             TrackID(xm_layer, tidx_list[5 * jdx], tr_w_xm_sig)))
                     dn_xm_list.append(self.connect_to_tracks(inst.get_pin('dn'),
-                                                             TrackID(xm_layer, tidx_list[6 * jdx + 1], tr_w_xm_sig)))
+                                                             TrackID(xm_layer, tidx_list[5 * jdx + 1], tr_w_xm_sig)))
                     dp_xm_list.append(self.connect_to_tracks(inst.get_pin('dp'),
-                                                             TrackID(xm_layer, tidx_list[6 * jdx + 2], tr_w_xm_sig)))
+                                                             TrackID(xm_layer, tidx_list[5 * jdx + 2], tr_w_xm_sig)))
                     dnb_xm_list.append(self.connect_to_tracks(inst.get_pin('dn_b'),
-                                                              TrackID(xm_layer, tidx_list[6 * jdx + 3], tr_w_xm_sig)))
+                                                              TrackID(xm_layer, tidx_list[5 * jdx + 3], tr_w_xm_sig)))
                     dpb_xm_list.append(self.connect_to_tracks(inst.get_pin('dp_b'),
-                                                              TrackID(xm_layer, tidx_list[6 * jdx + 4], tr_w_xm_sig)))
+                                                              TrackID(xm_layer, tidx_list[5 * jdx + 4], tr_w_xm_sig)))
             else:
                 for jdx, inst in enumerate(inst_row):
                     dm_xm_list.append(self.connect_to_tracks(inst.get_pin('dm'),

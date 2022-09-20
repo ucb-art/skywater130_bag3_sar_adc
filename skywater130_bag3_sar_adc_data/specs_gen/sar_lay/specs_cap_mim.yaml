@@ -6,8 +6,8 @@ root_dir: gen_outputs/mimcap
 params:
   ny: 4
   cap_config:
-    top_layer: 4
-    bot_layer: 3
+    top_layer: 5
+    bot_layer: 4
     #width: 80  #refers to capacitor layer width and height
     height: 3
     unit_height: 3
