@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # -*- coding: utf-8 -*-
-
+from copy import deepcopy
 from typing import Dict, Any, List
 
 import pkg_resources
@@ -82,6 +82,7 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
         # check length of switch params and cap params list:
         if nbits != len(sw_params_list):
             raise ValueError("[CDAC Array Schematic]: switch and cap params length don't match")
+        dum_term_list = []
         cap_term_list = []
         sw_term_list = []
 
@@ -95,34 +96,61 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
             _term = [('VDD', 'VDD'), ('VSS', 'VSS'), ('vref<2:0>', 'vref<2:0>'),
                      ('out', f"bot<{idx}>"), ('ctrl<2:0>', f"ctrl_n<{idx}>,ctrl_m<{idx}>,ctrl_p<{idx}>")]
             _cap_name = f'XCAP{idx}<{cap_m-1}:0>' if cap_m > 1 else f'XCAP{idx}'
+            dum_term_list.append((f'XCAP_DUM{idx}', [('TOP', f'dum_top{idx}'), ('BOT', f'bot_top{idx}')]))
             _sw_name = f'XDRV{idx}<{sw_m-1}:0>' if sw_m > 1 else f'XDRV{idx}'
-            cap_term_list.append((_cap_name, [('top', 'top'), ('bot', f'bot<{idx}>')]))
+            cap_term_list.append((_cap_name, [('top', 'top'), ('BOT', f'bot<{idx}>')]))
             sw_term_list.append((_sw_name, _term))
 
         # Design sar_sch array
         dx_max = 2*max(self.instances['XCAP'].width, self.instances['XDRV'].width)
+        self.array_instance('XCAP_DUM', inst_term_list=dum_term_list, dx=dx_max)
         self.array_instance('XCAP', inst_term_list=cap_term_list, dx=dx_max)
         self.array_instance('XDRV', inst_term_list=sw_term_list, dx=dx_max)
-        for idx, (name, _) in enumerate(cap_term_list):
-            self.instances[name].design(**unit_params_list[idx])
+        for idx, ((name, _), (dum_name, _)) in enumerate(zip( cap_term_list, dum_term_list)):
+            cap_params = deepcopy(unit_params_list[idx].to_dict())
+            cap_params['intent'] = unit_params_list[idx]['mim_type']
+            self.instances[name].design(**cap_params)
+
             if remove_cap:
                 self.remove_instance(name)
+            
+            if cap_params['dum_col_l'] >0:
+                cap_params['num_cols'] = unit_params_list[idx]['dum_col_l']
+                cap_params['dum_col_l'] = unit_params_list[idx]['num_cols']
+                self.instances[dum_name].design(**cap_params)
+            else:
+                self.remove_instance(dum_name)
         for idx, (name, _) in enumerate(sw_term_list):
             self.instances[name].design(**sw_params_list[idx])
 
         # Design cm cap
         cm_name = f"<XCAP_CM{cm - 1}:0>" if cm > 1 else f"XCAP_CM"
-        self.instances['XCAP_CM'].design(**cm_unit_params)
+        cm_cap_params = deepcopy(cm_unit_params.to_dict())
+        cm_cap_params['intent'] = cm_unit_params['mim_type']
+        self.instances['XCAP_CM'].design(**cm_cap_params)
+
+        cm_dum_name = f"<XCAP_CM_DUM{cm - 1}:0>" if cm > 1 else f"XCAP_CM_DUM"
+        cm_dum_cap_params = deepcopy(cm_unit_params.to_dict())
+        cm_dum_cap_params['intent'] = cm_unit_params['mim_type']
+        if cm_dum_cap_params['dum_col_l'] > 0:
+            cm_dum_cap_params['num_cols'] = cm_unit_params['dum_col_l']
+            cm_dum_cap_params['dum_col_l'] = cm_unit_params['num_cols']
+            self.instances[cm_dum_name].design(**cm_dum_cap_params)
+            self.reconnect_instance_terminal(cm_dum_name, 'BOT', 'cm_dum_bot')
+            self.reconnect_instance_terminal(cm_dum_name, 'TOP', 'cm_dum_top')
+        else:
+            self.remove_instance(cm_dum_name)
+
         if cm > 1:
             self.rename_instance('XCAP_CM', f'XCM{cm-1:0}')
-            self.reconnect_instance_terminal(cm_name, 'bot', 'vref<1>')
+            self.reconnect_instance_terminal(cm_name, 'BOT', 'vref<1>')
             self.reconnect_instance_terminal(cm_name, 'top', 'top')
             if remove_cap:
                 self.remove_instance(f'XCM{cm-1:0}')
         elif remove_cap:
             self.remove_instance('XCAP_CM')
         else:
-            self.reconnect_instance_terminal(cm_name, 'bot', 'vref<1>')
+            self.reconnect_instance_terminal(cm_name, 'BOT', 'vref<1>')
             self.reconnect_instance_terminal(cm_name, 'top', 'top')
 
         # Design cm sw

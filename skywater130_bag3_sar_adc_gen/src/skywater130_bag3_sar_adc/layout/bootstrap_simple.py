@@ -16,7 +16,7 @@ from xbase.layout.enum import MOSWireType, SubPortMode
 from xbase.layout.mos.placement.data import TilePatternElement, TilePattern
 from xbase.layout.mos.base import MOSBasePlaceInfo, MOSBase, MOSArrayPlaceInfo
 from xbase.layout.mos.top import GenericWrapper
-from xbase.layout.cap.mim import MIMCapCore
+from xbase.layout.cap.mim import MIMCap
 
 
 class BootstrapNMOS_simple(MOSBase):
@@ -279,13 +279,13 @@ class BootstrapNMOS_simple(MOSBase):
             XSAMPLE={'nf': seg_dict['sampler'], 'seg_n': sampler_params['sampler_unit_params']['seg'],
                       'w_n': self.params['w_n'],
                      'intent': self.get_tile_pinfo(0).get_row_place_info(ridx_samp).row_info.threshold},
-            XON_N={'nf': seg_dict['on_n'],
+            XON_N={'nf': seg_dict['on_n'], 'w_n': self.params['w_n'],
                    'intent': self.get_tile_pinfo(tidx_off).get_row_place_info(ridx_off0).row_info.threshold},
-            XOFF_N0={'nf': seg_dict['off0'],
+            XOFF_N0={'nf': seg_dict['off0'], 'w_n': self.params['w_n'],
                      'intent': self.get_tile_pinfo(tidx_off).get_row_place_info(ridx_off0).row_info.threshold},
-            XOFF_N1={'nf': seg_dict['off1'],
+            XOFF_N1={'nf': seg_dict['off1'], 'w_n': self.params['w_n'],
                      'intent': self.get_tile_pinfo(tidx_off).get_row_place_info(ridx_off1).row_info.threshold},
-            XCAP_N={'nf': seg_dict['cap_n'],
+            XCAP_N={'nf': seg_dict['cap_n'],'w_n': self.params['w_n'],
                     'intent': self.get_tile_pinfo(tidx_off).get_row_place_info(ridx_off1).row_info.threshold},
         )
         if dum_sampler:
@@ -651,11 +651,16 @@ class BootstrapNWL_simple(MOSBase):
             tidx_inv).get_row_place_info(1)
 
         dev_info = dict(
-            XON_P={'nf': seg_dict['on_p'], 'intent': prow_info.row_info.threshold},
-            XCAP_P={'nf': seg_dict['cap_p'], 'intent': prow_info.row_info.threshold},
-            XINV_P={'nf': seg_dict['inv_p'], 'intent': pinv_info.row_info.threshold},
-            XINV_N={'nf': seg_dict['inv_n'], 'intent': ninv_info.row_info.threshold},
-            XMID={'nf': seg_dict['mid'], 'intent': ninv_info.row_info.threshold},
+            XON_P={'nf': seg_dict['on_p'], 'w_n': prow_info.row_info.width,
+                    'intent': prow_info.row_info.threshold},
+            XCAP_P={'nf': seg_dict['cap_p'], 'w_n': prow_info.row_info.width,
+                    'intent': prow_info.row_info.threshold},
+            XINV_P={'nf': seg_dict['inv_p'], 'w_n': pinv_info.row_info.width,
+                    'intent': pinv_info.row_info.threshold},
+            XINV_N={'nf': seg_dict['inv_n'], 'w_n': ninv_info.row_info.width,
+                    'intent': ninv_info.row_info.threshold},
+            XMID={'nf': seg_dict['mid'], 'w_n': ninv_info.row_info.width,
+                    'intent': ninv_info.row_info.threshold},
         )
         for idx, (segn, segp) in enumerate(zip(seg_buf_list_n[::-1], seg_buf_list_p[::-1])):
             dev_info.update({f"XSAMPLE_INVN<{idx}>": {'nf': segn, 'intent': ninv_info.row_info.threshold}})
@@ -745,7 +750,7 @@ class Bootstrap_simple(TemplateBase):
         nmos_master: TemplateBase = self.new_template(GenericWrapper, params=btstrp_nmos_params)
         nwl_master: TemplateBase = self.new_template(GenericWrapper, params=btstrp_nwl_params)
 
-        w_cap = int((cap_params['height']+cap_params['cap_config']['cap_sp'])/ self.grid.resolution)
+        w_cap: int = cap_params['height']
         cboot_params = copy.deepcopy(cap_params.to_dict())
 
         w_blk, h_blk = self.grid.get_block_size(top_layer)
@@ -767,7 +772,7 @@ class Bootstrap_simple(TemplateBase):
 
         # cboot_params['height'] = cboot_height
         # cboot_params['width'] = w_cap
-        cboot_master: TemplateBase = self.new_template(MIMCapCore, params=cboot_params['cap_config'])
+        cboot_master: TemplateBase = self.new_template(MIMCap, params=cboot_params['cap_config'])
         # cboot_master: TemplateBase = self.new_template(MOMCapCore, params=cboot_params)
         
         vmw_blk, vmh_blk = self.grid.get_block_size(vm_layer)
@@ -845,8 +850,6 @@ class Bootstrap_simple(TemplateBase):
         # cap_bot
         capb_nmos = nmos.get_pin('cap_bot') 
         capb_nwl = nwl.get_pin('cap_bot')
-        vm_layer = capb_nmos.layer_id + 1
-        print(capb_nmos)
         cap_bot_vm_coord = min(nwl.bound_box.xl, capb_nmos.upper)
         cap_bot_vm_tidx = self.grid.coord_to_track(vm_layer, cap_bot_vm_coord, mode=RoundMode.NEAREST)
         cap_bot_vm_tid = TrackID(vm_layer, cap_bot_vm_tidx, tr_mgr.get_width(vm_layer, 'cap'))
@@ -914,7 +917,6 @@ class Bootstrap_simple(TemplateBase):
         cap_bot_vm_list, cap_top_vm_list = [], []
         tr_w_cap_vm = tr_mgr.get_width(vm_layer, 'cap')
         tr_w_cap_ym = tr_mgr.get_width(ym_layer, 'cap')
-        print(cap_vm_tidx_list)
         # for idx in cap_vm_tidx_list:
         #     cap_bot_vm_list.append(self.connect_to_tracks(cap_bot_hm, TrackID(vm_layer, idx, tr_w_cap_vm)))
         #     cap_top_vm_list.append(self.connect_to_tracks(cap_top_hm, TrackID(vm_layer, idx, tr_w_cap_vm)))
@@ -935,13 +937,11 @@ class Bootstrap_simple(TemplateBase):
         # cap_bot_xm_tidx = self.grid.coord_to_track(xm_layer, cap_bot_vm_list[0].middle, mode=RoundMode.NEAREST) 
         cap_top_layer = cboot_master.top_layer
         cap_bot_layer = cap_top_layer-1
-        mim_cap_top =  cboot.get_pin('top', layer=cap_top_layer) #BBoxArray(cboot.get_pin('top', layer=cap_top_layer))
-        mim_cap_bot = cboot.get_pin('bot', layer=cap_bot_layer)#BBoxArray(cboot.get_pin('bot', layer=cap_bot_layer))
+        mim_cap_top =  cboot.get_pin('TOP') #, layer=cap_top_layer) #BBoxArray(cboot.get_pin('top', layer=cap_top_layer))
+        mim_cap_bot = cboot.get_pin('BOT') #, layer=cap_bot_layer)#BBoxArray(cboot.get_pin('bot', layer=cap_bot_layer))
 
         #FIXME
         if ((cap_top_layer %2) == 0): 
-            print(mim_cap_top, mim_cap_bot)
-            print(cap_top_layer)
             idx_t = self.grid.find_next_track(cap_top_layer-1, int(mim_cap_top.yh), tr_width=1, half_track=True, mode=RoundMode.GREATER_EQ)
             idx_b = self.grid.find_next_track(cap_bot_layer-1, int(mim_cap_bot.yh), tr_width=1, half_track=True, mode=RoundMode.LESS_EQ)
             cap_top = self.connect_bbox_to_tracks(Direction.UPPER, ('met4','drawing'), mim_cap_top,
@@ -1071,7 +1071,7 @@ class Bootstrap_simple(TemplateBase):
             lch=nwl_master.sch_params['lch'],
             intent='standard',
             dev_info=dev_info,
-            cap_params=cboot_params,
+            cap_params=cboot_params['cap_config'],
             fast_on=fast_on,
             break_outputs= True if nout > 1 else False, #nmos_params['break_outputs'],
             no_sampler=False,
@@ -1109,7 +1109,7 @@ class BootstrapDiff_simple(TemplateBase):
         w_blk, h_blk = self.grid.get_block_size(top_layer)
         w_samp, h_samp = sampler_master.bound_box.w, sampler_master.bound_box.h
 
-        w_tot = 2 * (w_samp+w_blk)
+        w_tot = 2 * (w_samp+2*w_blk)
         h_tot = h_samp
         h_tot = -(-h_tot // h_blk) * h_blk
         w_tot = -(-w_tot // w_blk) * w_blk

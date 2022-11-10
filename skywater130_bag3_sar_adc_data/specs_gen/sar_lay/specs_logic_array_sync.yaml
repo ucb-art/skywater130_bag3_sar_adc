@@ -1,4 +1,4 @@
-impl_lib: AAA_SAR_lay
+impl_lib: AAA_SAR
 impl_cell: AAA_Logic_Arr_sync
 root_dir: gen_outputs/bag_sar
 #lay_class: xbase.layout.mos.top.GenericWrapper
@@ -11,35 +11,35 @@ params:
     lower_layer_routing: True
     substrate_row: False
     has_pmos_sw: True
-    logic_unit_row_arr: [4, 3, 2]
+    logic_unit_row_arr: [3, 3, 3]
     flop_out_unit_row_arr: [5, 4] 
     w_n: 84
     w_p: 110
     seg_dict:
-      buf_int: [4, 16]
-      buf_out: [4, 16]
-      logic_scale_list: [1, 1, 1, 1, 1, 1, 2, 2, 2]
-      flop_out: 2
-      #retimer:
-      #  inv: 2
-      #  latch: 2
-      #  buf: [2, 4]
-      logic:
-        oai:
-          seg: 1
-          seg_pstack1: 2
-        flop: 2
-        oai_fb: 1
-        buf: [4, 8]
-        nor: 2
-        nand_mid: 2
-        nand_done: 2
-        nand_state: 2
-        inv_ret: 2
-        inv_done: 2
-        inv_state: 2
-        buf_state: [1, 2]
-        inv_clk: 2
+        buf_int: [4, 16]
+        buf_out: [4, 16]
+        logic_scale_list: [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        flop_out: 16
+        #retimer:
+        #  inv: 2
+        #  latch: 2
+        #  buf: [2, 4]
+        logic:
+          oai:
+            seg: 1
+            seg_pstack1: 2
+          flop: 12
+          oai_fb: 1
+          buf: [4, 8]
+          nor: 2
+          nand_mid: 2
+          nand_done: 2
+          nand_state: 2
+          inv_ret: 2
+          inv_done: 2
+          inv_state: 2
+          buf_state: [1, 2]
+          inv_clk: 2
     pinfo:
       tiles:
         - name: logic_tile

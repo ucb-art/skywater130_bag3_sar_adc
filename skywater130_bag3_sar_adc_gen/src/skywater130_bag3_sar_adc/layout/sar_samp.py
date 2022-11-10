@@ -253,10 +253,12 @@ class Sampler(MOSBase):
         # export output
 
         for idx, s_list in enumerate(sampler_list_list):
+            unit_out_pins = []
             for s in s_list:
                 out_vm_tid = self.grid.coord_to_track(vm_layer, s.get_pin('out').middle, mode=RoundMode.NEAREST)
                 self.connect_to_tracks(s.get_pin('out'), TrackID(vm_layer, out_vm_tid, tr_w_sig_vm))
-
+                unit_out_pins.append(s.get_pin('out'))
+            self.connect_wires(unit_out_pins)
         # Collect vm tid list to export input
         vm_tid_list = []
         for idx in range(vm_col_l, vm_col_r + 1, 2):

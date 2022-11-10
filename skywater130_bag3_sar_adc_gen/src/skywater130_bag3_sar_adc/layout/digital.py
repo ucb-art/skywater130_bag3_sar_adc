@@ -2481,7 +2481,8 @@ class FlopCore(MOSBase):
         self.add_pin('VDD', self.connect_wires(vdd_list))
 
         # connect intermediate node
-        self.connect_wires([s_inst.get_pin('nin'), m_inst.get_pin('nout')])
+        mid = self.connect_wires([s_inst.get_pin('nin'), m_inst.get_pin('nout')])
+        self.add_pin('mid', mid)
         # connect clocks
         pclkb = self.connect_wires([s_inst.get_pin('pclkb'), m_inst.get_pin('pclk')])
         if b_inst is None:

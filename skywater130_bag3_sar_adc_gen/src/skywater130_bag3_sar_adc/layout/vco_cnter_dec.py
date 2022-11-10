@@ -118,7 +118,7 @@ class CnterDiv(MOSBase):
                                                 flip_lr=bool(ridx & 1)))
 
                 r_lat_list.append(self.add_tile(master_list[ridx + nrow], nrow - ridx - 1,
-                                                ncol_lat2 + ncol_lat + 2 * min_sep if ridx & 1 else ncol_lat + 2 * min_sep,
+                                                ncol_lat2 + ncol_lat + 3 * min_sep if ridx & 1 else ncol_lat + 3 * min_sep,
                                                 flip_lr=bool(ridx & 1)))
         # else:
         #     out_final_vm_tidx = self.arr_info.col_to_track(vm_layer, 3)

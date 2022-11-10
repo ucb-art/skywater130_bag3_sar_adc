@@ -4,8 +4,8 @@ view_name: schematic
 bbox:
   - -639
   - -134
-  - 140
-  - 320
+  - 188
+  - 454
 terminals:
   VDD:
     obj:
@@ -367,7 +367,7 @@ shapes:
       points:
         -
           - -220
-          - 280
+          - 230
         -
           - -220
           - 320
@@ -459,7 +459,7 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
-      net: net12
+      net: net03
       points:
         -
           - -420
@@ -471,38 +471,38 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
-      net: net11
-      points:
-        -
-          - -220
-          - 100
-        -
-          - -220
-          - 140
-  -
-    - 5
-    - layer: 228
-      purpose: 4294967295
-      net: net03
-      points:
-        -
-          - 70
-          - 140
-        -
-          - 80
-          - 150
-  -
-    - 5
-    - layer: 228
-      purpose: 4294967295
       net: top
       points:
         -
           - 70
-          - 280
+          - 240
         -
           - 70
           - 320
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: net01
+      points:
+        -
+          - 70
+          - 150
+        -
+          - 70
+          - 180
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: net01
+      points:
+        -
+          - 70
+          - 150
+        -
+          - 80
+          - 150
   -
     - 5
     - layer: 228
@@ -535,7 +535,7 @@ shapes:
     - 5
     - layer: 228
       purpose: 4294967295
-      net: net01
+      net: net011
       points:
         -
           - 70
@@ -583,6 +583,18 @@ shapes:
         -
           - 10
           - 10
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: net02
+      points:
+        -
+          - -220
+          - 100
+        -
+          - -220
+          - 170
   -
     - 7
     - layer: 228
@@ -649,43 +661,81 @@ shapes:
       text: top
 instances:
   XCAP:
-    lib_name: skywater130_bag3_sar_adc
-    cell_name: cap_unit_dum
+    lib_name: BAG_prim
+    cell_name: mim_34
     view_name: symbol
     xform:
-      - 0
-      - 140
-      - R0
+      - 110
+      - 170
+      - R180
     bbox:
-      - 0
-      - 136
-      - 140
-      - 284
+      - -24
+      - 170
+      - 188
+      - 244
     connections:
-      minus: net03
-      plus: top
+      BOT: net01
+      TOP: top
     params:
       {}
-    is_primitive: false
+    is_primitive: true
   XCAP_CM:
-    lib_name: skywater130_bag3_sar_adc
-    cell_name: cap_unit_dum
+    lib_name: BAG_prim
+    cell_name: mim_34
     view_name: symbol
     xform:
-      - -290
-      - 140
-      - R0
+      - -180
+      - 160
+      - R180
     bbox:
-      - -290
-      - 136
-      - -150
-      - 284
+      - -314
+      - 160
+      - -102
+      - 234
     connections:
-      minus: net11
-      plus: top
+      BOT: net02
+      TOP: top
     params:
       {}
-    is_primitive: false
+    is_primitive: true
+  XCAP_CM_DUM:
+    lib_name: BAG_prim
+    cell_name: mim_34
+    view_name: symbol
+    xform:
+      - -180
+      - 380
+      - R180
+    bbox:
+      - -314
+      - 380
+      - -102
+      - 454
+    connections:
+      BOT: net010
+      TOP: net09
+    params:
+      {}
+    is_primitive: true
+  XCAP_DUM:
+    lib_name: BAG_prim
+    cell_name: mim_34
+    view_name: symbol
+    xform:
+      - 110
+      - 380
+      - R180
+    bbox:
+      - -24
+      - 380
+      - 188
+      - 454
+    connections:
+      BOT: net08
+      TOP: net07
+    params:
+      {}
+    is_primitive: true
   XDRV:
     lib_name: skywater130_bag3_sar_adc
     cell_name: cap_drv
@@ -703,7 +753,7 @@ instances:
       VDD: VDD
       VSS: VSS
       ctrl<2:0>: ctrl<2:0>
-      out: net01
+      out: net011
       vref<2:0>: net13<0:2>
     params:
       {}
@@ -725,7 +775,7 @@ instances:
       B: VSS
       D: top
       G: ctrl_s
-      S: net12
+      S: net03
     params:
       l:
         - 3
@@ -740,22 +790,22 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 11098
+    - 15323
   instance#:
     - 0
-    - 4
+    - 8
   lastSchematicExtraction:
     - 4
-    - time_val: 1650175886
+    - time_val: 1665994312
   net#:
     - 0
-    - 6
+    - 11
   pin#:
     - 0
     - 11
   schGeometryLastUpdated:
     - 0
-    - 11098
+    - 15323
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -765,10 +815,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 11098
+    - 15323
   _dbvCvTimeStamp:
     - 0
-    - 11098
+    - 15323
   cdbRevision:
     - 0
     - 227612

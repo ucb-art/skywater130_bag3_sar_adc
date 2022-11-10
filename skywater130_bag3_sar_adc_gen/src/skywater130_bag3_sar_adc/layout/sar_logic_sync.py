@@ -392,7 +392,7 @@ class SARLogicUnit(MOSBase):
         tidx_lobit = self.grid.coord_to_track(vm_layer, flop_rst.bound_box.xl, mode=RoundMode.GREATER_EQ)
         tidx_hibit = self.grid.coord_to_track(vm_layer, flop_rst.bound_box.xh, mode=RoundMode.LESS_EQ)
         tidx_listbit = self.get_available_tracks(vm_layer, tidx_lobit, tidx_hibit,
-                                                0, flop_rst.bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
+                                                0, flop.bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
         nin = self.connect_to_tracks([flop_rst.get_pin('nin')], TrackID(vm_layer,  tidx_listbit[0], tr_w_vm))
         bit = self.connect_to_track_wires(nand_state.get_pin('nin<1>'), nin)
         _wrte_ret_tidx = self.grid.coord_to_track(vm_layer, nand_state.get_pin('nout').upper, mode=RoundMode.NEAREST)
@@ -417,7 +417,7 @@ class SARLogicUnit(MOSBase):
         tidx_lorst = self.grid.coord_to_track(vm_layer, flop_rst.bound_box.xl, mode=RoundMode.GREATER_EQ)
         tidx_hirst = self.grid.coord_to_track(vm_layer, flop_rst.bound_box.xh, mode=RoundMode.LESS_EQ)
         tidx_listrst = self.get_available_tracks(vm_layer, tidx_lorst, tidx_hirst,
-                                                0, flop_rst.bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
+                                                0, flop.bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
         rst_vm2 = self.connect_to_tracks([flop_rst.get_pin('rst')],
                                          TrackID(vm_layer, tidx_listrst[len(tidx_listrst)//2], tr_w_vm))
         rst_hm = self.connect_to_track_wires(rst_vm2, nor.get_pin('nin<2>'))
@@ -440,7 +440,7 @@ class SARLogicUnit(MOSBase):
         comp_tidx_upper = self.grid.coord_to_track(vm_layer, buf_n.bound_box.xl, mode=RoundMode.GREATER_EQ)
         tidx_list = self.get_available_tracks(vm_layer, oai_p.get_pin('out').track_id.base_index,
                                               comp_tidx_upper, 0, self.bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
-
+        
         comp_n, comp_p = self.connect_differential_tracks(oai_n.get_pin('in<1>'), oai_p.get_pin('in<1>'), vm_layer,
                                                           tidx_list[0], tidx_list[1], width=tr_w_vm)
 
@@ -911,7 +911,12 @@ class SARLogicArray(MOSBase):
         flop_out_flatten_list.sort(key=lambda x: x.get_pin('in').track_id.base_index)
         #connect up to vm layer because the flop pin is on met 1 and shorting randomly
         for i in range(0, len(flop_out_in_list)):
-            tidx_lo_hm = self.grid.coord_to_track(hm_layer, flop_out_flatten_list[i].bound_box.yl, mode=RoundMode.GREATER_EQ)
+            if i%2:
+                tidx_lo_hm = self.grid.coord_to_track(hm_layer, (flop_out_flatten_list[i].bound_box.yl+flop_out_flatten_list[i].bound_box.yh)//2,
+                                                  mode=RoundMode.GREATER_EQ)
+            else:
+                tidx_lo_hm = self.grid.coord_to_track(hm_layer, (flop_out_flatten_list[i].bound_box.yl+flop_out_flatten_list[i].bound_box.yh)//3,
+                                                  mode=RoundMode.GREATER_EQ)
             tidx_hi_hm = self.grid.coord_to_track(hm_layer, flop_out_flatten_list[i].bound_box.yh, mode=RoundMode.LESS_EQ)
             tidx_list_hm = self.get_available_tracks(hm_layer, tidx_lo_hm, tidx_hi_hm,
                                               flop_out_flatten_list[i].bound_box.xl, flop_out_flatten_list[i].bound_box.xh, width=tr_w_vm_clk, sep=tr_sp_vm_clk)
@@ -1046,7 +1051,7 @@ class SARLogicArray(MOSBase):
         # Connect the comp_clk wires together
         self.extend_wires(comp_clk_xm_list, lower=self.bound_box.xl)
         tidx_comp_clk_vm = self.grid.coord_to_track(vm_layer, self.bound_box.xl, mode=RoundMode.NEAREST)
-        comp_clk_vm = self.connect_to_tracks(comp_clk_xm_list, TrackID(vm_layer, tidx_comp_clk_vm, tr_w_rt_sig))
+        comp_clk_vm = self.connect_to_tracks(comp_clk_xm_list, TrackID(vm_layer, tidx_comp_clk_vm, tr_w_rt_sig*4))
 
         # Connect clk midb
         self.connect_to_tracks([clk_midb_xm, last_bit], TrackID(rt_layer, clk_midb_rt_tidx, tr_w_rt_clk))
@@ -1318,11 +1323,17 @@ class SARLogic(MOSBase):
         tr_sp_rt_sig = tr_manager.get_sep(rt_layer, ('sig', 'sig'))
         if lower_layer_routing:
             middle_coord = self.arr_info.col_to_coord(self.num_cols // 2)
-            rt_tidx_list = self.get_available_tracks(rt_layer, rt_tidx_start, rt_tidx_stop, self.bound_box.yl,
+            rt_tidx_lim1 = self.arr_info.col_to_track(rt_layer, self.num_cols //2 -12)
+            rt_tidx_lim2 = self.arr_info.col_to_track(rt_layer, self.num_cols //2 +12)
+            rt_tidx_list = self.get_available_tracks(rt_layer, rt_tidx_start, rt_tidx_lim1, self.bound_box.yl,
+                                                     self.bound_box.yh, width=tr_w_rt_sig, sep=tr_sp_rt_sig) + \
+                           self.get_available_tracks(rt_layer, rt_tidx_lim2, rt_tidx_stop, self.bound_box.yl,
                                                      self.bound_box.yh, width=tr_w_rt_sig, sep=tr_sp_rt_sig)
+
             rt_tidx_coord_list = [self.grid.track_to_coord(rt_layer, x) for x in rt_tidx_list]
-            compn_rt_tidx = SARLogicArray.get_nearest_tidx(logic_array.get_pin('comp_p'), rt_tidx_list, rt_tidx_coord_list, middle_coord)
             compp_rt_tidx = SARLogicArray.get_nearest_tidx(logic_array.get_pin('comp_n'), rt_tidx_list, rt_tidx_coord_list, middle_coord)
+            compn_rt_tidx = SARLogicArray.get_nearest_tidx(logic_array.get_pin('comp_p'), rt_tidx_list, rt_tidx_coord_list, middle_coord)            
+
             comp_p_ym = self.connect_to_tracks(logic_array.get_all_port_pins('comp_p'), TrackID(rt_layer, compp_rt_tidx, tr_w_rt_sig),
                                                track_upper=self.bound_box.yh)
             comp_n_ym = self.connect_to_tracks(logic_array.get_all_port_pins('comp_n'), TrackID(rt_layer, compn_rt_tidx, tr_w_rt_sig),
