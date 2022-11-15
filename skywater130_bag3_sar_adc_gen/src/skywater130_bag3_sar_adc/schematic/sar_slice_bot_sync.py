@@ -57,6 +57,7 @@ class skywater130_bag3_sar_adc__sar_slice_bot_sync(Module):
             ideal_switch='True to put ideal switch in front of SAR for sch simulation',
             tri_sa='True to enable tri-tail comparator',
             has_pmos_sw='True to have pmos switch in cdac',
+            divcount='True to use counter based divider'
         )
 
     @classmethod
@@ -68,6 +69,7 @@ class skywater130_bag3_sar_adc__sar_slice_bot_sync(Module):
         )
 
     def design(self, nbits: int, comp: Param, logic: Param, cdac: Param, clkgen:Param,
+               divcount: False,
                ideal_switch: bool, has_pmos_sw: bool,
                tri_sa: bool) -> None:
 
@@ -90,7 +92,19 @@ class skywater130_bag3_sar_adc__sar_slice_bot_sync(Module):
         else:
             self.instances['XCOMP'].design(**comp)
         self.instances['XLOGIC'].design(**logic)
-        self.instances['XCLK'].design(**clkgen)
+        if divcount:
+            self.replace_instance_master('XCLK', 'skywater130_bag3_sar_adc', 
+                        'sar_sync_counter', keep_connections=True)
+            clk_conn = [('VDD', 'VDD'), ('VSS', 'VSS'),
+                         ('clk_in', 'clk'), ('clk_out', 'clk16_b'), ('clk_out_b', 'clk16'), 
+                         ('comp_clk', 'comp_clk'), ('comp_clkb', 'comp_clkb'), ]
+            self.instances['XCLK'].design(**clkgen)
+            for con_pair in clk_conn:
+                self.reconnect_instance_terminal('XCLK', con_pair[0], con_pair[1])
+            self.reconnect_instance_terminal('XCOMP', 'clk', 'comp_clkb')
+            self.reconnect_instance_terminal('XLOGIC', 'sar_clk', 'comp_clkb')
+        else:
+            self.instances['XCLK'].design(**clkgen)
         [self.instances[inst].design(**cdac) for inst in ['XDACN', 'XDACP']]
 
         logic_conn = [(f"state<{nbits - 1}:0>", f"state<{nbits - 1}:0>"),

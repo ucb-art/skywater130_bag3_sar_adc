@@ -88,7 +88,6 @@ class skywater130_bag3_sar_adc__sar_slice_bot(Module):
         else:
             self.instances['XCOMP'].design(**comp)
         self.instances['XLOGIC'].design(**logic)
-        print(cdac)
         [self.instances[inst].design(**cdac) for inst in ['XDACN', 'XDACP']]
 
         logic_conn = [(f"state<{nbits - 1}:0>", f"state<{nbits - 1}:0>"),

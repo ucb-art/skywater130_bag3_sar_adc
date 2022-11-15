@@ -469,11 +469,11 @@ class SyncDivCounter(MOSBase):
         vss_hm = self.connect_wires(vss_list)
 
         # add pins
-        self.add_pin('clk', buf_in.get_pin('in'))
+        self.add_pin('clk_in', buf_in.get_pin('in'))
         self.add_pin('comp_clk', buf_comp_clk.get_pin('out'))
         self.add_pin('comp_clkb', buf_comp_clk.get_pin('outb'))
-        self.add_pin('clk_div', buf_out.get_pin('out'))
-        self.add_pin('clk_divb', buf_out.get_pin('outb'))
+        self.add_pin('clk_out', buf_out.get_pin('out'))
+        self.add_pin('clk_out_b', buf_out.get_pin('outb'))
         self.add_pin("VDD", vdd_hm)
         self.add_pin("VSS", vss_hm)
 

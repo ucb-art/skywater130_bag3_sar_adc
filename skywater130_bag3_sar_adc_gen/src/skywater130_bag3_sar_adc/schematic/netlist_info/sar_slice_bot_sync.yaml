@@ -895,17 +895,21 @@ shapes:
           - 660
           - -20
   -
-    - 5
+    - 7
     - layer: 228
-      purpose: 4294967295
+      purpose: 237
       net: top_p
-      points:
-        -
-          - 360
-          - 570
-        -
-          - 500
-          - 570
+      origin:
+        - 320
+        - 657
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: top_p
   -
     - 5
     - layer: 228
@@ -925,11 +929,11 @@ shapes:
       net: top_p
       points:
         -
-          - 360
-          - 570
+          - 400
+          - 510
         -
-          - 360
-          - 650
+          - 500
+          - 510
   -
     - 7
     - layer: 228
@@ -1139,17 +1143,21 @@ shapes:
           - 370
           - 480
   -
-    - 5
+    - 7
     - layer: 228
-      purpose: 4294967295
-      net: top_n
-      points:
-        -
-          - 370
-          - 480
-        -
-          - 370
-          - 510
+      purpose: 237
+      net: top_p
+      origin:
+        - 450
+        - 517
+      alignment: 5
+      orient: R0
+      font: 5
+      height: 10
+      overbar: false
+      visible: true
+      drafting: true
+      text: top_p
   -
     - 7
     - layer: 228
@@ -1387,26 +1395,14 @@ shapes:
       drafting: true
       text: comp_p
   -
-    - 5
-    - layer: 228
-      purpose: 4294967295
-      net: top_n
-      points:
-        -
-          - 370
-          - 510
-        -
-          - 500
-          - 510
-  -
     - 7
     - layer: 228
       purpose: 237
       net: top_n
       origin:
-        - 496
-        - 517
-      alignment: 8
+        - 300
+        - 487
+      alignment: 5
       orient: R0
       font: 5
       height: 10
@@ -1414,6 +1410,18 @@ shapes:
       visible: true
       drafting: true
       text: top_n
+  -
+    - 5
+    - layer: 228
+      purpose: 4294967295
+      net: top_n
+      points:
+        -
+          - 400
+          - 570
+        -
+          - 500
+          - 570
   -
     - 7
     - layer: 228
@@ -1578,18 +1586,18 @@ shapes:
     - 7
     - layer: 228
       purpose: 237
-      net: top_p
+      net: top_n
       origin:
-        - 496
+        - 450
         - 577
-      alignment: 8
+      alignment: 5
       orient: R0
       font: 5
       height: 10
       overbar: false
       visible: true
       drafting: true
-      text: top_p
+      text: top_n
   -
     - 5
     - layer: 228
@@ -2323,8 +2331,8 @@ instances:
       VSS: VSS
       clk: comp_clk
       clkb: net1
-      inn: top_n
-      inp: top_p
+      inn: top_p
+      inp: top_n
       osn: osn
       osp: osp
       outn: comp_n
@@ -2420,7 +2428,7 @@ instances:
 props:
   connectivityLastUpdated:
     - 0
-    - 128400
+    - 129496
   instance#:
     - 0
     - 32
@@ -2429,16 +2437,16 @@ props:
     - time_val: 1625163692
   lastSchematicExtraction:
     - 4
-    - time_val: 1653898230
+    - time_val: 1668053266
   net#:
     - 0
-    - 4
+    - 2
   pin#:
     - 0
     - 39
   schGeometryLastUpdated:
     - 0
-    - 128400
+    - 129496
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
@@ -2448,10 +2456,10 @@ props:
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 128400
+    - 129496
   _dbvCvTimeStamp:
     - 0
-    - 128400
+    - 129496
   cdbRevision:
     - 0
     - 227612
