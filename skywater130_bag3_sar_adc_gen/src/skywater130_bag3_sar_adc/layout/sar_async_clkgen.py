@@ -141,12 +141,7 @@ class NORNANDDynCore(MOSBase):
 
         ina_tidx = sig_locs.get('ina', self.get_track_index(ridx_n, MOSWireType.G, wire_name='sig', wire_idx=1))
         inb_tidx = sig_locs.get('inb', self.get_track_index(ridx_n, MOSWireType.G, wire_name='sig', wire_idx=0))
-
         ina, inb = self.connect_differential_tracks(ina.g, inb.g, hm_layer, ina_tidx, inb_tidx, width=tr_w_h)
-        # ina_vm_tidx = self.grid.coord_to_track(vm_layer, ina.lower, RoundMode.GREATER)
-        # inb_vm_tidx = self.grid.coord_to_track(vm_layer, inb.upper, RoundMode.LESS)
-        # ina_vm, inb_vm = self.connect_differential_tracks(ina, inb, vm_layer, ina_vm_tidx, inb_vm_tidx,
-        #                                                   width=tr_w_h)
 
         self.add_pin('clk', clk_warr)
         self.add_pin('in<0>', ina)

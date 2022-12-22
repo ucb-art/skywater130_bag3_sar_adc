@@ -96,7 +96,9 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
             _term = [('VDD', 'VDD'), ('VSS', 'VSS'), ('vref<2:0>', 'vref<2:0>'),
                      ('out', f"bot<{idx}>"), ('ctrl<2:0>', f"ctrl_n<{idx}>,ctrl_m<{idx}>,ctrl_p<{idx}>")]
             _cap_name = f'XCAP{idx}<{cap_m-1}:0>' if cap_m > 1 else f'XCAP{idx}'
-            dum_term_list.append((f'XCAP_DUM{idx}', [('TOP', f'dum_top{idx}'), ('BOT', f'bot_top{idx}')]))
+            for c in range(cap_m):
+                dum_term_list.append((f'XCAP_DUM{idx}{c}',
+                                     [('TOP', f'dum_top{idx}{c}'), ('BOT', f'dum_bot{idx}{c}')]))
             _sw_name = f'XDRV{idx}<{sw_m-1}:0>' if sw_m > 1 else f'XDRV{idx}'
             cap_term_list.append((_cap_name, [('top', 'top'), ('BOT', f'bot<{idx}>')]))
             sw_term_list.append((_sw_name, _term))
@@ -104,9 +106,12 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
         # Design sar_sch array
         dx_max = 2*max(self.instances['XCAP'].width, self.instances['XDRV'].width)
         self.array_instance('XCAP_DUM', inst_term_list=dum_term_list, dx=dx_max)
+        #dummy caps will not always be in same x coordinate as cdac cap
         self.array_instance('XCAP', inst_term_list=cap_term_list, dx=dx_max)
         self.array_instance('XDRV', inst_term_list=sw_term_list, dx=dx_max)
-        for idx, ((name, _), (dum_name, _)) in enumerate(zip( cap_term_list, dum_term_list)):
+        dumidx = 0
+ 
+        for idx, ((name, _)) in enumerate(cap_term_list):
             cap_params = deepcopy(unit_params_list[idx].to_dict())
             cap_params['intent'] = unit_params_list[idx]['mim_type']
             self.instances[name].design(**cap_params)
@@ -117,9 +122,23 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
             if cap_params['dum_col_l'] >0:
                 cap_params['num_cols'] = unit_params_list[idx]['dum_col_l']
                 cap_params['dum_col_l'] = unit_params_list[idx]['num_cols']
-                self.instances[dum_name].design(**cap_params)
+                dum_name, _ = dum_term_list[dumidx]
+                while f'{idx}' in dum_name[0:-1]: 
+                    self.instances[dum_name].design(**cap_params)
+                    dumidx = dumidx+1
+                    if dumidx<len(dum_term_list):
+                        dum_name, _ = dum_term_list[dumidx]
+                    else:
+                        dum_name ='done'
             else:
-                self.remove_instance(dum_name)
+                dum_name, _ = dum_term_list[dumidx]
+                while f'{idx}' in dum_name[0:-1]: 
+                    self.remove_instance(dum_name)
+                    dumidx = dumidx+1
+                    if dumidx<len(dum_term_list):
+                        dum_name, _ = dum_term_list[dumidx]
+                    else:
+                        dum_name = 'done'
         for idx, (name, _) in enumerate(sw_term_list):
             self.instances[name].design(**sw_params_list[idx])
 

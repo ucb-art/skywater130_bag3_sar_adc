@@ -74,10 +74,10 @@ class BootstrapNMOS_simple(MOSBase):
             pinfo0 = [TilePatternElement(pinfo[1]['samp_tile'], flip=True)] + \
                      [TilePatternElement(pinfo[1][tile['name']]) for tile in self.params['pinfo']['tiles']]
             self.draw_base((TilePattern(pinfo0), pinfo[1]))
-            tidx_samp, tidx_off = 1, 2
+            tidx_samp, tidx_off = 2, 3
         else:
             self.draw_base(pinfo)
-            tidx_samp, tidx_off = 0, 1
+            tidx_samp, tidx_off = 1, 2
 
         seg_dict: Dict[str, int] = self.params['seg_dict']
         w_n: int = self.params['w_n']
@@ -97,54 +97,15 @@ class BootstrapNMOS_simple(MOSBase):
         if (no_sampler or dummy_off):
             sampler_master = None
         else: 
-            sampler_params = self.params['sampler_params'].copy(append=dict(unit_pinfo = False, pinfo=self.get_draw_base_sub_pattern(0,1))) 
-                # dict(m_list=seg_dict['sampler'], nside=self.params['nside'],
-                #      tap_conn=SubPortMode.ODD if swap_inout else SubPortMode.EVEN,
-                #      sampler_unit_params=self.params['sampler_params']['unit_sampler_params'].copy(
-                #          append=dict(g_on_s=swap_inout,
-                #                      pinfo=self.get_draw_base_sub_pattern(1, 3 if dum_sampler else 2))))
+            sampler_params = self.params['sampler_params'].copy(append=dict(unit_pinfo = False, pinfo=self.get_draw_base_sub_pattern(1,2))) 
             sampler_master = self.new_template(Sampler, params=sampler_params)
             sampler_ncols = sampler_master.num_cols
-            seg_max = max(seg_max, sampler_ncols )#+ 2 * int(swap_inout))
+            seg_max = max(seg_max, sampler_ncols )
             if ((seg_max - sampler_ncols) // 2) & 1:
                 seg_max += 2
         seg_tot = seg_max
         seg_tot2 = seg_tot // 2
         
-        # Place sampler first, If has dummy sampler, put output btw dum_samp and samp
-        # if dum_sampler:
-        #     ridx_dum = ridx_samp - 1
-        #     samp = self.add_mos(ridx_samp, seg_tot2 - seg_samp // 2, seg_samp, w=w_n, g_on_s=False, tile_idx=1)
-        #     dum_samp = self.add_mos(ridx_samp, seg_tot2 - seg_samp // 2, seg_samp, w=w_n, g_on_s=False)
-        #     vin_c = self.connect_to_tracks(dum_samp.s, self.get_track_id(ridx_dum, MOSWireType.DS, 'sig', 1))
-        #     if break_outputs:
-        #         vout, vout_dum = [], []
-        #         for samp_d, dum_samp_d in zip(samp.d.to_warr_list(), dum_samp.d.to_warr_list()):
-        #             vout.append(self.connect_to_tracks(samp_d, self.get_track_id(ridx_samp, MOSWireType.DS,
-        #                                                                          'sig', 0, tile_idx=tidx_samp)))
-        #             vout_dum.append(self.connect_to_tracks(dum_samp_d, self.get_track_id(ridx_dum, MOSWireType.DS,
-        #                                                                                  'sig', 0)))
-        #     else:
-        #         vout = [self.connect_to_tracks(samp.d, self.get_track_id(ridx_samp, MOSWireType.DS, 'sig',
-        #                                                                  0, tile_idx=tidx_samp))]
-        #         _vout_dum = [self.connect_to_tracks(dum_samp.d, self.get_track_id(ridx_dum, MOSWireType.DS, 'sig', 0))]
-        #     vss_dum_sampler = self.connect_to_tracks(dum_samp.g, self.get_track_id(ridx_dum, MOSWireType.G, 'clk', 0))
-        #     self.add_pin('out', vout, label='out:', show=self.show_pins)
-        #     self.add_pin('in_c', vin_c, show=self.show_pins)
-        #     self.add_pin('vss_dum', vss_dum_sampler, show=self.show_pins)
-        # else:
-        #     samp = self.add_mos(ridx_samp, seg_tot2 - seg_samp // 2, seg_samp, w=w_n, g_on_s=False)
-        #     if break_outputs:
-        #         vout, vout_dum = [], []
-        #         for samp_d in samp.d.to_warr_list():
-        #             vout.append(self.connect_to_tracks(samp_d, self.get_track_id(ridx_samp, MOSWireType.DS,
-        #                                                                          'sig', 0, tile_idx=tidx_samp)))
-        #     else:
-        #         vout = [self.connect_to_tracks(samp.d, self.get_track_id(ridx_samp, MOSWireType.DS, 'sig',
-        #                                                                  0, tile_idx=tidx_samp))]
-        #     self.add_pin('out', vout, show=self.show_pins)
-
-
 
         # Place other transistors
         # Align cap_n and on_n
@@ -169,8 +130,7 @@ class BootstrapNMOS_simple(MOSBase):
             # Place sampler first, If has dummy sampler, put output btw dum_samp and samp
             sampler_col = (seg_max // 2 - sampler_ncols // 2)
             sampler_col += sampler_col & 1
-            #sampler_col -= int(swap_inout)
-            sampler = self.add_tile(sampler_master, 0, sampler_col+1) #FIXME calculate if need the +1 or not
+            sampler = self.add_tile(sampler_master, 1, sampler_col+1) 
         else:
             fill_conn_layer_intv(self, 1, 0, extend_to_gate=False, fill_empty=True)
             if dummy_off:
@@ -186,17 +146,12 @@ class BootstrapNMOS_simple(MOSBase):
         out_xm_tidx = self.grid.coord_to_track(xm_layer, (sampler if not no_sampler else self).bound_box.yl,
                                                RoundMode.NEAREST)
 
-        # samp_out_vm_tidx = self.grid.coord_to_track(vm_layer, sampler.get_pin('out<0>').upper//43*43)
-        # vout_vm = self.connect_to_tracks(sampler.get_pin('out<0>'), TrackID(vm_layer, samp_out_vm_tidx, tr_w_sig_xm))
         if sampler:
             if nouts > 1:
                 for idx in range(nouts):
                     self.add_pin(f'out<{idx}>', sampler.get_all_port_pins(f'out<{idx}>'))
             
             else:
-                # vout = [self.connect_to_tracks(sampler.get_pin('out'), self.get_track_id(ridx_samp, MOSWireType.DS, 'sig',
-                #                                                      0, tile_idx=tidx_samp))]
-                # self.add_pin('out', sampler.get_pin('out'), show=self.show_pins)
                 if (not swap_inout):
                     self.add_pin('out', sampler.get_all_port_pins('out<0>'))
                 else: 
@@ -204,44 +159,25 @@ class BootstrapNMOS_simple(MOSBase):
 
         # Add sub-contact
         sub = self.add_substrate_contact(0, 0, seg=seg_tot, tile_idx=tidx_off + 1, port_mode=SubPortMode.ODD)
+        sub_bot = self.add_substrate_contact(0, 0, seg=seg_tot, tile_idx=0, port_mode=SubPortMode.ODD)
+        
         self.set_mos_size()
 
         # --- Connection
         # - sampler input and vg
-
-        # sam_coord = self.grid.track_to_coord(xm_layer, sampler.get_pin('sam').track_id.base_htr)
-        # sam_hm_tidx = self.grid.coord_to_track(hm_layer, sam_coord)
-        # print(sam_hm_tidx)
-        # print(sampler.get_pin('sam').track_id.base_htr)
-        # samp_in_vm_tidx = self.grid.coord_to_track(vm_layer, sampler.get_pin('in').upper//43*43)
-        # in_vm = self.connect_to_tracks(sampler.get_pin('in'), TrackID(vm_layer, samp_in_vm_tidx, tr_w_sig_xm))
-        # in_hm = self.connect_to_tracks(in_vm, TrackID(hm_layer, sampler.get_pin('in').track_id.base_htr, tr_w_sig_xm))
-        
         if (not swap_inout):
-            vin = sampler.get_pin('in') #self.connect_to_tracks(in_vm,
-               #                      self.get_track_id(ridx_samp, MOSWireType.DS, 'sig', 1, tile_idx=tidx_samp))
+            vin = sampler.get_pin('in') 
         else:
             vin = sampler.get_pin('out<0>')
-        # samp_sam_vm_tidx = self.grid.coord_to_track(vm_layer, (sampler.get_pin('sam').upper+sampler.get_pin('sam').lower)//(2*43)*43)
-        # sam_vm = self.connect_to_tracks(sampler.get_pin('sam'), TrackID(vm_layer, samp_sam_vm_tidx, tr_w_sig_xm))
-        #sam_hm = self.connect_to_tracks(sam_vm, TrackID(hm_layer, sam_hm_tidx, tr_w_sig_xm))
-        # vg_sampler = self.connect_to_tracks(sam_vm,
-        #                                      self.get_track_id(ridx_samp, MOSWireType.G, 'clk', 0, tile_idx=tidx_samp))
+       
         # # - sampler -> on_n
         self.connect_to_track_wires(on_n.s, vin)
         
         cap_bot_on = self.connect_to_tracks(on_n.d,
                                             self.get_track_id(ridx_off0, MOSWireType.DS, 'sig', 0, tile_idx=tidx_off))
-        # if fast_on:
-        #     vg2 = self.connect_to_tracks(on_n.g,
-        #                                  self.get_track_id(ridx_off0, MOSWireType.G, 'clk', 0, tile_idx=tidx_off))
-        #     self.add_pin('vg2', vg2, show=self.show_pins)
-        # else:
         self.connect_to_track_wires(sampler.get_pin('sam'), on_n.g)
         # # - sampler -> off0
-        
         self.connect_to_track_wires(sampler.get_pin('sam'), off0.d)
-        # self.connect_wires([sampler.get_pin('sam'), off0.d])
         # - off0
         vdd_off0 = self.connect_to_tracks(off0.g, self.get_track_id(ridx_off0, MOSWireType.G, 'sup', 0,
                                                                     tile_idx=tidx_off))
@@ -256,7 +192,6 @@ class BootstrapNMOS_simple(MOSBase):
                                self.get_track_id(ridx_off1, MOSWireType.DS, 'sig', 0, tile_idx=tidx_off))
 
         # - on_n -> cap_n
-        # self.connect_wires([on_n.s, capn.s])
         # cap_n
         cap_bot = self.connect_to_tracks(capn.s,
                                          self.get_track_id(ridx_off1, MOSWireType.DS, 'sig', 0, tile_idx=tidx_off))
@@ -264,16 +199,14 @@ class BootstrapNMOS_simple(MOSBase):
         # - tap
         vss = self.connect_to_tracks([sub, off1.d, capn.d],
                                      self.get_track_id(0, MOSWireType.DS, 'sup', 0, tile_idx=tidx_off + 1))
-
-        # for pname, p in zip(['in', 'vg', 'sample_b', 'cap_bot'],
-        #                     [vin, vg_sampler, samp_b, [cap_bot, cap_bot_on]]):
-        #     self.add_pin(pname, p, show=self.show_pins)
+        vss2 = self.connect_to_tracks(sub_bot,
+                                     self.get_track_id(0, MOSWireType.DS, 'sup', 0, tile_idx=0))
         for pname, p in zip(['in', 'vg', 'sample_b', 'cap_bot'],
                             [vin, sampler.get_pin('sam'), samp_b, [cap_bot, cap_bot_on]]):
             self.add_pin(pname, p, show=self.show_pins)
 
-        self.add_pin('VSS', vss, show=self.show_pins)
-        self.add_pin('VDD', vdd_off0, show=self.show_pins)
+        self.add_pin('VSS', [vss, vss2])
+        self.add_pin('VDD', vdd_off0)
 
         dev_info = dict(
             XSAMPLE={'nf': seg_dict['sampler'], 'seg_n': sampler_params['sampler_unit_params']['seg'],
@@ -439,8 +372,7 @@ class BootstrapNWL_simple(MOSBase):
             inv_n0 = self.add_mos(ridx_n, cur_col, seg_inv_n0, w=w_n, tile_idx=tidx_nwl, g_on_s=True)
             cur_col -= min_sep + seg_inv_n1
             inv_n1 = self.add_mos(ridx_n, cur_col, seg_inv_n1, w=w_n, tile_idx=tidx_nwl)
-            # if cur_col > self.min_sub_col + self.sub_sep_col:
-            #     self.add_substrate_contact(ridx_n, 0, w=w_n, tile_idx=1, seg=cur_col-self.sub_sep_col)
+           
         else:
             inv_p_2, inv_n0, inv_n1 = None, None, None
 
@@ -495,14 +427,12 @@ class BootstrapNWL_simple(MOSBase):
                                             min_len_mode=MinLenMode.MIDDLE)
             _vss = self.connect_to_tracks([ptap, inv_n1.s],
                                           self.get_track_id(0, MOSWireType.DS, 'sup', 0, tile_idx=tidx_ptap))
-            # self.add_pin('sample_b', sample_b, show=self.show_pins)
             self.add_pin('VDD_inv', inv_vdd, label='VDD:', show=self.show_pins)
-            # self.add_pin('vg2', vg2_hm, show=self.show_pins)
+
         else:
             vg2_hm, sample_b, inv_vdd = None, None, None
             vmid = self.connect_to_tracks([on_p.g],
                                           self.get_track_id(ridx_p, MOSWireType.G, 'clk', 0, tile_idx=tidx_nwl))
-            # vss = self.connect_to_tracks(ptap, self.get_track_id(ridx_p, MOSWireType.DS, 'sup', 0, tile_idx=tidx_nwl))
 
         if seg_cap_p_aux:
             cap_top_aux_conn = [ntap_t, cap_p_aux.s, inv_p_2.s] if fast_on else [ntap_t, cap_p_aux.s]
@@ -633,8 +563,7 @@ class BootstrapNWL_simple(MOSBase):
             for vg in vg_vm_list:
                 if vg.track_id.base_index > vg_tidx_start:
                     self.connect_to_track_wires(vg_pre, vg)
-        # self.add_pin('VDD_cap', cap_vdd, label='VDD:', show=self.show_pins)
-        # self.add_pin('VSS', vss, label='VSS', show=self.show_pins)
+
         self.add_pin('VSS', vss_vm_list, show=self.show_pins, connect=True)
         self.add_pin('VDD', vdd_vm_list, show=self.show_pins, connect=True)
         self.add_pin('cap_top', cap_top, show=self.show_pins)
@@ -701,7 +630,6 @@ class Bootstrap_simple(TemplateBase):
             nmos_params='NMOS part parameters.',
             nwl_params='NWL part parameters.',
             cap_params='capacitor parameters',
-            #seg_dict='Segment dict for all transistors',
             top_layer='Top routing layer',
             tr_widths='track widths',
             tr_spaces='track widths',
@@ -720,7 +648,6 @@ class Bootstrap_simple(TemplateBase):
         nmos_params: Param = self.params['nmos_params']
         nwl_params: Param = self.params['nwl_params']
         cap_params: ImmutableSortedDict[str, Any] = self.params['cap_params']
-        #seg_dict: Mapping[str, int] = self.params['seg_dict']
         tr_widths: WDictType = self.params['tr_widths']
         tr_spaces: SpDictType = self.params['tr_spaces']
         fast_on: bool = self.params['fast_on']
@@ -770,11 +697,8 @@ class Bootstrap_simple(TemplateBase):
             h_cap_tot = h_tot - 2 * cap_params['width'] - 2 * h_blk
             cboot_height = (h_cap_tot // h_blk) * h_blk
 
-        # cboot_params['height'] = cboot_height
-        # cboot_params['width'] = w_cap
         cboot_master: TemplateBase = self.new_template(MIMCap, params=cboot_params['cap_config'])
-        # cboot_master: TemplateBase = self.new_template(MOMCapCore, params=cboot_params)
-        
+
         vmw_blk, vmh_blk = self.grid.get_block_size(vm_layer)
         w_cap = cboot_master.bound_box.h
         w_tot = max(w_nmos, w_nwl+w_cap+(vmw_blk)) #+ w_cap
@@ -800,22 +724,6 @@ class Bootstrap_simple(TemplateBase):
             vm_layer = capb_nmos.layer_id + 1
             cap_bot_coord = max(nwl.bound_box.yl, self.grid.track_to_coord(capb_nwl.track_id.layer_id, capb_nwl.track_id.base_index))
             cboot = self.add_instance(cboot_master, inst_name='CBOOT', xform=Transform(-(-(nwl.bound_box.xl-vmw_blk//2)//vmw_blk )* vmw_blk, cap_bot_coord, mode=Orientation.R90)) 
-        # if has_cap_aux:
-        #     caux_params = copy.deepcopy(mom_params.to_dict())
-        #     caux_height = h_cap_tot - cboot_height
-        #     if 'aux_width' in caux_params.keys():
-        #         w_aux_cap = int(mom_params['aux_width'] / self.grid.resolution)
-        #         w_aux_cap = -(-w_aux_cap // w_blk) * w_blk
-        #     else:
-        #         w_aux_cap = w_cap
-        #     caux_params['height'] = caux_height
-        #     caux_params['width'] = w_aux_cap
-        #     caux_master = self.new_template(MOMCapCore, params=caux_params)
-        #     caux = self.add_instance(caux_master, inst_name='CAUX',
-        #                              xform=Transform(0, int(h_tot - caux_master.bound_box.h)))
-        # else:
-        #     caux = None
-        #     caux_master = None
         self.set_size_from_bound_box(top_layer, BBox(0, 0, w_tot, h_tot))
 
         # --- Connections:
@@ -850,16 +758,14 @@ class Bootstrap_simple(TemplateBase):
         # cap_bot
         capb_nmos = nmos.get_pin('cap_bot') 
         capb_nwl = nwl.get_pin('cap_bot')
-        cap_bot_vm_coord = min(nwl.bound_box.xl, capb_nmos.upper)
+        cap_bot_vm_coord = min(nwl.bound_box.xl, capb_nmos.upper, cboot.get_pin('BOT').xm)
         cap_bot_vm_tidx = self.grid.coord_to_track(vm_layer, cap_bot_vm_coord, mode=RoundMode.NEAREST)
         cap_bot_vm_tid = TrackID(vm_layer, cap_bot_vm_tidx, tr_mgr.get_width(vm_layer, 'cap'))
-        #capb_nwl_vm = self.connect_to_tracks(capb_nwl, cap_bot_vm_tid)
         capb_nmos_vm = self.connect_to_tracks(nmos.get_all_port_pins('cap_bot'), cap_bot_vm_tid)
         self.extend_wires(capb_nmos_vm, upper=cap_bot_coord)
 
         # vg
         vg_nmos = nmos.get_port('vg')
-        # self.add_pin('vg_nmos', vg_nmos.get_pins())
         vg_nwl = nwl.get_port('vg')
         vg_nwl_bbox: List[BBox] = vg_nwl.get_pins()
         vm_lay_purp = (vg_nwl.get_single_layer(), 'drawing')
@@ -872,9 +778,9 @@ class Bootstrap_simple(TemplateBase):
 
         # supply vm
         vdd_nmos = nmos.get_pin('VDD')
-        vss_nmos = nmos.get_pin('VSS')
-        vdd_nwl= nwl.get_all_port_pins('VDD') #List[BBox] = nwl.get_all_port_pins('VDD')
-        vss_nwl= nwl.get_all_port_pins('VSS') #List[BBox] = nwl.get_all_port_pins('VSS')
+        vss_nmos = nmos.get_all_port_pins('VSS')
+        vdd_nwl= nwl.get_all_port_pins('VDD') 
+        vss_nwl= nwl.get_all_port_pins('VSS') 
         
         vdd_list=[]
         for wire in vdd_nwl:
@@ -883,26 +789,12 @@ class Bootstrap_simple(TemplateBase):
 
         vss_list=[]
         for wire in vss_nwl:
-            vss_list.append(self.connect_bbox_to_track_wires(Direction.UPPER, vm_lay_purp, wire, vss_nmos))
-        self.add_pin('VSS', vss_list)
-        # vdd_vm_bbox_list, vss_vm_bbox_list = [], []
-        # sup_vm_bnd_yl = self.bound_box.yh
-        # for bbox in vdd_nwl:
-        #     _ret_bnds = [COORD_MAX, COORD_MIN]
-        #     self.connect_bbox_to_track_wires(Direction.UPPER, vm_lay_purp, bbox, vdd_nmos, ret_bnds=_ret_bnds)
-        #     bbox.extend(y=_ret_bnds[0])
-        #     vdd_vm_bbox_list.append(bbox.extend(y=_ret_bnds[1]))
-        #     sup_vm_bnd_yl = _ret_bnds[0] if (_ret_bnds[0] < sup_vm_bnd_yl) else sup_vm_bnd_yl
-        # for bbox in vss_nwl:
-        #     _ret_bnds = [COORD_MAX, COORD_MIN]
-        #     self.connect_bbox_to_track_wires(Direction.UPPER, vm_lay_purp, bbox, vss_nmos, ret_bnds=_ret_bnds)
-        #     bbox.extend(y=_ret_bnds[0])
-        #     vss_vm_bbox_list.append(bbox.extend(y=_ret_bnds[1]))
-        #     sup_vm_bnd_yl = _ret_bnds[0] if (_ret_bnds[0] < sup_vm_bnd_yl) else sup_vm_bnd_yl
+            vss_list.append(self.connect_bbox_to_track_wires(Direction.UPPER, vm_lay_purp, wire, vss_nmos[0]))
+        self.add_pin('VSS', nmos.get_all_port_pins('VSS'))
+    
         if nmos_master.sch_params['has_dum_sampler']:
             self.add_pin('vss_dum', nmos.get_pin('vss_dum'), label='VSS', connect=True)
-        # for bbox in vdd_vm_bbox_list + vss_vm_bbox_list:
-        #     bbox.extend(y=sup_vm_bnd_yl)
+
 
         # Connection with mom cap
         # 1. Get available tracks in space
@@ -917,11 +809,7 @@ class Bootstrap_simple(TemplateBase):
         cap_bot_vm_list, cap_top_vm_list = [], []
         tr_w_cap_vm = tr_mgr.get_width(vm_layer, 'cap')
         tr_w_cap_ym = tr_mgr.get_width(ym_layer, 'cap')
-        # for idx in cap_vm_tidx_list:
-        #     cap_bot_vm_list.append(self.connect_to_tracks(cap_bot_hm, TrackID(vm_layer, idx, tr_w_cap_vm)))
-        #     cap_top_vm_list.append(self.connect_to_tracks(cap_top_hm, TrackID(vm_layer, idx, tr_w_cap_vm)))
-
-        # cap_top_xm_tidx = self.grid.coord_to_track(xm_layer, cap_top_vm_list[0].middle, mode=RoundMode.NEAREST) #FIXME
+       
         if has_cap_aux:
             cap_top_aux_vm_list = []
             cap_top_aux_hm = nwl.get_pin('cap_top_aux')
@@ -934,11 +822,10 @@ class Bootstrap_simple(TemplateBase):
             cap_top_aux_vm_list = []
             cap_top_aux_xm_tidx = COORD_MAX
 
-        # cap_bot_xm_tidx = self.grid.coord_to_track(xm_layer, cap_bot_vm_list[0].middle, mode=RoundMode.NEAREST) 
         cap_top_layer = cboot_master.top_layer
         cap_bot_layer = cap_top_layer-1
-        mim_cap_top =  cboot.get_pin('TOP') #, layer=cap_top_layer) #BBoxArray(cboot.get_pin('top', layer=cap_top_layer))
-        mim_cap_bot = cboot.get_pin('BOT') #, layer=cap_bot_layer)#BBoxArray(cboot.get_pin('bot', layer=cap_bot_layer))
+        mim_cap_top =  cboot.get_pin('TOP')
+        mim_cap_bot = cboot.get_pin('BOT')
 
         #FIXME
         if ((cap_top_layer %2) == 0): 
@@ -951,40 +838,14 @@ class Bootstrap_simple(TemplateBase):
                                                             capb_nmos_vm.track_id.base_index, 1)) #TrackID(cap_bot_layer-1, idx_b, 1))
             self.connect_wires([capb_nmos_vm, cap_bot])
             self.connect_to_track_wires(capb_nwl, capb_nmos_vm) #FIXME
-        #     #FIXME
             cap_top_tr_w = round(self.grid.coord_to_track(vm_layer, w_cap, mode=RoundMode.LESS_EQ))*2
             self.extend_wires(cap_top_hm, lower=cap_top.lower)
             idx_vm_top = self.grid.coord_to_track(vm_layer, -(-(cap_top.lower+cap_top.upper)//(h_blk*2))*h_blk, mode=RoundMode.NEAREST)
             cap_top_mid = self.connect_to_tracks(cap_top_hm, TrackID(vm_layer, idx_vm_top, int(cap_top_tr_w) ))
             self.connect_to_track_wires(cap_top_mid, cap_top)
-            #cap_bot = self.add_wires(cap_bot_layer-1, idx_b, int(mim_cap_bot.xl+h_blk), int(mim_cap_bot.xh-h_blk), width=1)
-        # self.add_pin('plus', capb_nmos_vm, show=self.show_pins)
-        # self.add_pin('minus', cap_top, show=self.show_pins)
+
 
         tr_w_cap_xm = tr_mgr.get_width(xm_layer, 'cap')
-        # cap_top_xm = self.connect_to_tracks(cap_top_vm_list, TrackID(xm_layer, cap_top_xm_tidx, tr_w_cap_xm))
-        # cap_bot_xm = self.connect_to_tracks(cap_bot_vm_list, TrackID(xm_layer, cap_bot_xm_tidx, tr_w_cap_xm))
-
-        # _, locs = tr_mgr.place_wires(ym_layer, ['cap'] * 3, center_coord=cap_top_xm[0].middle)
-        # ym_tids = [TrackID(ym_layer, tidx, tr_w_cap_ym) for tidx in locs]
-        # mom_cap_bot = [cboot.get_pin('minus', layer=xm_layer)]
-        # if has_cap_aux:
-        #     mom_cap_bot.append(caux.get_pin('minus', layer=xm_layer))
-        #     mom_cap_aux = caux.get_pin('plus', layer=xm_layer)
-        # else:
-        #     mom_cap_aux = None
-        # mom_cap_top = cboot.get_pin('plus', layer=xm_layer)
-
-        # cap_top = self.connect_to_track_wires(cap_top_xm, self.connect_to_tracks(mom_cap_top, ym_tids[1]))
-        # cap_bot = self.connect_to_track_wires(cap_bot_xm, self.connect_to_tracks(mom_cap_bot, ym_tids[2]))
-
-        # # Handle cap_aux
-        # if has_cap_aux:
-        #     cap_top_aux_xm = self.connect_to_tracks(cap_top_aux_vm_list,
-        #                                             TrackID(xm_layer, cap_top_aux_xm_tidx, tr_w_cap_xm))
-
-        #     cap_top_aux = self.connect_to_track_wires(cap_top_aux_xm, self.connect_to_tracks(mom_cap_aux, ym_tids[0]))
-        #     self.add_pin('cap_top_aux', cap_top_aux, show=self.show_pins)
 
         # Reexport pins:
         vin = nmos.get_pin('in')
@@ -998,26 +859,7 @@ class Bootstrap_simple(TemplateBase):
                                                 sep_margin=tr_mgr.get_sep(vm_layer, ('sig', 'sup')))
         tr_w_sig_vm = tr_mgr.get_width(vm_layer, 'sig')
         tr_w_sig_xm = tr_mgr.get_width(xm_layer, 'sig')
-        # vin_vm = [self.connect_to_tracks(vin, TrackID(vm_layer, tidx, tr_w_sig_vm)) for tidx in sig_tr_list]
-        # vin_xm_tidx = self.grid.coord_to_track(xm_layer, (vin.bound_box.yl + vin.bound_box.yh) // 2,
-        #                                        mode=RoundMode.NEAREST)
-        # vin_xm = self.connect_to_tracks(vin_vm, TrackID(xm_layer, vin_xm_tidx, tr_w_sig_xm))
         self.add_pin('in', vin)
-        # if nmos_params['dum_sampler']:
-        #     vin_c = nmos.get_pin('in_c')
-        #     vinc_vm = [self.connect_to_tracks(vin_c, TrackID(vm_layer, tidx, tr_w_sig_vm)) for tidx in sig_tr_list]
-        #     vinc_xm_tidx = self.grid.coord_to_track(xm_layer, (vin_c.bound_box.yl + vin_c.bound_box.yh) // 2,
-        #                                             mode=RoundMode.NEAREST)
-        #     vinc_xm = self.connect_to_tracks(vinc_vm, TrackID(xm_layer, vinc_xm_tidx, tr_w_sig_xm))
-        #     self.add_pin('in_c', vinc_xm)
-
-        # Handle multiple outputs
-        # out_port = nmos.get_port('out')
-        # if len(out_port.get_pins()) == 1:
-        #     self.reexport(out_port)
-        # else:
-        #     for idx, pin in enumerate(out_port.get_pins()[:len(out_port.get_pins()) // 2]):
-        #         self.add_pin(f'out<{idx}>', pin)
 
         nout = 0
         for pname in nmos.port_names_iter():
@@ -1025,13 +867,9 @@ class Bootstrap_simple(TemplateBase):
                 self.reexport(nmos.get_port(pname))
                 nout += 1
 
-
-        # self.reexport(nwl.get_port('sample'))
         self.add_pin("sample", nwl.get_pin('sample'))
 
         # Add pins:
-        # self.reexport(nmos.get_port('cap_bot'))
-        # self.reexport(nwl.get_port('cap_top'))
         self.add_pin('cap_bot', nmos.get_pin('cap_bot'), show=self.show_pins)
         self.add_pin('cap_top', nwl.get_pin('cap_top'), show=self.show_pins)
         vm_lay_purp = self.grid.tech_info.get_lay_purp_list(vm_layer)[0]
@@ -1039,29 +877,6 @@ class Bootstrap_simple(TemplateBase):
         for bbox in vg_vm_bbox_list:
             self.add_pin_primitive('vg', vm_lay_purp[0], bbox, show=self.show_pins)
 
-        # -- supply
-        # vdd_pin = []
-        # for bbox in vdd_vm_bbox_list:
-        #     print(bbox)
-        #     print(bbox.xh)
-        #     x = -(-(bbox.xl)//(86))*86
-        #     print(x)
-        #     vdd_pin.append(self.add_wires(vm_layer, self.grid.coord_to_track(vm_layer, x),
-        #                                 lower=bbox.yl, upper=bbox.yh, width=tr_w_sig_vm))
-        # self.add_pin('VDD', vdd_pin)
-
-        #     #self.add_pin_primitive('VDD', vm_lay_purp[0], bbox, show=self.show_pins, connect=True)
-        # vss_pin = []
-        # for bbox in vss_vm_bbox_list:
-        #     print(bbox)
-        #     print(bbox.xh)
-        #     x = -(-(bbox.xl)//(86))*86
-        #     print(x)
-        #     vss_pin.append(self.add_wires(vm_layer, self.grid.coord_to_track(vm_layer, x),
-        #                                 lower=bbox.yl, upper=bbox.yh, width=tr_w_sig_vm))
-        #     # self.add_pin('VSS', vss_pin)
-        #     #self.add_pin_primitive('VSS', vm_lay_purp[0], bbox, show=self.show_pins, connect=True)
-        # self.add_pin('VSS', vss_pin)
 
         dev_info = {
             **nmos_master.sch_params['dev_info'],
@@ -1073,13 +888,9 @@ class Bootstrap_simple(TemplateBase):
             dev_info=dev_info,
             cap_params=cboot_params['cap_config'],
             fast_on=fast_on,
-            break_outputs= True if nout > 1 else False, #nmos_params['break_outputs'],
-            no_sampler=False,
-            # sampler_array = nmos_params['sampler_params']['m_list']
+            break_outputs= True if nout > 1 else False, 
+            no_sampler=False
         )
-        # if has_cap_aux:
-        #     self._sch_params.update(dict(cap_aux_params=caux_master.sch_params))
-
 
 class BootstrapDiff_simple(TemplateBase):
     def __init__(self, temp_db: TemplateDB, params: Param, **kwargs: Any) -> None:

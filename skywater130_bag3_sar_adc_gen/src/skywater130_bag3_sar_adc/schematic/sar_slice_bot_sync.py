@@ -101,8 +101,8 @@ class skywater130_bag3_sar_adc__sar_slice_bot_sync(Module):
             self.instances['XCLK'].design(**clkgen)
             for con_pair in clk_conn:
                 self.reconnect_instance_terminal('XCLK', con_pair[0], con_pair[1])
-            self.reconnect_instance_terminal('XCOMP', 'clk', 'comp_clkb')
-            self.reconnect_instance_terminal('XLOGIC', 'sar_clk', 'comp_clkb')
+            self.reconnect_instance_terminal('XCOMP', 'clk', 'comp_clk')
+            self.reconnect_instance_terminal('XLOGIC', 'sar_clk', 'comp_clk')
         else:
             self.instances['XCLK'].design(**clkgen)
         [self.instances[inst].design(**cdac) for inst in ['XDACN', 'XDACP']]

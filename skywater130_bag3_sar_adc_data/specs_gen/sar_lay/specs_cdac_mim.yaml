@@ -1,4 +1,4 @@
-impl_lib: AAA_SAR_lay
+impl_lib: AAA_SAR_lay2
 impl_cell: AAA_CapDac
 root_dir: gen_outputs/bag_sar
 lay_class: skywater130_bag3_sar_adc.layout.sar_cdac.CapDacColCore
@@ -7,14 +7,16 @@ lay_class: skywater130_bag3_sar_adc.layout.sar_cdac.CapDacColCore
 params:
   remove_cap: False
   lower_layer_routing: True
-  nbits: 8
-  ny_list:    [1, 1, 1, 1, 1, 1, 2, 4, 8] #still necessary for mim to figure out switch size
-  ratio_list: [1, 1, 2, 4, 8, 8, 8, 8, 8] 
+  nbits: 9
+  ny_list:    [1, 1, 1, 1, 1, 1, 2, 4, 4, 8] #still necessary for mim to figure out switch size
+  ratio_list: [1, 1, 2, 4, 8, 8, 8, 8, 8, 8] 
+  row_list: [1, 1, 1, 1, 2, 3,  5,  6, 8, 14]
+  col_list: [1, 1, 2, 3, 3, 4, 4, 3, 4, 4]
   sw_type: ['n', 'n', 'p']
-  diff_idx: 5
+  diff_idx: 7
   width: &cap_width 
     4000   
-  seg: 16 #32  #changes switch size
+  seg: 16 #changes switch size
   seg_cm: 16
   sp: 4 # how many tracks apart to space the switches
   w: 84 
@@ -27,7 +29,7 @@ params:
   tr_spaces: &tr_sp
     {}
   cap_config:
-    top_layer: 4 #2
+    top_layer: 4 
     bot_layer: 3
     pin_layer: 3
     top_w: 1
@@ -40,12 +42,9 @@ params:
     num_rows: 1
     num_cols: 1
     dum_col_l: 3
-    # height: 500
     mim_type: '34'
     unit_height: 400
-    unit_width: 2000 # specify
-    # width: *cap_width
-    # width_total: 24000
+    unit_width: 2000 # specify unit width
     has_rmetal: False
     #cap: 317e-18
   pinfo_cm:

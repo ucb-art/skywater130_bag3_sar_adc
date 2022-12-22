@@ -349,8 +349,10 @@ class SyncDivCounter(MOSBase):
         tidx_clkinhi_hm = self.grid.coord_to_track(hm_layer, buf_in.bound_box.yh, mode=RoundMode.LESS_EQ)
         tidx_clkin_hm = self.get_available_tracks(hm_layer, tidx_clkinlo_hm, tidx_clkinhi_hm,
                                               buf_in.bound_box.xl, flop_rst.bound_box.xh, width=tr_w_vm, sep=tr_sp_vm)
-        clk_in = self.connect_to_tracks([buf_in.get_pin('out'), clk_bufcomp_in, flop_rst.get_pin('clk')], 
+        clk_buf = self.connect_to_tracks([buf_in.get_pin('out'), clk_bufcomp_in], 
                                        TrackID(hm_layer, tidx_clkin_hm[len(tidx_clkin_hm)//2], tr_w_hm))
+        clk_in = self.connect_to_tracks([buf_in.get_pin('outb'),  flop_rst.get_pin('clk')], 
+                                       TrackID(hm_layer, tidx_clkin_hm[len(tidx_clkin_hm)//2 - 2], tr_w_hm))
         # clk b to the latch
         self.connect_to_track_wires( buf_in.get_pin('poutb'), flop_list[0].get_pin('clk'))
         # self.add_pin('buf_in_outb', buf_in.get_pin('outb'))
@@ -412,11 +414,16 @@ class SyncDivCounter(MOSBase):
         tidx_rstnor1_vm = self.get_available_tracks(vm_layer, tidx_lorst_vm, tidx_hirst_vm,
                                               flop_list[0].bound_box.yl, flop_list[1].bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
         
-        x2 = self.connect_to_tracks(nor1.get_pin('nin<1>'), TrackID(vm_layer, tidx_rstnor1_vm[0], tr_w_vm))
-        self.connect_to_track_wires(x2, div_list[0])
-        xb4 = self.connect_to_tracks(nor1.get_pin('nin<0>'), TrackID(vm_layer, tidx_rstnor1_vm[1], tr_w_vm))
-        self.connect_to_track_wires(xb4, divb_list[1])
-
+        xb2 = self.connect_to_tracks(nor1.get_pin('nin<1>'), TrackID(vm_layer, tidx_rstnor1_vm[0], tr_w_vm))
+        self.connect_to_track_wires(xb2, divb_list[0])
+        # self.add_pin('x2b', xb2)
+        # self.add_pin('div_x2b', divb_list[0])
+        # self.add_pin('div_x2', div_list[0])
+        x4 = self.connect_to_tracks(nor1.get_pin('nin<0>'), TrackID(vm_layer, tidx_rstnor1_vm[1], tr_w_vm))
+        self.connect_to_track_wires(x4, div_list[1])
+        # self.add_pin('x4', x4)
+        # self.add_pin('div_x4', div_list[1])
+        # self.add_pin('div_x4b', divb_list[1])
         tidx_rstnor2_vm = self.get_available_tracks(vm_layer, tidx_lorst_vm, tidx_hirst_vm,
                                               flop_list[2].bound_box.yl, flop_list[3].bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
         x8 = self.connect_to_tracks(nor2.get_pin('nin<1>'), TrackID(vm_layer, tidx_rstnor2_vm[0], tr_w_vm))

@@ -61,9 +61,8 @@ To generate a design from this repo run the following command in your workspace:
 ./run_bag.sh BAG_framework/run_scripts/gen_cell.py skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/sar_lay/your_yaml.yaml
 ```
 ## Caveats
-The layouts included in this repo have been verified with Calibre LVS tools. However, the schematics created out of the box from this generator will not simulate or be usable for LVS. To simulate or check LVS on any designs, all of the transistors in the schematics must be swapped from the `BAG_prim` transistors generated to the respective skywater `s8phires_10` model .
-
-This generator still contains a few non-waivable DRC errors out of the box. These should be manually fixed. 
+This generator still contains a few non-waivable DRC errors out of the box, depending on parameters used. These should be manually fixed. 
+LVS, however, should be clean out of the box. 
 
 ## Licensing
 

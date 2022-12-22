@@ -786,7 +786,9 @@ class CapDacColCore(TemplateBase):
             lower_layer_routing='only use up to m4',
             tr_widths='Track width dictionary',
             tr_spaces='Track space dictionary',
-            has_cm_sw='has a cm sw in the cdac layout'
+            has_cm_sw='has a cm sw in the cdac layout', 
+            row_list='number of rows',
+            col_list='number of columns'
         )
 
     @classmethod
@@ -800,6 +802,8 @@ class CapDacColCore(TemplateBase):
             w=4,
             remove_cap=False,
             has_cm_sw = True,
+            row_list =[],
+            col_list =[]
         )
         return ans
 
@@ -816,6 +820,8 @@ class CapDacColCore(TemplateBase):
         diff_idx: int = self.params['diff_idx']
         ny_list: List[int] = self.params['ny_list'].to_list()
         ratio_list: List[int] = self.params['ratio_list'].to_list()
+        row_list: List[int] = self.params['row_list'].to_list()
+        col_list: List[int] = self.params['col_list'].to_list()
         sw_type: List[str] = self.params['sw_type'].to_list()
         tr_widths: Dict[str, Any] = self.params['tr_widths']
         tr_spaces: Mapping[Tuple[str, str], Mapping[int, Union[float, HalfInt]]] = self.params['tr_spaces']
@@ -837,41 +843,42 @@ class CapDacColCore(TemplateBase):
         ratio_list = ratio_list[diff_idx:][::-1] + ratio_list
         
         #bit list lists out which cap belongs to which total cap ratio (ex from 0 to 8)
-        bit_list = [1, 0, 2, 3] + list(range(diff_idx - 1, nbits + 1))
+        bit_list = [1, 0, 2, 3] + list(range(4, diff_idx-1))+ list(range(diff_idx - 1, nbits + 1))
         bit_list = bit_list[diff_idx:][::-1] + bit_list
         
         #compute the number of units
-        tot_col = width//cap_config['unit_width']
-        if (cap_config['ismim']==True):    
-            row_list = []
-            col_list = []
-            dum_col_list = []
-            h_idx = 0
-            for idx in range(0, max(bit_list)+1):
-                if (idx==0):
-                    row_list.append(1)
-                    col_list.append(1)
-                    dum_col_list.append(tot_col-1)
-                else:
-                    if (width/(2**(idx-1)) >= cap_config['unit_width']):
-                        if ((idx-1)>=h_idx):
-                            h_idx = idx-1
-                        col_list.append(2**(idx-1))
-                        dum_col_list.append(tot_col-2**(idx-1))
+        if not row_list:
+            tot_col = width//cap_config['unit_width']
+            if (cap_config['ismim']==True):    
+                row_list = []
+                col_list = []
+                dum_col_list = []
+                h_idx = 0
+                for idx in range(0, max(bit_list)+1):
+                    if (idx==0):
                         row_list.append(1)
+                        col_list.append(1)
+                        dum_col_list.append(tot_col-1)
                     else:
-                        col_list.append(2**h_idx)
-                        dum_col_list.append(tot_col -2**h_idx )
-                        row_list.append(2**(idx-h_idx-1))
-                if (idx >= diff_idx):
-                    row_list[-1] = -(-row_list[-1]//2)
-
+                        if (width/(2**(idx-1)) >= cap_config['unit_width']):
+                            if ((idx-1)>=h_idx):
+                                h_idx = idx-1
+                            col_list.append(2**(idx-1))
+                            dum_col_list.append(tot_col-2**(idx-1))
+                            row_list.append(1)
+                        else:
+                            col_list.append(2**h_idx)
+                            dum_col_list.append(tot_col -2**h_idx )
+                            row_list.append(2**(idx-h_idx-1))
+                    if (idx >= diff_idx):
+                        row_list[-1] = -(-row_list[-1]//2)
+        dum_col_list =[4-col for col in col_list]
         row_list = row_list[diff_idx:][::-1] + \
-                         [row_list[1], row_list[0]] + row_list[2:diff_idx] + row_list[diff_idx:]
+                        [row_list[1], row_list[0]] + row_list[2:diff_idx] + row_list[diff_idx:]
         col_list = col_list[diff_idx:][::-1] + \
-                         [col_list[1], col_list[0]] + col_list[2:diff_idx] + col_list[diff_idx:]
+                        [col_list[1], col_list[0]] + col_list[2:diff_idx] + col_list[diff_idx:]
         dum_col_list = dum_col_list[diff_idx:][::-1] + \
-                         [dum_col_list[1], dum_col_list[0]] + dum_col_list[2:diff_idx] + dum_col_list[diff_idx:]
+                            [dum_col_list[1], dum_col_list[0]] + dum_col_list[2:diff_idx] + dum_col_list[diff_idx:]
 
         # Place control signals
         conn_layer = MOSArrayPlaceInfo.get_conn_layer(self.grid.tech_info,
@@ -900,7 +907,6 @@ class CapDacColCore(TemplateBase):
             cap_config_mim['num_cols'] = max(col_list)
             cap_config_mim['dum_col_l'] = min(dum_col_list)
             cap_master = self.new_template(CapColCore, params=dict(cap_config=cap_config_mim, ny=4 * sum(ny_list)))
-            # cap_config_mim['rows'] = 1
             unit_cap_master = self.new_template(CapColCore, params=dict(cap_config=cap_config_mim, ny=4))
         else:
             cap_master = self.new_template(CapColCore, params=dict(cap_config=cap_config, width=width, ny=4 * sum(ny_list)))
@@ -1449,6 +1455,7 @@ class CapDacColCore(TemplateBase):
 
         m_list = [len(_l) for _l in bit_cap_list_list]
         sw_list = m_list
+        m_list = [1 if d < diff_idx-1 else 2 for d in range(nbits)]
         unit_params_list = [master.sch_params for master in cap_master_list[1:]]
 
         self._actual_width = self.bound_box.w - routing_bnd
