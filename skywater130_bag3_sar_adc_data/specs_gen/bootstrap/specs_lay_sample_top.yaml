@@ -1,0 +1,11 @@
+impl_lib: AAA_bootstrap_sampletop_v3
+impl_cell: AAAbootstrap
+root_dir: gen_outputs/skywater130_bag3_sar_adc/sampler_top
+lay_class: skywater130_bag3_sar_adc.layout.sampler_top.SamplerTop
+
+params:
+  top_layer_supply: False
+  sig_sampler: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/bootstrap/specs_lay.yaml'
+  vcm_sampler: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/bootstrap/specs_lay_diff.yaml'
+  vcm_mid_sw:  'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/bootstrap/specs_vcm_sw_mid_n.yaml'
+
