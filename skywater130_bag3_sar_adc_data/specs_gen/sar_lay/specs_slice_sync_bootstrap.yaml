@@ -9,6 +9,7 @@ params:
     cap: {3: 3, 4: 3}
   tr_spaces: &tr_sp
     {}
+  shield: &shield True
   sampler_params: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/bootstrap/specs_lay_sample_top.yaml'
     # Uncomment below for regular mos sampling
     #     m_list: [1,1,1,2,2,2,4,4]
@@ -116,8 +117,9 @@ params:
                   shared: ['sup']
         abut_list: []
   comp_params:
-    cls_name: skywater130_bag3_sar_adc.layout.sar.sar_comp.SA
+    cls_name: skywater130_bag3_sar_adc.layout.sar_comp.SA
     sch_cls: strongarm_core
+    shield: *shield
     sup_top_layer: 3
     #ncols_tot: 100
     num_comp_tiles: 3
@@ -157,7 +159,7 @@ params:
           tr_widths:
             sig: {2: 1}
             clk: {2: 1}
-            sup: {2: 1}
+            sup: {1: 1, 2: 1}
           tr_spaces: {}
         place_info:
           ntap_tile:
@@ -456,5 +458,19 @@ params:
                   shared: ['sup']
                 flip: True
         abut_list: []
+  route_power: True
+  decoupling_cap_params:
+    decoupling_margin: 2000
+    cap_config:
+      top_layer: 4
+      bot_layer: 3 
+      num_rows: 1
+      num_cols: 1
+      dum_col_l: 0
+      unit_height: 800
+      unit_width: 800
+      rotateable: True
+      mim_type: '45'
+      has_res_metal: False
 
 

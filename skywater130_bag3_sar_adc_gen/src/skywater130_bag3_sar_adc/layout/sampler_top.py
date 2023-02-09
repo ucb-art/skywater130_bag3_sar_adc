@@ -1,4 +1,5 @@
 from typing import Any, Dict, Type, Optional
+import copy
 
 from bag.design.database import ModuleDB, Module
 from bag.io.file import read_yaml
@@ -12,11 +13,11 @@ from xbase.layout.enum import MOSWireType, SubPortMode
 from xbase.layout.mos.placement.data import TilePatternElement, TilePattern
 from xbase.layout.mos.base import MOSBasePlaceInfo, MOSBase, MOSArrayPlaceInfo
 from xbase.layout.mos.top import GenericWrapper
+from xbase.layout.cap.mim import MIMCap
 
 from .bootstrap_simple import Bootstrap_simple, BootstrapDiff_simple
 from .util.template import TemplateBaseZL
 from .util.template import TrackIDZL as TrackID
-
 
 class CMSwitch(MOSBase, TemplateBaseZL):
     """A inverter with only transistors drawn, no metal connections
@@ -315,12 +316,14 @@ class SamplerTop(TemplateBaseZL):
             vcm_sampler='Path to vcm sampler yaml(diff)',
             sig_sampler='Path to signal sampler yaml',
             vcm_mid_sw='Path to middle switch yaml',
-            top_layer_supply='True to add top layer supply'
+            route_power='True to add top layer supply',
+            decap_width='Decoupling cap width',
+            cap_config='Settings for decoupling capacitors'
         )
 
     @classmethod
     def get_default_param_values(cls) -> Dict[str, Any]:
-        return dict(top_layer_supply=True)
+        return dict(route_power=True, decap_width=0, cap_config={})
 
     def draw_layout(self) -> None:
         sig_sampler_params: Param = Param(read_yaml(self.params['sig_sampler'])['params'])
@@ -352,15 +355,27 @@ class SamplerTop(TemplateBaseZL):
         w_vcm_sampler_diff, h_vcm_sampler_diff = \
             vcm_sampler_master.bound_box.w, vcm_sampler_master.bound_box.h
 
-        w_tot = max(w_vcm_sampler_diff, w_cmsw) + 2 * w_sig_sampler_se
         h_tot = max(h_sig_sampler_se, h_vcm_sampler_diff + h_cmsw)
-        w_tot = -(-w_tot // w_blk) * w_blk
         h_tot = -(-h_tot // h_blk) * h_blk
-        w_tot2 = w_tot // 2
 
-        cm_sw_mid = self.add_instance(mid_sw_master, xform=Transform(w_tot2+w_cmsw//2, 0, Orientation.MY))
-        mid_sw_params['params']['swap_inout'] = True
-        mid_sw_master = self.new_template(GenericWrapper, params=mid_sw_params)
+        # Calculate extra decap width for floorplanning (can be 0 for no decaps)
+        route_power = self.params['route_power']
+        decap_width = self.params['decap_width']
+        if route_power:
+            if decap_width>0:
+                cap_width = -(-decap_width//(w_blk))*w_blk
+                decap_vref_params = copy.deepcopy(self.params['cap_config'].to_dict())
+                decap_vref_params['num_cols'] = cap_width//decap_vref_params['unit_width']
+                decap_vref_params['num_rows'] = (2*h_tot//3)//decap_vref_params['unit_height']
+                decap_vref_master = self.new_template(MIMCap,
+                                    params=decap_vref_params)
+                cap_w = decap_vref_master.bound_box.w
+        else:
+            cap_w = 0
+
+        w_tot = max(w_vcm_sampler_diff, w_cmsw) + 2 * w_sig_sampler_se + 2 * cap_w
+        w_tot = -(-w_tot // w_blk) * w_blk
+        w_tot2 = w_tot // 2
 
         # get xm1layer supply pitch
         top_hor_lay = top_layer_btstrp if self.grid.get_direction(
@@ -372,15 +387,24 @@ class SamplerTop(TemplateBaseZL):
 
         sup_align_ofst=0
         sup_align_ofst += 2 * top_hor_sup_pitch 
-        sup_align_ofst += -(-cm_sw_mid.bound_box.h // 2 // top_hor_sup_pitch) * 2 * top_hor_sup_pitch
+        sup_align_ofst += -(-h_cmsw // 2 // top_hor_sup_pitch) * 2 * top_hor_sup_pitch
         y_cm_sampler = -(-sup_align_ofst // h_blk) * h_blk
 
-        cm_sampler = self.add_instance(vcm_sampler_master,
-                                       xform=Transform(w_tot2 - w_vcm_sampler_diff // 2, y_cm_sampler, Orientation.R0))
-        sig_sampler_p = self.add_instance(sig_sampler_n_master, xform=Transform(w_tot-w_sig_sampler_se, 0, Orientation.R0))
-        sig_sampler_n = self.add_instance(sig_sampler_p_master, xform=Transform(w_sig_sampler_se, 0, Orientation.MY))
+        cm_sw_mid = self.add_instance(mid_sw_master, xform=Transform(w_tot2+w_cmsw//2, -y_cm_sampler, Orientation.MY))
+        mid_sw_params['params']['swap_inout'] = True
+        mid_sw_master = self.new_template(GenericWrapper, params=mid_sw_params)
 
-        self.set_size_from_bound_box(top_layer_btstrp, BBox(0, 0, w_tot, h_tot))
+        cm_sampler = self.add_instance(vcm_sampler_master,
+                                       xform=Transform(w_tot2 - w_vcm_sampler_diff // 2, 0, Orientation.R0))
+        sig_sampler_p = self.add_instance(sig_sampler_n_master, xform=Transform(w_tot-(w_sig_sampler_se+cap_w), 0, Orientation.R0))
+        sig_sampler_n = self.add_instance(sig_sampler_p_master, xform=Transform(w_sig_sampler_se + cap_w, 0, Orientation.MY))
+
+        # only add decaps if the decap width is > 0
+        if cap_w > 0:
+            decap_l = self.add_instance(decap_vref_master, inst_name='XDECAP', xform=Transform(0, 0))
+            decap_r = self.add_instance(decap_vref_master, inst_name='XDECAP', xform=Transform(w_tot, 0, mode=Orientation.MY))
+        
+        self.set_size_from_bound_box(top_layer_btstrp, BBox(0, 0, w_tot, max(h_tot, decap_vref_master.bound_box.h)))
 
         self.connect_wires(cm_sampler.get_all_port_pins('VDD', layer=top_hor_lay) +
                            sig_sampler_n.get_all_port_pins('VDD', layer=top_hor_lay))
@@ -420,18 +444,11 @@ class SamplerTop(TemplateBaseZL):
         self.reexport(sig_sampler_n.get_port('vg'), net_name='vg_n')
         self.reexport(sig_sampler_p.get_port('vg'), net_name='vg_p')
 
-        cm_vss = cm_sw_mid.get_pin('VSS')
-        samp_n_vss = sig_sampler_n.get_pin('VSS')
-        samp_p_vss = sig_sampler_p.get_pin('VSS') 
-
         # Routing clock signals
-        self.add_pin('sam',cm_sampler.get_pin('sample'))
-        self.add_pin('sam',sig_sampler_n.get_pin('sample'))
-        self.add_pin('sam',sig_sampler_p.get_pin('sample'))
-        self.add_pin('sam_b',cm_sampler.get_pin('sample_b'))
-        self.add_pin('sam_b',sig_sampler_n.get_pin('sample_b'))
-        self.add_pin('sam_b',sig_sampler_p.get_pin('sample_b'))
-
+        sam = self.connect_wires([cm_sampler.get_pin('sample'), sig_sampler_n.get_pin('sample'), sig_sampler_p.get_pin('sample')])
+        sam_b = self.connect_wires([cm_sampler.get_pin('sample_b'), sig_sampler_n.get_pin('sample_b'), sig_sampler_p.get_pin('sample_b')])
+        self.add_pin('sam', sam)
+        self.add_pin('sam_b', sam_b)
 
         for pinname in sig_sampler_p.port_names_iter():
             if 'out' in pinname:
@@ -446,84 +463,174 @@ class SamplerTop(TemplateBaseZL):
         self.reexport(sig_sampler_n.get_port('in'), net_name='sig_n')
         self.reexport(sig_sampler_p.get_port('in'), net_name='sig_p')
 
+        # connect power signals
         vdd_topm = [sig_sampler_n.get_pin('VDD'),
                    sig_sampler_p.get_pin('VDD'),
                      cm_sampler.get_pin('VDD')]
-        vss_topm = [sig_sampler_n.get_pin('VSS'),
-                   sig_sampler_p.get_pin('VSS'),
-                   cm_sampler.get_pin('VSS'), cm_sw_mid.get_pin('VSS')]
+        vdd_topm = self.connect_wires(vdd_topm)
+
+        vss_topm = self.connect_wires(sig_sampler_n.get_all_port_pins('VSS') + \
+                   sig_sampler_p.get_all_port_pins('VSS') + \
+                   cm_sampler.get_all_port_pins('VSS'))
+        for cm_vss in cm_sw_mid.get_all_port_pins('VSS'):
+            # connect cm sw to lower VSS track of samplers
+            self.connect_bbox_to_track_wires(Direction.UPPER, (cm_sw_mid.get_port('VSS').get_single_layer(), 'drawing'), 
+                                            cm_vss, sig_sampler_n.get_all_port_pins('VSS')[1])
 
         vcm_topm2 = [cm_sampler.get_pin('out_n'), cm_sampler.get_pin('out_p')]
-        # vcm_top=[]
-        # for bbox in vcm_topm2:
-        #     tidx = self.grid.coord_to_track(vm_layer, bbox.xm//68*68) #FIXME
-        #     vcm_top.append(self.add_wires(vm_layer, tidx, lower=bbox.yl, upper=bbox.yh, width=tr_w_sig_hm))
 
         cmsw_params = dict()
         mid_sw_master_params = mid_sw_master.sch_params.to_dict()
         cmsw_params['n'] = mid_sw_master_params['n']
         cmsw_params['p'] = mid_sw_master_params['p']
 
-        top_layer_supply = self.params['top_layer_supply']
-        if top_layer_supply:
-            top_sup_layer = top_layer_btstrp + 1
-            tr_w_sup_top = tr_manager.get_width(top_sup_layer, 'sup')
-            tr_sp_sup_top = tr_manager.get_sep(top_sup_layer, ('sup', 'sup'))
-            if self.grid.get_direction(top_sup_layer) == Orient2D.y:
-                top_coord_mid = (self.bound_box.xl + self.bound_box.xh) // 2
-                top_coord_upper = self.bound_box.xh
-                top_upper = self.bound_box.yh
+        # top_layer_supply = self.params['top_layer_supply']
+        # decap_width = self.params['decap_width']
+        # if top_layer_supply:
+        #     top_sup_layer = top_layer_btstrp + 1
+        #     tr_w_sup_top = tr_manager.get_width(top_sup_layer, 'sup')
+        #     tr_sp_sup_top = tr_manager.get_sep(top_sup_layer, ('sup', 'sup'))
+        #     if self.grid.get_direction(top_sup_layer) == Orient2D.y:
+        #         top_coord_mid = (self.bound_box.xl + self.bound_box.xh) // 2
+        #         top_coord_upper = self.bound_box.xh
+        #         top_upper = self.bound_box.yh
+        #     else:
+        #         vcm_top=[]
+        #         for bbox in vcm_topm2:
+        #             tidx = self.grid.coord_to_track(vm_layer, bbox.xm//w_conn_blk*w_conn_blk) 
+        #             vcm_top.append(self.add_wires(vm_layer, tidx, lower=bbox.yl, upper=bbox.yh, width=tr_w_sig_hm))
+
+        #         top_coord_mid = ((self.bound_box.yl + self.bound_box.yh) // (2*w_blk))*w_blk
+        #         top_coord_upper = self.bound_box.yh
+        #         top_upper = self.bound_box.xh
+        #         top_cm_tid = self.grid.coord_to_track(top_sup_layer, top_coord_mid)
+        #         #vcm_top = self.connect_to_tracks(vcm_topm, TrackID(top_layer_btstrp + 1, top_cm_tid, tr_w_sup_top))
+        #         top_cm_lower = vcm_topm2.xl if self.grid.get_direction(
+        #             top_sup_layer) == Orient2D.y else vcm_top.bound_box.yl
+        #         top_cm_upper = vcm_topm2.xh if self.grid.get_direction(
+        #             top_sup_layer) == Orient2D.y else vcm_top.bound_box.yh
+        #         top_locs = self.get_tids_between(top_sup_layer,
+        #                                          self.grid.coord_to_track(top_sup_layer, 0, RoundMode.GREATER),
+        #                                          self.grid.coord_to_track(top_sup_layer, top_cm_lower, RoundMode.LESS),
+        #                                          tr_w_sup_top, tr_sp_sup_top, 0, False, mod=2)
+        #         vss_top_list = [self.connect_to_tracks(sig_sampler_n.get_all_port_pins('VSS', layer=top_layer_btstrp) + \
+        #                                                cm_sampler.get_all_port_pins('VSS', layer=top_layer_btstrp),
+        #                                                tidx, track_lower=0,
+        #                                                track_upper=top_upper) for tidx in top_locs[1::2]]
+        #         vdd_top_list = [self.connect_to_tracks(sig_sampler_n.get_all_port_pins('VDD', layer=top_layer_btstrp) + \
+        #                                                cm_sampler.get_all_port_pins('VDD', layer=top_layer_btstrp),
+        #                                                tidx, track_lower=0,
+        #                                                track_upper=top_upper) for tidx in top_locs[0::2]]
+        #         top_locs = self.get_tids_between(top_sup_layer,
+        #                                          self.grid.coord_to_track(top_sup_layer, top_cm_upper,
+        #                                                                   RoundMode.GREATER),
+        #                                          self.grid.coord_to_track(top_sup_layer, top_coord_upper,
+        #                                                                   RoundMode.LESS),
+        #                                          tr_w_sup_top, tr_sp_sup_top, 0, False, True, mod=2)[::-1]
+        #         vss_top_list += [self.connect_to_tracks(sig_sampler_p.get_all_port_pins('VSS', layer=top_layer_btstrp) + \
+        #                                                 cm_sampler.get_all_port_pins('VSS', layer=top_layer_btstrp),
+        #                                                 tidx, track_lower=0,
+        #                                                 track_upper=top_upper) for tidx in top_locs[1::2]]
+        #         vdd_top_list += [self.connect_to_tracks(sig_sampler_p.get_all_port_pins('VDD', layer=top_layer_btstrp) + \
+        #                                                 cm_sampler.get_all_port_pins('VDD', layer=top_layer_btstrp),
+        #                                                 tidx, track_lower=0,
+        #                                                 track_upper=top_upper) for tidx in top_locs[0::2]]
+        #         self.add_pin('VSS', vss_top_list)
+        #         self.add_pin('VDD', vdd_top_list)
+        #         self.add_pin('vcm', vcm_top)
+        
+        # else:
+
+        route_power = self.params['route_power']
+        decap_width = self.params['decap_width']
+        if route_power:
+            # TODO: space the grids nicely
+            shields = False
+            if sig_sampler_n.has_port('VSS_shield'):
+                self.reexport(sig_sampler_n.get_port('VSS_shield'))
+                shields = True
+            if sig_sampler_p.has_port('VSS_shield'):
+                self.reexport(sig_sampler_p.get_port('VSS_shield'))
+                shields = True
+            if cm_sampler.has_port('VSS_shield'):
+                self.reexport(cm_sampler.get_port('VSS_shield'))
+                shields = True 
+
+            if shields:
+                print(cm_sampler.get_all_port_pins('VSS_shield'))
+                vdd_vm_l, vss_vm_l = self.do_power_fill(vm_layer, tr_manager, vdd_topm, vss_topm, 
+                                                            bound_box = BBox(0, 0, cm_sampler.get_all_port_pins('VSS_shield')[0].xl, 
+                                                               self.grid.htr_to_coord(hm_layer, vdd_topm[0].track_id.base_htr+1)))
+                vdd_vm_r, vss_vm_r = self.do_power_fill(vm_layer, tr_manager, vdd_topm, vss_topm, 
+                                                            bound_box = BBox(cm_sampler.get_all_port_pins('VSS_shield')[-1].xh, 0, w_tot,
+                                                               self.grid.htr_to_coord(hm_layer, vdd_topm[0].track_id.base_htr+1)))
+                xm_boxes = [BBox(0, 0, sig_sampler_n.get_all_port_pins('VSS_shield')[0].xl-w_blk, sig_sampler_n.bound_box.yh),
+                            BBox(sig_sampler_n.get_all_port_pins('VSS_shield')[1].xh+w_blk, 0, cm_sampler.get_all_port_pins('VSS_shield')[1].xl-w_blk, sig_sampler_n.bound_box.yh-h_blk),
+                            BBox(cm_sampler.get_all_port_pins('VSS_shield')[-1].xh+w_blk, 0, sig_sampler_p.get_all_port_pins('VSS_shield')[1].xl-w_blk, sig_sampler_p.bound_box.yh-h_blk),
+                            BBox(sig_sampler_p.get_all_port_pins('VSS_shield')[0].xh+w_blk, 0, w_tot, sig_sampler_p.bound_box.yh)]
+                vdd_xm, vss_xm = [], []
+                for x in xm_boxes:
+                    _vdd_xm, _vss_xm = self.do_power_fill(xm_layer, tr_manager, vdd_vm_l+vdd_vm_r, vss_vm_l+vss_vm_r, 
+                                                            bound_box = x)
+                    if cap_w > 0:
+                        if x.xl > sig_sampler_n.get_all_port_pins('VSS_shield')[1].xh and x.xh < sig_sampler_p.get_all_port_pins('VSS_shield')[1].xl:
+                            _vss_xm = self.extend_wires(_vss_xm, lower=cm_sampler.get_all_port_pins('VSS_shield')[0].xl, upper=cm_sampler.get_all_port_pins('VSS_shield')[-1].xh)
+
+                        if x.xh < w_tot//2:
+                            _vss_xm = self.connect_bbox_to_track_wires(Direction.UPPER, (f'met{ym_layer}', 'drawing'), decap_l.get_port('BOT').get_bounding_box(), _vss_xm)   
+                        if x.xl > w_tot//2:
+                            _vss_xm = self.connect_bbox_to_track_wires(Direction.UPPER, (f'met{ym_layer}', 'drawing'), decap_r.get_port('BOT').get_bounding_box(), _vss_xm)
+                    vdd_xm = vdd_xm + _vdd_xm
+                    vss_xm = vss_xm + _vss_xm
+
+                ym_boxes = [BBox(sig_sampler_n.get_all_port_pins('VSS_shield')[1].xh, 0, cm_sampler.get_all_port_pins('VSS_shield')[0].xl, self.grid.htr_to_coord(vm_layer, vdd_xm[-1].track_id.base_htr+1) ),
+                            BBox(cm_sampler.get_all_port_pins('VSS_shield')[2].xh, 0, sig_sampler_p.get_all_port_pins('VSS_shield')[1].xl,self.grid.htr_to_coord(vm_layer, vdd_xm[-1].track_id.base_htr+1) ),
+                             self.bound_box,
+                             BBox(sig_sampler_n.get_all_port_pins('VSS_shield')[0].xh, 0, sig_sampler_n.get_all_port_pins('VSS_shield')[1].xh, self.grid.htr_to_coord(vm_layer, vdd_xm[-1].track_id.base_htr+1)),
+                            BBox(sig_sampler_p.get_all_port_pins('VSS_shield')[1].xl, 0, sig_sampler_p.get_all_port_pins('VSS_shield')[0].xl,self.grid.htr_to_coord(vm_layer, vdd_xm[-1].track_id.base_htr+1) ),]
+                vdd_ym, vss_ym = [], []
+                for y in ym_boxes:
+                    _vdd_ym, _vss_ym = self.do_power_fill(ym_layer, tr_manager, vdd_xm, vss_xm, 
+                                                            bound_box = y)
+                    vdd_ym = vdd_ym + _vdd_ym
+                    vss_ym = vss_ym + _vss_ym
             else:
-                vcm_top=[]
-                for bbox in vcm_topm2:
-                    tidx = self.grid.coord_to_track(vm_layer, bbox.xm//w_conn_blk*w_conn_blk) 
-                    vcm_top.append(self.add_wires(vm_layer, tidx, lower=bbox.yl, upper=bbox.yh, width=tr_w_sig_hm))
+                vdd_vm_l, vss_vm_l = self.do_power_fill(vm_layer, tr_manager, vdd_topm, vss_topm, 
+                                                            bound_box = BBox(0, 0, cm_sampler.bound_box.xl, 
+                                                               self.grid.htr_to_coord(hm_layer, vdd_topm[0].track_id.base_htr+1)))
+                vdd_vm_r, vss_vm_r = self.do_power_fill(vm_layer, tr_manager, vdd_topm, vss_topm, 
+                                                            bound_box = BBox(cm_sampler.bound_box.xh, 0, w_tot,
+                                                               self.grid.htr_to_coord(hm_layer, vdd_topm[0].track_id.base_htr+1)))
 
-                top_coord_mid = (self.bound_box.yl + self.bound_box.yh) // 2
-                top_coord_upper = self.bound_box.yh
-                top_upper = self.bound_box.xh
-                top_cm_tid = self.grid.coord_to_track(top_sup_layer, top_coord_mid)
-                #vcm_top = self.connect_to_tracks(vcm_topm, TrackID(top_layer_btstrp + 1, top_cm_tid, tr_w_sup_top))
-                top_cm_lower = vcm_top.bound_box.xl if self.grid.get_direction(
-                    top_sup_layer) == Orient2D.y else vcm_top.bound_box.yl
-                top_cm_upper = vcm_top.bound_box.xh if self.grid.get_direction(
-                    top_sup_layer) == Orient2D.y else vcm_top.bound_box.yh
-                top_locs = self.get_tids_between(top_sup_layer,
-                                                 self.grid.coord_to_track(top_sup_layer, 0, RoundMode.GREATER),
-                                                 self.grid.coord_to_track(top_sup_layer, top_cm_lower, RoundMode.LESS),
-                                                 tr_w_sup_top, tr_sp_sup_top, 0, False, mod=2)
-                vss_top_list = [self.connect_to_tracks(sig_sampler_n.get_all_port_pins('VSS', layer=top_layer_btstrp) + \
-                                                       cm_sampler.get_all_port_pins('VSS', layer=top_layer_btstrp),
-                                                       tidx, track_lower=0,
-                                                       track_upper=top_upper) for tidx in top_locs[1::2]]
-                vdd_top_list = [self.connect_to_tracks(sig_sampler_n.get_all_port_pins('VDD', layer=top_layer_btstrp) + \
-                                                       cm_sampler.get_all_port_pins('VDD', layer=top_layer_btstrp),
-                                                       tidx, track_lower=0,
-                                                       track_upper=top_upper) for tidx in top_locs[0::2]]
-                top_locs = self.get_tids_between(top_sup_layer,
-                                                 self.grid.coord_to_track(top_sup_layer, top_cm_upper,
-                                                                          RoundMode.GREATER),
-                                                 self.grid.coord_to_track(top_sup_layer, top_coord_upper,
-                                                                          RoundMode.LESS),
-                                                 tr_w_sup_top, tr_sp_sup_top, 0, False, True, mod=2)[::-1]
-                vss_top_list += [self.connect_to_tracks(sig_sampler_p.get_all_port_pins('VSS', layer=top_layer_btstrp) + \
-                                                        cm_sampler.get_all_port_pins('VSS', layer=top_layer_btstrp),
-                                                        tidx, track_lower=0,
-                                                        track_upper=top_upper) for tidx in top_locs[1::2]]
-                vdd_top_list += [self.connect_to_tracks(sig_sampler_p.get_all_port_pins('VDD', layer=top_layer_btstrp) + \
-                                                        cm_sampler.get_all_port_pins('VDD', layer=top_layer_btstrp),
-                                                        tidx, track_lower=0,
-                                                        track_upper=top_upper) for tidx in top_locs[0::2]]
-                self.add_pin('VSS', vss_top_list)
-                self.add_pin('VDD', vdd_top_list)
-                self.add_pin('vcm', vcm_top)
+                vdd_xm, vss_xm = self.do_power_fill(xm_layer, tr_manager, vdd_vm_l+vdd_vm_r, vss_vm_l+vss_vm_r,  
+                                                            bound_box = self.bound_box)
+                vdd_ym, vss_ym = self.do_power_fill(xm_layer, tr_manager, vdd_xm, vss_xm, 
+                                                            bound_box = self.bound_box)
+
+                if cap_w > 0:
+                    self.connect_bbox_to_track_wires(Direction.LOWER, (f'met{vm_layer}', 'drawing'), decap_r.get_port('BOT').get_bounding_box(), vss_xm)
+                    self.connect_bbox_to_track_wires(Direction.LOWER, (f'met{vm_layer}', 'drawing'), decap_l.get_port('BOT').get_bounding_box(), vss_xm)
+            # get spaces from available tracks
+            
+            vdd_x2m, vss_x2m = self.do_power_fill(ym_layer+1, tr_manager, vdd_ym, vss_ym, 
+                                                            bound_box = BBox(sig_sampler_n.bound_box.xl+2*w_blk, 
+                                                                            0, sig_sampler_p.bound_box.xh-2*w_blk,
+                                                                            sig_sampler_p.bound_box.yh)) 
+            if cap_w> 0:
+                self.extend_wires(vdd_x2m, upper=decap_r.get_port('TOP').get_bounding_box().xh, lower=decap_l.get_port('TOP').get_bounding_box().xl)
+    
+
+            self.add_pin('VSS', vss_ym)
+            self.add_pin('VDD', vdd_ym)
+            
         else:
-            self.add_pin('VSS', vss_topm[0], connect=True)
-            self.add_pin('VDD', vdd_topm, connect=True)
+            self.add_pin('VSS', vss_topm)
+            self.add_pin('VDD', vdd_topm)
             # self.add_pin('vcm', vcm_top, connect=True)
-            self.reexport(cm_sampler.get_port('out_n'), net_name='vcm') 
-            self.reexport(cm_sampler.get_port('out_p'), net_name='vcm') 
-
+        self.reexport(cm_sampler.get_port('out_n'), net_name='vcm') 
+        self.reexport(cm_sampler.get_port('out_p'), net_name='vcm') 
+        
+        # schematic parameters
         self._sch_params = dict(
             cm_sw_params=cmsw_params,
             sig_sampler_params=sig_sampler_n_master.sch_params,

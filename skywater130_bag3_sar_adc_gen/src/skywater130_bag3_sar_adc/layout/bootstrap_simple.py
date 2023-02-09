@@ -563,7 +563,7 @@ class BootstrapNWL_simple(MOSBase):
             for vg in vg_vm_list:
                 if vg.track_id.base_index > vg_tidx_start:
                     self.connect_to_track_wires(vg_pre, vg)
-
+        
         self.add_pin('VSS', vss_vm_list, show=self.show_pins, connect=True)
         self.add_pin('VDD', vdd_vm_list, show=self.show_pins, connect=True)
         self.add_pin('cap_top', cap_top, show=self.show_pins)
@@ -635,12 +635,14 @@ class Bootstrap_simple(TemplateBase):
             tr_spaces='track widths',
             fast_on='True to fast turn on XON_N',
             no_sampler="True to remove sampler",
+            shield="True to add ground shield over MOS components"
         )
 
     @classmethod
     def get_default_param_values(cls) -> Dict[str, Any]:
         return dict(fast_on=False, 
                     no_sampler=False,
+                    shield=False
                     )
 
     def draw_layout(self) -> None:
@@ -651,6 +653,7 @@ class Bootstrap_simple(TemplateBase):
         tr_widths: WDictType = self.params['tr_widths']
         tr_spaces: SpDictType = self.params['tr_spaces']
         fast_on: bool = self.params['fast_on']
+        shield: bool = self.params['shield']
 
         has_cap_aux = bool(nwl_params['seg_dict'].get('cap_p_aux', 0))
 
@@ -687,7 +690,7 @@ class Bootstrap_simple(TemplateBase):
         w_nwl, h_nwl = nwl_box.w, nwl_box.h
 
         w_cap = -(-w_cap // w_blk) * w_blk
-        h_tot = h_nmos + h_nwl
+        h_tot = h_nmos + h_nwl + h_blk
         h_tot = -(-h_tot // h_blk) * h_blk
 
         if has_cap_aux:
@@ -704,25 +707,25 @@ class Bootstrap_simple(TemplateBase):
         w_tot = max(w_nmos, w_nwl+w_cap+(vmw_blk)) #+ w_cap
         w_tot = -(-w_tot // w_blk) * w_blk
 
-        
-        nmos = self.add_instance(nmos_master, inst_name='XNMOS', xform=Transform(w_tot - w_nmos, 0)) #
+        nmos_x = -(-(w_tot - w_nmos)//w_blk)*w_blk
+        nmos = self.add_instance(nmos_master, inst_name='XNMOS', xform=Transform(nmos_x, 0)) 
 
         capb_nmos = nmos.get_pin('cap_bot')
         cap_coord = capb_nmos.upper
         if (cap_coord < w_tot-(w_nwl+w_cap+vmw_blk)):
             nwl = self.add_instance(nwl_master, inst_name='XNWL',
-                    xform=Transform(cap_coord+vmw_blk//2+w_cap, h_nmos))
+                    xform=Transform(cap_coord+vmw_blk//2+w_cap, h_nmos + h_blk))
             capb_nwl = nwl.get_pin('cap_bot')
             vm_layer = capb_nmos.track_id.layer_id + 1
-            cap_bot_coord = max(int(nwl.bound_box.yl), self.grid.track_to_coord(capb_nwl.track_id.layer_id, capb_nwl.track_id.base_index))
+            cap_bot_coord = max(int(nwl.bound_box.yl) + 2*h_blk, self.grid.track_to_coord(capb_nwl.track_id.layer_id, capb_nwl.track_id.base_index))
             cboot = self.add_instance(cboot_master, inst_name='CBOOT', xform=Transform(-(-(cap_coord+w_cap-vmw_blk//2)//vmw_blk )* vmw_blk, cap_bot_coord, mode=Orientation.R90))
         else:
             nwl = self.add_instance(nwl_master, inst_name='XNWL',
-                                xform=Transform(w_tot - w_nwl, h_nmos))
+                                xform=Transform(w_tot - w_nwl, h_nmos + h_blk))
 
             capb_nwl = nwl.get_pin('cap_bot')
             vm_layer = capb_nmos.layer_id + 1
-            cap_bot_coord = max(nwl.bound_box.yl, self.grid.track_to_coord(capb_nwl.track_id.layer_id, capb_nwl.track_id.base_index))
+            cap_bot_coord = max(nwl.bound_box.yl + h_blk, self.grid.track_to_coord(capb_nwl.track_id.layer_id, capb_nwl.track_id.base_index))
             cboot = self.add_instance(cboot_master, inst_name='CBOOT', xform=Transform(-(-(nwl.bound_box.xl-vmw_blk//2)//vmw_blk )* vmw_blk, cap_bot_coord, mode=Orientation.R90)) 
         self.set_size_from_bound_box(top_layer, BBox(0, 0, w_tot, h_tot))
 
@@ -827,7 +830,7 @@ class Bootstrap_simple(TemplateBase):
         mim_cap_top =  cboot.get_pin('TOP')
         mim_cap_bot = cboot.get_pin('BOT')
 
-        #FIXME
+        # Use a MIM Cap
         if ((cap_top_layer %2) == 0): 
             idx_t = self.grid.find_next_track(cap_top_layer-1, int(mim_cap_top.yh), tr_width=1, half_track=True, mode=RoundMode.GREATER_EQ)
             idx_b = self.grid.find_next_track(cap_bot_layer-1, int(mim_cap_bot.yh), tr_width=1, half_track=True, mode=RoundMode.LESS_EQ)
@@ -838,7 +841,7 @@ class Bootstrap_simple(TemplateBase):
                                                             capb_nmos_vm.track_id.base_index, 1)) #TrackID(cap_bot_layer-1, idx_b, 1))
             self.connect_wires([capb_nmos_vm, cap_bot])
             self.connect_to_track_wires(capb_nwl, capb_nmos_vm) #FIXME
-            cap_top_tr_w = round(self.grid.coord_to_track(vm_layer, w_cap, mode=RoundMode.LESS_EQ))*2
+            cap_top_tr_w = round(self.grid.coord_to_track(vm_layer, w_cap, mode=RoundMode.LESS_EQ)*3//2)
             self.extend_wires(cap_top_hm, lower=cap_top.lower)
             idx_vm_top = self.grid.coord_to_track(vm_layer, -(-(cap_top.lower+cap_top.upper)//(h_blk*2))*h_blk, mode=RoundMode.NEAREST)
             cap_top_mid = self.connect_to_tracks(cap_top_hm, TrackID(vm_layer, idx_vm_top, int(cap_top_tr_w) ))
@@ -867,7 +870,18 @@ class Bootstrap_simple(TemplateBase):
                 self.reexport(nmos.get_port(pname))
                 nout += 1
 
-        self.add_pin("sample", nwl.get_pin('sample'))
+        # Connect sample to a horizontal layer
+        samp_vm_tidx_lower = self.grid.coord_to_track(vm_layer, nwl.bound_box.xl)
+        samp_vm_tidx_upper = self.grid.coord_to_track(vm_layer, nwl.bound_box.xh)
+        samp_vm_avail_tracks = self.get_available_tracks(vm_layer, samp_vm_tidx_lower, samp_vm_tidx_upper, 
+                                                            nmos.bound_box.yh, nwl.bound_box.yh)
+        samp_vm = self.connect_to_tracks(nwl.get_pin('sample'), TrackID(vm_layer, samp_vm_avail_tracks[0], tr_w_sig_vm))
+        samp_hm_tidx_lower = self.grid.coord_to_track(hm_layer, nmos.bound_box.yh)
+        samp_hm_tidx_upper = self.grid.coord_to_track(hm_layer, nwl.bound_box.yl)
+        samp_hm_avail_tracks = self.get_available_tracks(hm_layer, samp_hm_tidx_lower, samp_hm_tidx_upper, 
+                                                            nmos.bound_box.yl, nmos.bound_box.yh)
+        samp_hm = self.connect_to_tracks(samp_vm, TrackID(hm_layer, samp_hm_avail_tracks[0], tr_w_sig_vm))
+        self.add_pin("sample", samp_hm)
 
         # Add pins:
         self.add_pin('cap_bot', nmos.get_pin('cap_bot'), show=self.show_pins)
@@ -877,7 +891,13 @@ class Bootstrap_simple(TemplateBase):
         for bbox in vg_vm_bbox_list:
             self.add_pin_primitive('vg', vm_lay_purp[0], bbox, show=self.show_pins)
 
-
+        if shield:
+            shield_layer_purp = (f'met{xm_layer}', 'drawing')
+            vss_shield = [self.add_bbox_array(shield_layer_purp, BBoxArray(BBox(nwl.bound_box.xl, nmos.bound_box.yh, nwl.bound_box.xh, nwl.bound_box.yh))), 
+                      self.add_bbox_array(shield_layer_purp, BBoxArray(nmos.bound_box))]
+            self.add_pin_primitive('VSS_shield', shield_layer_purp[0], BBox(nwl.bound_box.xl, nmos.bound_box.yh, nwl.bound_box.xh, nwl.bound_box.yh))
+            self.add_pin_primitive('VSS_shield', shield_layer_purp[0], nmos.bound_box)
+       
         dev_info = {
             **nmos_master.sch_params['dev_info'],
             **nwl_master.sch_params['dev_info']
@@ -979,6 +999,10 @@ class BootstrapDiff_simple(TemplateBase):
         #self.reexport(samp_n.get_port('in_c'), net_name='sig_p', connect=True)
         #self.reexport(samp_p.get_port('in'), net_name='sig_p', connect=True)
         #self.reexport(samp_p.get_port('in_c'), net_name='sig_n', connect=True)
+        if samp_n.has_port('VSS_shield'):
+            self.reexport(samp_n.get_port('VSS_shield'))
+        if samp_n.has_port('VSS_shield'):
+            self.reexport(samp_p.get_port('VSS_shield'))
 
         self._sch_params = dict(
             sampler_params=sampler_master.sch_params

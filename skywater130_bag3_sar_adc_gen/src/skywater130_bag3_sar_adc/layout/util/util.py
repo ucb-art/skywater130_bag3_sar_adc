@@ -668,7 +668,8 @@ class MOSBaseTapWithPower(MOSBase):
         for tidx in vss_vm_tidx_list:
             vss_vm_list.append(self.connect_to_tracks(vss_hm_list, TrackID(vm_layer, tidx, tr_w_sup_vm),
                                                       track_lower=self.bound_box.yl, track_upper=self.bound_box.yh))
-
+        self.add_pin('VDD', vdd_vm_list, connect=True)
+        self.add_pin('VSS', vss_vm_list, connect=True)
         # # Go up to xm_layer
         # tile_height = self.get_tile_info(0)[0].height
         # num_xm_per_tile = \

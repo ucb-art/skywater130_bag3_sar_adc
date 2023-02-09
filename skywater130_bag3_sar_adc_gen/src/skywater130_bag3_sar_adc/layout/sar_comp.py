@@ -9,7 +9,7 @@ from bag.layout.template import TemplateDB
 from bag.util.immutable import Param, ImmutableSortedDict
 from bag.util.importlib import import_class
 from bag.util.math import HalfInt
-from pybag.core import BBox
+from pybag.core import BBox, BBoxArray
 from pybag.enum import RoundMode
 from xbase.layout.enum import MOSWireType, SubPortMode, MOSType
 from xbase.layout.mos.base import MOSBasePlaceInfo, MOSBase
@@ -1538,6 +1538,7 @@ class SARComp(MOSBase, TemplateBaseZL):
             ncols_tot='Total number of columns',
             seg_dict='segments dictionary.',
             w_dict='widths dictionary.',
+            shield='Add ground shield if True',
             ngroups_dict='',
             ridx_dict='',
             clk_params='',
@@ -1553,12 +1554,13 @@ class SARComp(MOSBase, TemplateBaseZL):
             w_dict={},
             ncols_tot=0,
             clk_params=None,
-            num_comp_tiles=1 , #'',
+            num_comp_tiles=1 ,
             ngroups_dict='',
             ridx_dict='',
             add_tap=False,
             substrate_row=False,
-            vertical_out=True
+            vertical_out=True,
+            shield=False
         )
 
     def draw_layout(self):
@@ -1567,6 +1569,7 @@ class SARComp(MOSBase, TemplateBaseZL):
 
         seg_dict: Dict[str, Dict] = self.params['seg_dict']
         w_dict: Dict[str, Dict] = self.params['w_dict']
+        shield = self.params['shield']
 
         tr_manager = self.tr_manager
         hm_layer = self.conn_layer + 1
@@ -1576,7 +1579,6 @@ class SARComp(MOSBase, TemplateBaseZL):
         xm1_layer = ym_layer + 1
         # Make templates
         clk_params = self.params['clk_params']
-
         total_tiles = self.params['num_comp_tiles']
         comp_params = dict(pinfo=(self.get_tile_subpattern(0, total_tiles), self.tile_table),
                            seg_dict=seg_dict, w_dict=w_dict, add_tap=self.params['add_tap'],
@@ -1632,7 +1634,6 @@ class SARComp(MOSBase, TemplateBaseZL):
         comp = self.add_tile(comp_master, 0, (tot_ncol - comp_ncol) // 2, commit=False)
         bufn = self.add_tile(buf_master, total_tiles, (tot_ncol - buf_mid_sep) // 2, flip_lr=True)
         bufp = self.add_tile(buf_master, total_tiles, (tot_ncol + buf_mid_sep) // 2)
-
         comp.commit()
 
         if clk_master:
@@ -1690,8 +1691,8 @@ class SARComp(MOSBase, TemplateBaseZL):
                                                   vss_top)]
         vdd_hm_top = [self.connect_to_track_wires(bufp.get_all_port_pins('VDD') + bufn.get_all_port_pins('VDD'),
                                                   vdd_top)]
-        self.add_pin('VSS',vss_hm_top)
-        self.add_pin('VDD', vdd_hm_top)
+        # self.add_pin('VSS',vss_hm_top)
+        # self.add_pin('VDD', vdd_hm_top)
         self.extend_wires(vss_hm_top, lower=self.bound_box.xl, upper=self.bound_box.xh)
         # self.reexport(bufn.get_port('outb'), net_name='outn')
         # self.reexport(bufp.get_port('outb'), net_name='outp')
@@ -1771,6 +1772,15 @@ class SARComp(MOSBase, TemplateBaseZL):
         self.add_pin('outn', outn_hm) #outn_viaup[vm_layer]) #change from vm_layer + 2
         self.add_pin('outp', outp_hm)
 
+        if shield:
+            coord_x = self.grid.track_to_coord(vm_layer, 1) #FIXME Not sure why bound box is not quite covering whole thing
+            coord_y = self.grid.track_to_coord(hm_layer, 1)
+            shield_box = BBox(min(bufn.bound_box.xl, comp.bound_box.xl)-coord_x,
+                              comp.bound_box.yl, 
+                              max(bufp.bound_box.xh, comp.bound_box.xh)+coord_x, 
+                              ptap_top.bound_box.yh+coord_y)
+            vss_shield = self.add_bbox_array((f'met{3}', 'drawing'), BBoxArray(shield_box))
+            self.add_pin_primitive('VSS_shield', xm_layer, shield_box)
         if side_sup:
             # port_mode = SubPortMode.EVEN if tot_ncol % 4 != 0 else SubPortMode.ODD
             core_ntile = comp_master.num_tile_rows
@@ -1814,12 +1824,17 @@ class SARComp(MOSBase, TemplateBaseZL):
             # #     vdd_xm_core.append(self.export_tap_hm(tr_manager, vdd_hm, hm_layer, xm_layer,
             # #                                           bbox=[vss_hm.middle, vss_hm.upper]))
             # print(ndum_side)
-            sup_stack_dict_l = self.connect_supply_stack_warr(tr_manager, [vdd_hm_top, vss_hm_top], hm_layer,
-                                                              vm_layer, bbox_l, side_sup=True)
-            sup_stack_dict_r = self.connect_supply_stack_warr(tr_manager, [vdd_hm_top, vss_hm_top], hm_layer,
-                                                              vm_layer, bbox_r, side_sup=True, align_upper=True)
+           
+            #sup_stack_dict_l = self.connect_supply_stack_warr(tr_manager, [vdd_hm_top, vss_hm_top], hm_layer,
+            #                                                  vm_layer, bbox_l, side_sup=True)
+            #sup_stack_dict_r = self.connect_supply_stack_warr(tr_manager, [vdd_hm_top, vss_hm_top], hm_layer,
+            #                                                  vm_layer, bbox_r, side_sup=True, align_upper=True)
             # self.connect_to_track_wires(vdd_xm_core, sup_stack_dict_r[0][vm_layer]+sup_stack_dict_l[0][vm_layer])
             # self.connect_to_track_wires(vss_xm_core, sup_stack_dict_r[1][vm_layer]+sup_stack_dict_l[1][vm_layer])
+            self.extend_wires(vss_hm_top, lower=bbox_l.xl, upper=bbox_r.xh)
+            self.extend_wires(vdd_hm_top, lower=bbox_l.xl, upper=bbox_r.xh)
+            sup_vdd_vm_l, sup_vss_vm_l = self.do_power_fill(vm_layer, tr_manager, vdd_hm_top, vss_hm_top, bbox_l)
+            sup_vdd_vm_r, sup_vss_vm_r = self.do_power_fill(vm_layer, tr_manager, vdd_hm_top, vss_hm_top, bbox_r)
             bbox_l.extend(x=(self.bound_box.xl+self.bound_box.xh)//2-1000)
             bbox_r.extend(x=(self.bound_box.xl+self.bound_box.xh)//2+1000)
             # sup_stack_dict_l = self.connect_supply_stack_warr(tr_manager, [vdd_xm_core, vss_xm_core], xm_layer,
@@ -1831,10 +1846,15 @@ class SARComp(MOSBase, TemplateBaseZL):
             # vdd_comp_r, vss_comp_r = self.connect_supply_warr(tr_manager, [comp.get_all_port_pins('VDD'), comp.get_all_port_pins('VSS')], hm_layer,
             #                          BBox(comp.bound_box.xh, bbox_l.yl, bbox_r.xh, comp.bound_box.yh), side_sup=False,
             #                          align_upper=True)
+            
 
+            # print("VDD PINS: ", sup_vss_vm_l+sup_vss_vm_r)
+            # print(self.top_layer)
+            # self.add_pin('VSS', sup_vss_vm_l+sup_vss_vm_r)
+            # self.add_pin('VDD', sup_vdd_vm_l+sup_vdd_vm_r)
     
-            self.add_pin('VSS', comp.get_all_port_pins('VSS'))
-            self.add_pin('VDD', comp.get_all_port_pins('VDD'))
+            self.add_pin('VSS', sup_vss_vm_l+sup_vss_vm_r, connect=True)
+            self.add_pin('VDD', sup_vdd_vm_l+sup_vdd_vm_r, connect=True)
 
             # for xm in vdd_xm_core:
             #     if xm.bound_box.yh < comp.bound_box.yh:
@@ -1856,6 +1876,7 @@ class SARComp(MOSBase, TemplateBaseZL):
             self.add_pin('VSS', comp.get_all_port_pins('VSS'))
             self.add_pin('VDD', comp.get_all_port_pins('VDD'))
 
+    
         self.sch_params = dict(
             buf_outb=False,
             sch_cls=self.params['sch_cls'],

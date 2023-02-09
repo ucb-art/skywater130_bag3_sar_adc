@@ -171,7 +171,7 @@ class TemplateBaseZL(TemplateBase, abc.ABC):
     def get_available_tracks(self, layer_id: int, tid_lo: TrackType, tid_hi: TrackType,
                              lower: int, upper: int, width: int = 1, sep: HalfInt = HalfInt(1),
                              include_last: bool = False, sep_margin: Optional[HalfInt] = None,
-                             align_to_higer=False) -> List[HalfInt]:
+                             align_to_higer=False, uniform_grid=False) -> List[HalfInt]:
         grid = self.grid
 
         orient = grid.get_direction(layer_id)

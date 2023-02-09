@@ -977,7 +977,6 @@ class CapDacColCore(TemplateBase):
                 w_blk, h_blk = self.grid.get_block_size(top_layer)
                 w_sw_p, h_sw = sw_p_master.bound_box.w, sw_p_master.bound_box.h
                 w_sw_n, h_sw = sw_n_master.bound_box.w, sw_n_master.bound_box.h 
-
                 sw_y = (y_cm_sw_top + h_blk) if has_cm_sw else 0
                 cap_y = sw_y #+ (h_sw - h_cap) // 2
                 capmim_y.append(cap_y)
@@ -989,8 +988,8 @@ class CapDacColCore(TemplateBase):
                     XP=sw_type[2],
                 )
                 sw_params_list = [sw_n_master.sch_params.copy(append=dict(sw_type_dict=sw_type_dict)) for _ in range(nbits)]
-                swn_x = -(-(sw_x + w_sw_p) // w_blk) * w_blk
-
+                swn_x = -(-(sw_x + w_sw_p) // w_blk) * w_blk 
+ 
                 # Get sorted ctrl pins
                 sw_ctrl_m: List[Union[WireArray, None]] = [] 
                 sw_ctrl_n: List[Union[WireArray, None]] = [] 
@@ -1065,7 +1064,7 @@ class CapDacColCore(TemplateBase):
                     sw_y = -(-sw_y//h_blk)*h_blk 
                     capmim_y.append(sw_y)
                 
-                #might be a bit hacky, have to connect with boxes because of the ports returned
+                # Ports on vertical layers are returned as boxes
                 vref1_tidx = self.grid.coord_to_track(vm_layer, -(-vref0_xm[0].xl//(w_blk//2))*w_blk//2)
                 self.add_rect_array((f'met{vm_layer}', 'drawing'), BBox(vref0_xm[0].xl, vref0_xm[0].yl, vref0_xm[-1].xh, vref0_xm[-1].yh))
                 self.add_rect_array((f'met{vm_layer}', 'drawing'), BBox(vref1_xm[0].xl, vref1_xm[0].yl, vref1_xm[-1].xh, vref1_xm[-1].yh))
@@ -1524,7 +1523,7 @@ class CapMIMCore(TemplateBase):
         # self.add_pin('minus', capMIM.get_pin('TOP'), show=True)
         # self.add_pin('plus', capMIM.get_pin('BOT'), show=True)
 
-        minus_tidx = self.grid.coord_to_track(top_layer, (capMIM.get_pin('TOP').xm//68)*68)
+        minus_tidx = self.grid.coord_to_track(top_layer, (capMIM.get_pin('TOP').xm//86)*86)
         minus_pin = self.add_wires(top_layer, minus_tidx, capMIM.get_pin('TOP').yl, capMIM.get_pin('TOP').yh)
 
         plus_tidx = self.grid.coord_to_track(bot_layer, (capMIM.get_pin('BOT').ym//86)*86)
@@ -1533,12 +1532,11 @@ class CapMIMCore(TemplateBase):
         self.add_pin('minus', minus_pin, show=True)
         self.add_pin('plus', plus_pin, show=True)
 
-        #schematic things
-
+        # Set schematic parameters
         has_rmetal = cap_config.get('has_rmetal', True)
         if has_rmetal:
-            res_top_box = capMIM.get_pin('top', layer=top_layer)
-            res_bot_box = capMIM.get_pin('bot', layer=bot_layer)
+            res_top_box = capMIM.get_pin('TOP')
+            res_bot_box = capMIM.get_pin('BOT')
 
         if 'cap' in cap_config and has_rmetal:
             self.sch_params = dict(

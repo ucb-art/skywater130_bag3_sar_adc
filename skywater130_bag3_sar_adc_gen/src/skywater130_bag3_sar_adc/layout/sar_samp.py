@@ -201,6 +201,7 @@ class Sampler(MOSBase):
         return ModuleDB.get_schematic_class('skywater130_bag3_sar_adc', 'nmos_sampler_diff')
 
     def draw_layout(self):
+        # Parse parameters
         if (self.params['unit_pinfo']):
             place_info = MOSBasePlaceInfo.make_place_info(self.grid, self.params['sampler_unit_params']['pinfo'])
             sampler_master = self.new_template(SamplerUnit, params=self.params['sampler_unit_params'])
@@ -209,10 +210,8 @@ class Sampler(MOSBase):
             sampler_master = self.new_template(SamplerUnit, params=self.params['sampler_unit_params'].copy(
                                                             append=dict(pinfo=self.params['pinfo'])))
         self.draw_base(place_info)
-        # print(self.params['pinfo'])
 
-
-        # by default use binary segments
+        # by default use binary segments, otherwise used passed m_list parameter
         sampler_params_list = []
         nbits = self.params['nbits']
         if self.params['m_list']:
@@ -236,8 +235,6 @@ class Sampler(MOSBase):
             sampler_list_list.append(sampler_sub_list)
 
         vm_col_r = self.num_cols
-        #self.add_tap(self.num_cols + tap_n_cols + tap_sep_col, tap_vdd_list, tap_vss_list, tile_idx=0, flip_lr=True)
-
         self.set_mos_size()
 
         in_warr = self.connect_wires([s.get_pin('in') for s in sampler_list])
@@ -250,8 +247,8 @@ class Sampler(MOSBase):
 
         tr_w_sig_vm = tr_manager.get_width(vm_layer, 'sig')
         tr_w_sig_xm = tr_manager.get_width(xm_layer, 'sig')
-        # export output
 
+        # export output
         for idx, s_list in enumerate(sampler_list_list):
             unit_out_pins = []
             for s in s_list:
@@ -272,40 +269,39 @@ class Sampler(MOSBase):
         in_vm_list = [self.connect_to_tracks(in_warr, TrackID(vm_layer, _tid, tr_w_sig_vm))
                       for _tid in vm_tid_list]
 
-        in_xm_tid = self.grid.coord_to_track(xm_layer, in_vm_list[0].middle, mode=RoundMode.NEAREST)
-        in_vm_list_ret = []
-        in_xm = self.connect_to_tracks(in_vm_list, TrackID(xm_layer, in_xm_tid, tr_w_sig_xm),
-                                       ret_wire_list=in_vm_list_ret)
+        # Uncomment to connect dummies up to xm_layer
+        # in_xm_tid = self.grid.coord_to_track(xm_layer, in_vm_list[0].middle, mode=RoundMode.NEAREST)
+        # in_vm_list_ret = []
+        # in_xm = self.connect_to_tracks(in_vm_list, TrackID(xm_layer, in_xm_tid, tr_w_sig_xm),
+        #                                ret_wire_list=in_vm_list_ret)
+        # out_vm_upper = in_vm_list_ret[0].upper
 
-        out_vm_upper = in_vm_list_ret[0].upper
         for idx, s_list in enumerate(sampler_list_list):
             _out_vm_list = []
             for s in s_list:
                 out_vm_tid = self.grid.coord_to_track(vm_layer, s.get_pin('out').middle, mode=RoundMode.NEAREST)
+                # _out_vm_list.append(s.get_pin('out')) 
+                # Uncomment (and replace prev line) to connect dummies up to xm layer
                 _out_vm_list.append(self.connect_to_tracks(s.get_pin('out'),
-                                                           TrackID(vm_layer, out_vm_tid, tr_w_sig_vm),
-                                                           track_upper=out_vm_upper))
+                                                       TrackID(vm_layer, out_vm_tid, tr_w_sig_vm)))
             self.add_pin(f'out<{idx}>', _out_vm_list)
-        #self.add_pin('in', in_xm)
 
         if sampler_list[0].has_port('in_c'):
             inc_warr = self.connect_wires([s.get_pin('in_c') for s in sampler_list])
             self.add_pin('in_c', inc_warr)
             inc_vm_list = [self.connect_to_tracks(inc_warr, TrackID(vm_layer, _tid, tr_w_sig_vm))
                            for _tid in vm_tid_list]
-            inc_xm_tid = self.grid.coord_to_track(xm_layer, inc_vm_list[0].middle, mode=RoundMode.NEAREST)
-            inc_xm = self.connect_to_tracks(inc_vm_list, TrackID(xm_layer, inc_xm_tid, tr_w_sig_xm))
-            self.add_pin('in_c', inc_xm)
+            self.add_pin('in_c', inc_warr)
+
+            # Uncomment (and replace pin assignment) to connect dummies up to xm_layer
+            # inc_xm_tid = self.grid.coord_to_track(xm_layer, inc_vm_list[0].middle, mode=RoundMode.NEAREST)
+            # inc_xm = self.connect_to_tracks(inc_vm_list, TrackID(xm_layer, inc_xm_tid, tr_w_sig_xm))
+            # self.add_pin('in_c', inc_xm)
 
         if sampler_list[0].has_port('sam'):
             clk = self.connect_wires([s.get_pin('sam') for s in sampler_list])
             self.add_pin('sam', clk)
-            #FIXME
-            # clk_vm_list = [self.connect_to_tracks(clk, TrackID(vm_layer, _tid, tr_w_sig_vm))
-            #                for _tid in vm_tid_list]
-            # clk_xm_tid = self.grid.coord_to_track(xm_layer, clk_vm_list[0].middle, mode=RoundMode.NEAREST)
-            # clk_xm = self.connect_to_tracks(clk_vm_list, TrackID(xm_layer, clk_xm_tid, tr_w_sig_xm))
-            #self.add_pin('sam', clk_xm)
+
         if sampler_list[0].has_port('sam_b'):
             clkb = self.connect_wires([s.get_pin('sam_b') for s in sampler_list])
             self.add_pin('sam_b', clkb)

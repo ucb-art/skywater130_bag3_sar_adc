@@ -6,16 +6,16 @@ impl_cell: tb_comp_delay_test
 dut_class: skywater130_bag3_sar_adc.layout.sar_comp.SARCompCore
 root_dir: gen_outputs/sar_comp_meas
 
-gen_specs_file: 'bag3_sar_vco_adc_data/specs_gen/sar_lay/specs_comp_sa.yaml'
+gen_specs_file: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/sar_lay/specs_comp_sa.yaml'
 
 meas_params:
-  analysis: ['noise', 'delay']
-  swp_info:
-    v_cm:
-      type: 'LINEAR'
-      start: 0.3
-      stop: 0.8
-      num: 10
+  analysis: ['noise']
+  swp_info: 
+    v_vcm: &swp  # there's some issue getting this sweep to work for both noise and delay functionality
+      type: 'LOG'
+      start: 10000
+      stop: 250000000
+      num: 20
 #    v_dm:
 #      type: 'LOG'
 #      start: 0.1
@@ -24,36 +24,51 @@ meas_params:
   tbm_specs:
     sim_envs:
       - tt_25
-    save_outputs: ['outn', 'outp', 'inn', 'inp', 'clk', 'XDUT/outn', 'XDUT/outp']
+    save_outputs: ['VDD', 'VSS', 'outn', 'outp', 'inn', 'inp', 'clk','XDUT/outn', 'XDUT/outp']
     tran_options:
       maxstep: 1.0e-12
       errpreset: conservative
     pnoise_options:
       errpreset: conservative
-      probe_thres: 'v_VDD/2'
-      events:
-        pm: 'jitterevent'
+      # start: 10000
+      # stop: 250000000
+      pnoisemethod: fullspectrum
+      measurement:
+        -
+          trig_p: outp
+          trig_n: VSS
+          triggerthresh: 'v_VDD/2'
+          triggernum: 1
+          triggerdir: rise
+          targ_p: outp
+          targ_n: VSS
+    pss_options:
+      harms: 11
+      errpreset: conservative
     sim_params:
-      t_sim: '4*t_per'
+      t_sim: '10*t_per'
       t_rf: 20e-12
       t_per: 2e-9
-      v_cm: 0.45
+      v_vcm: 1
       v_dm: 1e-3
-      c_load: 10e-15
-      vdd: 0.85
-#    pwr_domain:
-#      inn: !!python/tuple ['VSS', 'VDD']
-#      inp: !!python/tuple ['VSS', 'VDD']
-#      outn: !!python/tuple ['VSS', 'VDD']
-#      outp: !!python/tuple ['VSS', 'VDD']
-#    pin_values:
-#      clk_fast_ext: 1
-#      clk_sel<1:0>: 3
-#      fast_mode: 1
-#      osp: 0
-#      osn: 0
+      c_load: 1e-15
+      vdd: 1.8
+      v_VDD: 1.8
+      v_VSS: 0
+    pwr_domain:
+      inn: !!python/tuple ['VDD', 'vcm-v_dm/2']
+      inp: !!python/tuple ['VDD', 'vcm+v_dm/2']
+      outn: !!python/tuple ['VSS', 'VDD']
+      outp: !!python/tuple ['VSS', 'VDD']
+      clk: !!python/tuple ['VSS', 'VDD']
+    sweep_options: *swp
+    fund: 500e6
+    probe_info_list:
+      -
+        - 'outp'
+        - 'outn'
     sup_values:
-      VDD: 0.85
+      VDD: 1.8
       VSS: 0.0
     load_list:
       - pin: 'outn'
@@ -62,46 +77,68 @@ meas_params:
       - pin: 'outp'
         type: 'cap'
         value: 'c_load'
-    stimuli_list:
-      - src_type: 'vpulse'
-        pin: 'clk'
-        table:
-          per: 't_per'
-          pw: '0.5*t_per-t_rf'
+    src_list:
+      - type: vpulse
+        lib: analogLib
+        value: 
           v1: 'v_VDD'
           v2: 'v_VSS'
-          tf: 't_rf'
-          tr: 't_rf'
+          period: 't_per'
+          rise: 't_rf'
+        conns: {PLUS: clk, MINUS: VSS}
+    pulse_list:
+      - pin: 'clk'
+        tper: 't_per'
+        tpw: '0.5*t_per-t_rf'
+        trf: 't_rf'
+        pos: False
+        td_after_rst: False
   noise_in_stimuli:
-    - src_type: 'vdc'
-      pin: 'inn'
-      table:
-        vdc: 'v_cm-v_dm/2'
-    - src_type: 'vdc'
-      pin: 'inp'
-      gnd: 'inn'
-      table:
-        vdc: 'v_dm'
-        pacm: '1'
-  delay_in_stimuli:
-    - src_type: 'vpulse'
-      pin: 'inn'
-      table:
-        td: '2.25*t_per'
-        per: 't_per'
-        pw: '0.5*t_per-t_rf'
-        v1: 'v_VSS'
-        v2: 'v_cm-v_dm/2'
-        tf: 't_rf'
-        tr: 't_rf'
-    - src_type: 'vpulse'
-      pin: 'inp'
-      table:
-        td: '2.25*t_per'
-        per: 't_per'
-        pw: '0.5*t_per-t_rf'
-        v1: 'v_VDD'
-        v2: 'v_cm+v_dm/2'
-        tf: 't_rf'
-        tr: 't_rf'
+    - type: vdc
+      lib: analogLib
+      value: 
+        vdc: 'v_vcm-v_dm'
+      conns: {PLUS: inn, MINUS: VSS}
+    - type: vdc
+      lib: analogLib
+      value: 
+        vdc: 'v_vcm+v_dm'
+      conns: {PLUS: inp, MINUS: VSS}
+  delay_stimuli:
+    - pin: 'inn'
+      td: '2*t_per'
+      tper: 't_per'
+      tpw: '0.5*t_per-t_rf'
+      trf: 't_rf'
+      td_after_rst: False
+    - pin: 'inp'
+      td: '2*t_per'
+      tper: 't_per'
+      tpw: '0.5*t_per-t_rf'
+      trf: 't_rf'
+      td_after_rst: False
+  # noise_in_stimuli:
+  #   - pin: 'inn'
+  #     td: '2*t_per'
+  #     tper: 't_per'
+  #     tpw: '0.5*t_per-t_rf'
+  #     trf: 't_rf'
+  #     td_after_rst: False
+  #   - pin: 'inp'
+  #     td: '2*t_per'
+  #     tper: 't_per'
+  #     tpw: '0.5*t_per-t_rf'
+  #     trf: 't_rf'
+  #     td_after_rst: False
+  #   # - src_type: 'vdc'
+  #   #   pin: 'inn'
+  #   #   table:
+  #   #     vdc: 'v_cm-v_dm/2'
+  #   # - src_type: 'vdc'
+  #   #   pin: 'inp'
+  #   #   gnd: 'inn'
+  #   #   table:
+  #   #     vdc: 'v_dm'
+  #   #     pacm: '1'
+
 

@@ -14,14 +14,14 @@ from bag.math.interpolate import LinearInterpolator
 from bag.concurrent.util import GatherHelper
 
 from bag3_testbenches.measurement.data.tran import EdgeType
-from bag3_testbenches.measurement.tran.analog import AnalogTranTB
+from bag3_testbenches.measurement.tran.digital import DigitalTranTB
 from bag3_testbenches.measurement.pnoise.base import PNoiseTB
 
 
 class ComparatorMM(MeasurementManager):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self._tbm_info: Optional[Tuple[AnalogTranTB, Mapping[str, Any]]] = None
+        self._tbm_info: Optional[Tuple[DigitalTranTB, Mapping[str, Any]]] = None
 
     def initialize(self, sim_db: SimulationDB, dut: DesignInstance) -> Tuple[bool, MeasInfo]:
         raise RuntimeError('Unused')
@@ -35,18 +35,17 @@ class ComparatorMM(MeasurementManager):
                        ) -> Tuple[bool, MeasInfo]:
         raise RuntimeError('Unused')
 
-    def setup_tbm(self, sim_db: SimulationDB, dut: DesignInstance, analysis: Union[Type[AnalogTranTB], Type[PNoiseTB]],
-                  ) -> Union[AnalogTranTB, PNoiseTB]:
+    def setup_tbm(self, sim_db: SimulationDB, dut: DesignInstance, analysis: Union[Type[DigitalTranTB], Type[PNoiseTB]],
+                  ) -> Union[DigitalTranTB, PNoiseTB]:
         specs = self.specs
         noise_in_stimuli = specs['noise_in_stimuli']
-        delay_in_stimuli = specs['delay_in_stimuli']
+        delay_stimuli = specs['delay_stimuli']
         tbm_specs = copy.deepcopy(dict(**specs['tbm_specs']))
         tbm_specs['dut_pins'] = list(dut.sch_master.pins.keys())
-        if analysis is PNoiseTB:
-            tbm_specs['stimuli_list'].extend(noise_in_stimuli)
-        else:
-            tbm_specs['stimuli_list'].extend(delay_in_stimuli)
+        if analysis is DigitalTranTB:
             swp_info = []
+            tbm_specs['src_list'] = []
+            tbm_specs['pulse_list'].extend(delay_stimuli)
             for k, v in specs.get('swp_info', dict()).items():
                 if isinstance(v, list):
                     swp_info.append((k, dict(type='LIST', values=v)))
@@ -61,6 +60,8 @@ class ComparatorMM(MeasurementManager):
                     else:
                         raise RuntimeError
             tbm_specs['swp_info'] = swp_info
+        else:
+            tbm_specs['src_list'].extend(noise_in_stimuli)
         tbm = cast(analysis, sim_db.make_tbm(analysis, tbm_specs))
         return tbm
 
@@ -71,28 +72,27 @@ class ComparatorMM(MeasurementManager):
         data.open_group('pnoise')
         freq = data['freq']
         noise = data['out']
-        noise_fd = np.square(noise[0, 0, ...])
+        noise_fd = np.square(noise[0])
         noise_fit = LinearInterpolator([freq], noise_fd, [0])
         tot_noise = np.sqrt(noise_fit.integrate(noise_fit.input_ranges[0][0], noise_fit.input_ranges[0][1]))
         # -- Process pac --
-        data.open_group('pac')
-        gain = np.abs(data['outp'] - data['outn'])[0, 0, 0, :][0]
-        in_referred_noise = tot_noise / gain
+        # data.open_group('pac')
+        # gain = np.abs(data['outp'] - data['outn'])[0, 0, 0, :][0]
+        # in_referred_noise = tot_noise / gain
 
-        return MeasInfo('done', {'noise': in_referred_noise})
+        return MeasInfo('done', {'noise': tot_noise})
 
     @staticmethod
-    def process_output_delay(sim_results: Union[SimResults, MeasureResult], tbm: AnalogTranTB) -> MeasInfo:
+    def process_output_delay(sim_results: Union[SimResults, MeasureResult], tbm: DigitalTranTB) -> MeasInfo:
         data = cast(SimResults, sim_results).data
-
-        t_d = tbm.calc_delay(data, 'clk', 'out', EdgeType.RISE, EdgeType.CROSS, False, True, '2.25*t_per', 't_sim')
+        t_d = tbm.calc_delay(data, 'clk', 'outn', EdgeType.RISE, EdgeType.CROSS, '2.25*t_per', 't_sim')
         result = dict(td=t_d)
 
         return MeasInfo('done', result)
 
     @staticmethod
     async def _run_sim(name: str, sim_db: SimulationDB, sim_dir: Path, dut: DesignInstance,
-                       tbm: AnalogTranTB):
+                       tbm: DigitalTranTB):
         sim_id = f'{name}'
         sim_results = await sim_db.async_simulate_tbm_obj(sim_id, sim_dir / sim_id,
                                                           dut, tbm, {}, tb_name=sim_id)
@@ -123,7 +123,7 @@ class ComparatorMM(MeasurementManager):
                 results['noise'] = self.process_output_noise(noise_results).prev_results
 
         if 'delay' in self.specs['analysis']:
-            tbm_delay = self.setup_tbm(sim_db, dut, AnalogTranTB)
+            tbm_delay = self.setup_tbm(sim_db, dut, DigitalTranTB)
             delay_results = await self._run_sim(name + '_delay', sim_db, sim_dir, dut, tbm_delay)
             results['delay'] = self.process_output_delay(delay_results, tbm_delay).prev_results
 
@@ -156,7 +156,7 @@ class ComparatorDelayMM(ComparatorMM):
         axis.legend()
 
     @staticmethod
-    def plot_vcm(sim_data, td, axis, tbm: AnalogTranTB):
+    def plot_vcm(sim_data, td, axis, tbm: DigitalTranTB):
         if 'v_dm' in sim_data.sweep_params:
             raise RuntimeError("Only sweep vcm, vdm is also in sweep params now")
         vdm = tbm.get_sim_param_value('v_dm')
