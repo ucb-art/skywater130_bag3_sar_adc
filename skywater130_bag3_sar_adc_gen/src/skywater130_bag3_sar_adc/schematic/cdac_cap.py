@@ -107,8 +107,8 @@ class skywater130_bag3_sar_adc__cdac_cap(Module):
         self.array_instance('XCAP', inst_term_list=cap_term_list, dx=dx_max)
         for idx, (name, _) in enumerate(cap_term_list):
             self.instances[name].design(**unit_params_list[idx])
-            if remove_cap:
-                self.remove_instance(name)
+            # if remove_cap:
+            #     self.remove_instance(name)
 
         # Design cm cap
         cm_name = f"<XCAP_CM{cm - 1}:0>" if cm > 1 else f"XCAP_CM"
@@ -117,10 +117,10 @@ class skywater130_bag3_sar_adc__cdac_cap(Module):
             self.rename_instance('XCAP_CM', f'XCM{cm - 1:0}')
             self.reconnect_instance_terminal(cm_name, 'bot', 'bot_cm')
             self.reconnect_instance_terminal(cm_name, 'top', 'top')
-            if remove_cap:
-                self.remove_instance(f'XCM{cm - 1:0}')
-        elif remove_cap:
-            self.remove_instance('XCAP_CM')
+        #     if remove_cap:
+        #         self.remove_instance(f'XCM{cm - 1:0}')
+        # elif remove_cap:
+        #     self.remove_instance('XCAP_CM')
         else:
             self.reconnect_instance_terminal(cm_name, 'bot', 'bot_cm')
             self.reconnect_instance_terminal(cm_name, 'top', 'top')

@@ -9,13 +9,19 @@ root_dir: gen_outputs/sar_comp_meas
 gen_specs_file: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/sar_lay/specs_comp_sa.yaml'
 
 meas_params:
-  analysis: ['noise']
-  swp_info: 
-    v_vcm: &swp  # there's some issue getting this sweep to work for both noise and delay functionality
-      type: 'LOG'
-      start: 10000
-      stop: 250000000
-      num: 20
+  analysis: ['delay'] #'noise'
+  swp_info:
+   {}
+    # v_vcm: # these are the parameters you sweep across
+    #   type: 'LINEAR'
+    #   start: 0.5
+    #   stop: 1
+    #   num: 6
+    # c_load: # these are the parameters you sweep across
+    #   type: 'LINEAR'
+    #   start: 1e-15
+    #   stop: 1e-8
+    #   num: 2
 #    v_dm:
 #      type: 'LOG'
 #      start: 0.1
@@ -48,7 +54,7 @@ meas_params:
     sim_params:
       t_sim: '10*t_per'
       t_rf: 20e-12
-      t_per: 2e-9
+      t_per: 10e-9
       v_vcm: 1
       v_dm: 1e-3
       c_load: 1e-15
@@ -61,8 +67,12 @@ meas_params:
       outn: !!python/tuple ['VSS', 'VDD']
       outp: !!python/tuple ['VSS', 'VDD']
       clk: !!python/tuple ['VSS', 'VDD']
-    sweep_options: *swp
-    fund: 500e6
+    sweep_options:  # this for pnoise test
+      type: 'LOG'
+      start: 10000
+      stop: 250000000
+      num: 20
+    fund: 100e6
     probe_info_list:
       -
         - 'outp'
@@ -103,6 +113,7 @@ meas_params:
       lib: analogLib
       value: 
         vdc: 'v_vcm+v_dm'
+        pacm: '1'
       conns: {PLUS: inp, MINUS: VSS}
   delay_stimuli:
     - pin: 'inn'

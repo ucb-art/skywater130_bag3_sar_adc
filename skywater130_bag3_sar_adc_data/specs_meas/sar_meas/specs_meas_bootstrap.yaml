@@ -1,0 +1,96 @@
+meas_name: 'tb_boot'
+meas_class: skywater130_bag3_sar_adc.measurement.bootstrap.BootstrapMM
+
+impl_lib: AAA_Bootstrap
+impl_cell: tb_bootstrap
+dut_class: skywater130_bag3_sar_adc.layout.bootstrap_simple.Bootstrap_simple
+root_dir: gen_outputs/bootstrap_meas
+
+gen_specs_file: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/bootstrap/specs_lay.yaml'
+
+meas_params:
+  analysis: ['delay']
+  swp_info:
+    vdm: # these are the parameters you sweep across
+      type: 'LINEAR'
+      start: 1
+      stop: 1.8
+      num: 3
+    # c_load: 
+    #   type: 'LINEAR'
+    #   start: 1e-12
+    #   stop: 2e-12
+    #   num: 2
+    num_samp: # these are the parameters you sweep across
+      type: 'LINEAR'
+      start: 64
+      stop: 128
+      num: 2
+    num_sig: # these are the parameters you sweep across
+      type: 'LINEAR'
+      start: 17
+      stop: 19
+      num: 2
+    
+  tbm_specs:
+    sim_envs:
+      - tt_25
+    save_outputs: ['VDD', 'VSS', 'out<8:0>', 'in', 'sample']
+    tran_options:
+      #maxstep: 1.0e-12
+      errpreset: conservative
+    sim_params:
+      t_rf: 20e-12
+      base_per: 10e-9
+      base_sample: 64
+      t_per: 'base_per*base_sample/num_samp'
+      num_samp: 64
+      num_sig: 7
+      freq_sig: 'num_sig/(num_samp*t_per)'
+      t_sim: '(num_samp+5)*t_per'
+      v_vcm: 1
+      vdm: 0.9 #'v_VDD/2'
+      c_load: 1e-12
+      vdd: 1.8
+      v_VDD: 1.8
+      v_VSS: 0
+      
+    pwr_domain:
+      in: !!python/tuple ['VSS', 'VDD']
+      out: !!python/tuple ['VSS', 'VDD']
+      sample: !!python/tuple ['VSS', 'VDD']
+      sample_b: !!python/tuple ['VSS', 'VDD']
+    sup_values:
+      VDD: 1.8
+      VSS: 0.0
+    load_list:
+      - pin: 'out<8>'
+        type: 'cap'
+        value: 'c_load'
+    src_list:
+      - type: vpulse
+        lib: analogLib
+        value: 
+          v1: 'v_VDD'
+          v2: 'v_VSS'
+          period: 't_per'
+          rise: 't_rf'
+        conns: {PLUS: sample_b, MINUS: VSS}
+      - type: vpulse
+        lib: analogLib
+        value: 
+          v1: 'v_VSS'
+          v2: 'v_VDD'
+          period: 't_per'
+          rise: 't_rf'
+        conns: {PLUS: sample, MINUS: VSS}
+      - type: vsin
+        lib: analogLib
+        value:
+          vo: v_VDD/2
+          va: 'vdm'
+          freq: 'freq_sig'
+        conns: {PLUS: in, MINUS: VSS}
+    swp_info:
+      {}
+    

@@ -7,16 +7,18 @@ import copy
 from pathlib import Path
 
 from bag.simulation.core import TestbenchManager
+from bag.simulation.data import AnalysisType
 from bag.simulation.cache import SimulationDB, DesignInstance, SimResults, MeasureResult
 from bag.simulation.measure import MeasurementManager, MeasInfo
 from bag.math.interpolate import LinearInterpolator
 
 from bag.concurrent.util import GatherHelper
+import matplotlib
 
 from bag3_testbenches.measurement.data.tran import EdgeType
 from bag3_testbenches.measurement.tran.digital import DigitalTranTB
 from bag3_testbenches.measurement.pnoise.base import PNoiseTB
-
+from bag3_testbenches.measurement.pac.base import PACTB
 
 class ComparatorMM(MeasurementManager):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -45,6 +47,7 @@ class ComparatorMM(MeasurementManager):
         if analysis is DigitalTranTB:
             swp_info = []
             tbm_specs['src_list'] = []
+            tbm_specs['pulse_list'] = list(tbm_specs['pulse_list'])
             tbm_specs['pulse_list'].extend(delay_stimuli)
             for k, v in specs.get('swp_info', dict()).items():
                 if isinstance(v, list):
@@ -52,7 +55,7 @@ class ComparatorMM(MeasurementManager):
                 else:
                     _type = v['type']
                     if _type == 'LIST':
-                        swp_info.append((k, dict(type='LIST', values=v['val'])))
+                        swp_info.append((k, dict(type='LIST', values=v['values'])))
                     elif _type == 'LINEAR':
                         swp_info.append((k, dict(type='LINEAR', start=v['start'], stop=v['stop'], num=v['num'])))
                     elif _type == 'LOG':
@@ -66,21 +69,24 @@ class ComparatorMM(MeasurementManager):
         return tbm
 
     @staticmethod
-    def process_output_noise(sim_results: Union[SimResults, MeasureResult]) -> MeasInfo:
-        data = cast(SimResults, sim_results).data
+    def process_output_noise(noise_sim_results: Union[SimResults, MeasureResult],
+                             pac_sim_results: Union[SimResults, MeasureResult]) -> MeasInfo:
+        data_noise = cast(SimResults, noise_sim_results).data
         # -- Process pnoise --
-        data.open_group('pnoise')
-        freq = data['freq']
-        noise = data['out']
+        data_noise.open_group('pnoise')
+        freq = data_noise['freq']
+        noise = data_noise['out']
         noise_fd = np.square(noise[0])
         noise_fit = LinearInterpolator([freq], noise_fd, [0])
         tot_noise = np.sqrt(noise_fit.integrate(noise_fit.input_ranges[0][0], noise_fit.input_ranges[0][1]))
         # -- Process pac --
-        # data.open_group('pac')
-        # gain = np.abs(data['outp'] - data['outn'])[0, 0, 0, :][0]
-        # in_referred_noise = tot_noise / gain
+        data_pac = cast(SimResults, pac_sim_results).data
+        data_pac.open_group('pac')
+        gain = np.abs(data_pac['outp'] - data_pac['outn'])[0, 0, :][0]
+        in_referred_noise = tot_noise / gain
 
-        return MeasInfo('done', {'noise': tot_noise})
+        return MeasInfo('done', {'Output noise': tot_noise, 
+                                 'Input Ref noise': in_referred_noise})
 
     @staticmethod
     def process_output_delay(sim_results: Union[SimResults, MeasureResult], tbm: DigitalTranTB) -> MeasInfo:
@@ -100,18 +106,20 @@ class ComparatorMM(MeasurementManager):
         return sim_results
 
     async def get_noise(self, name, sim_db: SimulationDB, dut: DesignInstance, sim_dir: Path, vcm: float):
-        self.specs['tbm_specs']['sim_params']['v_cm'] = vcm
+        self.specs['tbm_specs']['sim_params']['v_vcm'] = vcm
         tbm_noise = self.setup_tbm(sim_db, dut, PNoiseTB)
         noise_results = await self._run_sim(name + '_noise', sim_db, sim_dir, dut, tbm_noise)
-        noise = self.process_output_noise(noise_results).prev_results
+        tbm_pac = self.setup_tbm(sim_db, dut, PACTB)
+        pac_results = await self._run_sim(name + '_pac', sim_db, sim_dir, dut, tbm_pac)
+        noise = self.process_output_noise(noise_results, pac_results).prev_results
         return noise
 
     async def async_measure_performance(self, name: str, sim_dir: Path, sim_db: SimulationDB,
                                         dut: Optional[DesignInstance]) -> Dict[str, Any]:
         results = dict()
         if 'noise' in self.specs['analysis']:
-            if 'v_cm' in self.specs['swp_info'].keys():
-                vcm_swp_info = self.specs['swp_info']['v_cm']
+            if 'v_vcm' in self.specs['swp_info'].keys():
+                vcm_swp_info = self.specs['swp_info']['v_vcm']
                 helper = GatherHelper()
                 for vcm in list(
                         np.linspace(float(vcm_swp_info['start']), float(vcm_swp_info['stop']), vcm_swp_info['num'])):
@@ -120,15 +128,19 @@ class ComparatorMM(MeasurementManager):
             else:
                 tbm_noise = self.setup_tbm(sim_db, dut, PNoiseTB)
                 noise_results = await self._run_sim(name + '_noise', sim_db, sim_dir, dut, tbm_noise)
-                results['noise'] = self.process_output_noise(noise_results).prev_results
+                tbm_pac = self.setup_tbm(sim_db, dut, PACTB)
+                pac_results = await self._run_sim(name + '_pac', sim_db, sim_dir, dut, tbm_pac)
+                results['noise'] = self.process_output_noise(noise_results, pac_results).prev_results
 
         if 'delay' in self.specs['analysis']:
             tbm_delay = self.setup_tbm(sim_db, dut, DigitalTranTB)
             delay_results = await self._run_sim(name + '_delay', sim_db, sim_dir, dut, tbm_delay)
+            data = cast(SimResults, delay_results).data
             results['delay'] = self.process_output_delay(delay_results, tbm_delay).prev_results
-
-        return results
-
+            #cls = ComparatorDelayMM
+            #cls.plot_vcm(data, results['delay']['td'], matplotlib.pyplot, tbm_delay)
+        #matplotlib.pyplot.show()
+        return results['delay'] #cast(SimResults, delay_results).data
 
 class ComparatorDelayMM(ComparatorMM):
     def commit(self) -> None:
@@ -160,12 +172,11 @@ class ComparatorDelayMM(ComparatorMM):
         if 'v_dm' in sim_data.sweep_params:
             raise RuntimeError("Only sweep vcm, vdm is also in sweep params now")
         vdm = tbm.get_sim_param_value('v_dm')
-        axis.plot(sim_data['v_cm'], td[0, ...], label=f'vdm={vdm}')
-        axis.set_xlabel('v_cm')
-        axis.set_ylabel('Resolve Time')
+        axis.plot(sim_data['v_vcm'], td[0], label=f'vdm={vdm}')
+        axis.xlabel('v_cm')
+        axis.ylabel('Resolve Time')
         axis.grid()
         axis.legend()
-
 
 class ComparatorPNoiseMM(ComparatorMM):
     def commit(self) -> None:

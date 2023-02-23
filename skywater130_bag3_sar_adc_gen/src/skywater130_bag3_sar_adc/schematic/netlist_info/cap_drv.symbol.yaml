@@ -315,22 +315,22 @@ shapes:
 instances:
   {}
 props:
-  interfaceLastChanged:
-    - 4
-    - time_val: 1604354058
-  partName:
-    - 3
-    - cap_drv
   pin#:
     - 0
     - 5
+  interfaceLastChanged:
+    - 4
+    - time_val: 1604354058
+  vendorName:
+    - 3
+    - ""
+  partName:
+    - 3
+    - cap_drv
   portOrder:
     - 5
     - name: ILList
       bin_val: ("VDD" "VSS" "ctrl<2:0>" "out" "vref<2:0>")
-  vendorName:
-    - 3
-    - ""
 app_defs:
   _dbLastSavedCounter:
     - 0

@@ -102,7 +102,8 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
             _sw_name = f'XDRV{idx}<{sw_m-1}:0>' if sw_m > 1 else f'XDRV{idx}'
             cap_term_list.append((_cap_name, [('top', 'top'), ('BOT', f'bot<{idx}>')]))
             sw_term_list.append((_sw_name, _term))
-
+        print(cap_m_list)
+        print(dum_term_list)
         # Design sar_sch array
         dx_max = 2*max(self.instances['XCAP'].width, self.instances['XDRV'].width)
         self.array_instance('XCAP_DUM', inst_term_list=dum_term_list, dx=dx_max)
@@ -133,6 +134,7 @@ class skywater130_bag3_sar_adc__cdac_array_bot(Module):
             else:
                 dum_name, _ = dum_term_list[dumidx]
                 while f'{idx}' in dum_name[0:-1]: 
+                    print('remove ', dum_name)
                     self.remove_instance(dum_name)
                     dumidx = dumidx+1
                     if dumidx<len(dum_term_list):

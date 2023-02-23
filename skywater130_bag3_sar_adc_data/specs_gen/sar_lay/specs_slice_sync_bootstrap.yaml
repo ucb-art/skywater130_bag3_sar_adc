@@ -7,6 +7,7 @@ params:
   tr_widths: &tr_w
     sig: {2: 1, 3: 2}
     cap: {3: 3, 4: 3}
+    sup: {2: 1, 3: 1, 4: 4, 5: 1}
   tr_spaces: &tr_sp
     {}
   shield: &shield True
@@ -118,7 +119,7 @@ params:
         abut_list: []
   comp_params:
     cls_name: skywater130_bag3_sar_adc.layout.sar_comp.SA
-    sch_cls: strongarm_core
+    sch_cls: comp_strongarm_core
     shield: *shield
     sup_top_layer: 3
     #ncols_tot: 100
@@ -275,8 +276,8 @@ params:
             top_layer: 4
             tr_widths:
               sig: {2: 1, 3: 1}
-              clk: {2: 1, 3: 2, 4: 2, 5: 11}
-              sup: {2: 2, 3: 2, 4: 6, 5: 3, 6: 10, 7: 2}
+              clk: {2: 1, 3: 2, 4: 2}
+              sup: {2: 2, 3: 2, 4: 6}
             tr_spaces: {}
           place_info:
             counter_tile:

@@ -7,6 +7,45 @@ bbox:
   - 304
   - 304
 terminals:
+  in_p:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 56
+          - 4
+          - 64
+    stype: 0
+    ttype: 0
+  in_n:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 196
+          - 4
+          - 204
+    stype: 0
+    ttype: 0
+  sam_b:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 116
+          - 296
+          - 124
+          - 304
+    stype: 0
+    ttype: 0
   VDD:
     obj:
       - 0
@@ -33,30 +72,17 @@ terminals:
           - 304
     stype: 2
     ttype: 2
-  in_n:
+  sam:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - -4
-          - 196
-          - 4
-          - 204
-    stype: 0
-    ttype: 0
-  in_p:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - -4
-          - 56
-          - 4
-          - 64
+          - 96
+          - 296
+          - 104
+          - 304
     stype: 0
     ttype: 0
   out_n:
@@ -85,32 +111,6 @@ terminals:
           - 204
     stype: 0
     ttype: 1
-  sam:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 96
-          - 296
-          - 104
-          - 304
-    stype: 0
-    ttype: 0
-  sam_b:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 116
-          - 296
-          - 124
-          - 304
-    stype: 0
-    ttype: 0
 shapes:
   -
     - 7
@@ -693,15 +693,12 @@ shapes:
 instances:
   {}
 props:
-  interfaceLastChanged:
-    - 4
-    - time_val: 1616033549
-  partName:
-    - 3
-    - nmos_sampler_diff
   pin#:
     - 0
     - 13
+  interfaceLastChanged:
+    - 4
+    - time_val: 1616033549
   portOrder:
     - 5
     - name: ILList
@@ -709,6 +706,9 @@ props:
   vendorName:
     - 3
     - ""
+  partName:
+    - 3
+    - nmos_sampler_diff
 app_defs:
   _dbLastSavedCounter:
     - 0

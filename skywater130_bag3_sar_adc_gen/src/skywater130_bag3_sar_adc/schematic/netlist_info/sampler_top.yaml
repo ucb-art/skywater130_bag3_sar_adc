@@ -163,22 +163,22 @@ terminals:
           format: 1
     stype: 0
     ttype: 2
-  outn:
+  sig_n:
     obj:
       - 1
       - inst:
           lib_name: basic
-          cell_name: iopin
-          view_name: symbolr
+          cell_name: ipin
+          view_name: symbol
           xform:
-            - -170
-            - 190
+            - -270
+            - -10
             - R0
           bbox:
-            - -231
-            - 164
-            - -160
-            - 200
+            - -327
+            - -36
+            - -270
+            - 0
           connections:
             {}
           params:
@@ -189,8 +189,8 @@ terminals:
           purpose: 237
           net: ""
           origin:
-            - -195
-            - 190
+            - -300
+            - -10
           alignment: 7
           orient: R0
           font: 5
@@ -201,7 +201,85 @@ terminals:
           attr_type: 0
           format: 1
     stype: 0
-    ttype: 2
+    ttype: 0
+  sig_p:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: ipin
+          view_name: symbol
+          xform:
+            - -270
+            - -40
+            - R0
+          bbox:
+            - -327
+            - -66
+            - -270
+            - -30
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -300
+            - -40
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 0
+  sam:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: ipin
+          view_name: symbol
+          xform:
+            - -270
+            - -110
+            - R0
+          bbox:
+            - -327
+            - -136
+            - -270
+            - -100
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -300
+            - -110
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 0
   outp:
     obj:
       - 1
@@ -241,7 +319,46 @@ terminals:
           format: 1
     stype: 0
     ttype: 2
-  sam:
+  vcm:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -270
+            - 130
+            - R0
+          bbox:
+            - -331
+            - 104
+            - -260
+            - 140
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -295
+            - 130
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 2
+  sam_e_b:
     obj:
       - 1
       - inst:
@@ -250,13 +367,13 @@ terminals:
           view_name: symbol
           xform:
             - -270
-            - -110
+            - -200
             - R0
           bbox:
             - -327
-            - -136
+            - -226
             - -270
-            - -100
+            - -190
           connections:
             {}
           params:
@@ -268,7 +385,7 @@ terminals:
           net: ""
           origin:
             - -300
-            - -110
+            - -200
           alignment: 7
           orient: R0
           font: 5
@@ -358,201 +475,6 @@ terminals:
           format: 1
     stype: 0
     ttype: 0
-  sam_e_b:
-    obj:
-      - 1
-      - inst:
-          lib_name: basic
-          cell_name: ipin
-          view_name: symbol
-          xform:
-            - -270
-            - -200
-            - R0
-          bbox:
-            - -327
-            - -226
-            - -270
-            - -190
-          connections:
-            {}
-          params:
-            {}
-          is_primitive: true
-        attr:
-          layer: 229
-          purpose: 237
-          net: ""
-          origin:
-            - -300
-            - -200
-          alignment: 7
-          orient: R0
-          font: 5
-          height: 10
-          overbar: false
-          visible: true
-          drafting: true
-          attr_type: 0
-          format: 1
-    stype: 0
-    ttype: 0
-  sig_n:
-    obj:
-      - 1
-      - inst:
-          lib_name: basic
-          cell_name: ipin
-          view_name: symbol
-          xform:
-            - -270
-            - -10
-            - R0
-          bbox:
-            - -327
-            - -36
-            - -270
-            - 0
-          connections:
-            {}
-          params:
-            {}
-          is_primitive: true
-        attr:
-          layer: 229
-          purpose: 237
-          net: ""
-          origin:
-            - -300
-            - -10
-          alignment: 7
-          orient: R0
-          font: 5
-          height: 10
-          overbar: false
-          visible: true
-          drafting: true
-          attr_type: 0
-          format: 1
-    stype: 0
-    ttype: 0
-  sig_p:
-    obj:
-      - 1
-      - inst:
-          lib_name: basic
-          cell_name: ipin
-          view_name: symbol
-          xform:
-            - -270
-            - -40
-            - R0
-          bbox:
-            - -327
-            - -66
-            - -270
-            - -30
-          connections:
-            {}
-          params:
-            {}
-          is_primitive: true
-        attr:
-          layer: 229
-          purpose: 237
-          net: ""
-          origin:
-            - -300
-            - -40
-          alignment: 7
-          orient: R0
-          font: 5
-          height: 10
-          overbar: false
-          visible: true
-          drafting: true
-          attr_type: 0
-          format: 1
-    stype: 0
-    ttype: 0
-  vcm:
-    obj:
-      - 1
-      - inst:
-          lib_name: basic
-          cell_name: iopin
-          view_name: symbolr
-          xform:
-            - -270
-            - 130
-            - R0
-          bbox:
-            - -331
-            - 104
-            - -260
-            - 140
-          connections:
-            {}
-          params:
-            {}
-          is_primitive: true
-        attr:
-          layer: 229
-          purpose: 237
-          net: ""
-          origin:
-            - -295
-            - 130
-          alignment: 7
-          orient: R0
-          font: 5
-          height: 10
-          overbar: false
-          visible: true
-          drafting: true
-          attr_type: 0
-          format: 1
-    stype: 0
-    ttype: 2
-  vg_cm:
-    obj:
-      - 1
-      - inst:
-          lib_name: basic
-          cell_name: opin
-          view_name: symbol
-          xform:
-            - -180
-            - -70
-            - R0
-          bbox:
-            - -180
-            - -96
-            - -123
-            - -60
-          connections:
-            {}
-          params:
-            {}
-          is_primitive: true
-        attr:
-          layer: 229
-          purpose: 237
-          net: ""
-          origin:
-            - -155
-            - -70
-          alignment: 1
-          orient: R0
-          font: 5
-          height: 10
-          overbar: false
-          visible: true
-          drafting: true
-          attr_type: 0
-          format: 1
-    stype: 0
-    ttype: 1
   vg_n:
     obj:
       - 1
@@ -631,6 +553,84 @@ terminals:
           format: 1
     stype: 0
     ttype: 1
+  vg_cm:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: opin
+          view_name: symbol
+          xform:
+            - -180
+            - -70
+            - R0
+          bbox:
+            - -180
+            - -96
+            - -123
+            - -60
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -155
+            - -70
+          alignment: 1
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 1
+  outn:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - -170
+            - 190
+            - R0
+          bbox:
+            - -231
+            - 164
+            - -160
+            - 200
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - -195
+            - 190
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
+    ttype: 2
 shapes:
   -
     - 5
@@ -1781,93 +1781,148 @@ shapes:
         - 915
         - -85
 instances:
-  X10:
-    lib_name: basic
-    cell_name: noConn
+  XN:
+    lib_name: skywater130_bag3_sar_adc
+    cell_name: bootstrap
     view_name: symbol
     xform:
-      - 1130
-      - 110
+      - 40
+      - -520
       - MX
     bbox:
-      - 1120
-      - 106
-      - 1140
-      - 160
+      - 286
+      - -534
+      - 664
+      - -286
     connections:
-      noConn: net8
+      in_c: sig_p
+      vg: vg_n
+      sample: sam
+      sample_b: sam_b
+      VDD: VDD
+      VSS: VSS
+      cap_bot: net6
+      cap_top: net19
+      out: outn
+      in: sig_n
     params:
       {}
-    is_primitive: true
-  X12:
-    lib_name: basic
-    cell_name: noConn
+    is_primitive: false
+  XP:
+    lib_name: skywater130_bag3_sar_adc
+    cell_name: bootstrap
     view_name: symbol
     xform:
-      - 1210
-      - 110
+      - 40
+      - 200
+      - R0
+    bbox:
+      - 286
+      - -34
+      - 664
+      - 214
+    connections:
+      in_c: sig_n
+      vg: vg_p
+      sample: sam
+      sample_b: sam_b
+      VDD: VDD
+      VSS: VSS
+      cap_bot: net3
+      cap_top: net2
+      out: outp
+      in: sig_p
+    params:
+      {}
+    is_primitive: false
+  XCM:
+    lib_name: skywater130_bag3_sar_adc
+    cell_name: bootstrap_diff
+    view_name: symbol
+    xform:
+      - 1060
+      - 70
       - MX
     bbox:
-      - 1200
-      - 106
-      - 1220
-      - 160
+      - 1056
+      - -374
+      - 1364
+      - 74
     connections:
-      noConn: net12
+      out_p: vcm
+      out_n: vcm
+      vg_n: vg_cm
+      vg_p: vg_cm
+      cap_bot_n: net12
+      cap_bot_p: net11
+      cap_top_n: net8
+      cap_top_p: net7
+      sig_n: out_n_bot
+      sig_p: out_p_bot
+      sample: sam_e
+      sample_b: sam_e_b
+      VDD: VDD
+      VSS: VSS
     params:
       {}
-    is_primitive: true
-  X13:
-    lib_name: basic
-    cell_name: noConn
+    is_primitive: false
+  XSW_CM_P:
+    lib_name: xbase
+    cell_name: pmos4_analog
     view_name: symbol
     xform:
-      - 1190
-      - 110
+      - 850
+      - -120
       - MX
     bbox:
-      - 1180
-      - 106
-      - 1200
-      - 160
+      - 769
+      - -221
+      - 1048
+      - -116
     connections:
-      noConn: net11
+      s: out_p_bot
+      d: out_n_bot
+      b: VDD
+      g: sam_e_b
     params:
       {}
-    is_primitive: true
-  X15:
+    is_primitive: false
+  XSW_CM_N:
+    lib_name: xbase
+    cell_name: nmos4_analog
+    view_name: symbol
+    xform:
+      - 640
+      - -200
+      - R0
+    bbox:
+      - 569
+      - -204
+      - 838
+      - -99
+    connections:
+      s: out_p_bot
+      d: out_n_bot
+      b: VSS
+      g: sam_e
+    params:
+      {}
+    is_primitive: false
+  X19:
     lib_name: basic
     cell_name: noConn
     view_name: symbol
     xform:
-      - 1400
-      - 0
+      - 700
+      - -440
       - R90
     bbox:
-      - 1396
-      - -10
-      - 1450
-      - 10
+      - 696
+      - -450
+      - 750
+      - -430
     connections:
-      noConn: vg_cm
-    params:
-      {}
-    is_primitive: true
-  X16:
-    lib_name: basic
-    cell_name: noConn
-    view_name: symbol
-    xform:
-      - 1400
-      - -20
-      - R90
-    bbox:
-      - 1396
-      - -30
-      - 1450
-      - -10
-    connections:
-      noConn: vg_cm
+      noConn: vg_n
     params:
       {}
     is_primitive: true
@@ -1889,93 +1944,93 @@ instances:
     params:
       {}
     is_primitive: true
-  X19:
+  X16:
     lib_name: basic
     cell_name: noConn
     view_name: symbol
     xform:
-      - 700
-      - -440
+      - 1400
+      - -20
       - R90
     bbox:
-      - 696
-      - -450
-      - 750
-      - -430
+      - 1396
+      - -30
+      - 1450
+      - -10
     connections:
-      noConn: vg_n
+      noConn: vg_cm
     params:
       {}
     is_primitive: true
-  X3:
+  X15:
     lib_name: basic
     cell_name: noConn
     view_name: symbol
     xform:
-      - 420
-      - -570
-      - R0
+      - 1400
+      - 0
+      - R90
     bbox:
-      - 410
-      - -620
-      - 430
-      - -566
+      - 1396
+      - -10
+      - 1450
+      - 10
     connections:
-      noConn: net6
+      noConn: vg_cm
     params:
       {}
     is_primitive: true
-  X4:
+  X13:
     lib_name: basic
     cell_name: noConn
     view_name: symbol
     xform:
-      - 400
-      - -570
-      - R0
-    bbox:
-      - 390
-      - -620
-      - 410
-      - -566
-    connections:
-      noConn: net19
-    params:
-      {}
-    is_primitive: true
-  X6:
-    lib_name: basic
-    cell_name: noConn
-    view_name: symbol
-    xform:
-      - 420
-      - 250
+      - 1190
+      - 110
       - MX
     bbox:
-      - 410
-      - 246
-      - 430
-      - 300
+      - 1180
+      - 106
+      - 1200
+      - 160
     connections:
-      noConn: net3
+      noConn: net11
     params:
       {}
     is_primitive: true
-  X7:
+  X12:
     lib_name: basic
     cell_name: noConn
     view_name: symbol
     xform:
-      - 400
-      - 250
+      - 1210
+      - 110
       - MX
     bbox:
-      - 390
-      - 246
-      - 410
-      - 300
+      - 1200
+      - 106
+      - 1220
+      - 160
     connections:
-      noConn: net2
+      noConn: net12
+    params:
+      {}
+    is_primitive: true
+  X10:
+    lib_name: basic
+    cell_name: noConn
+    view_name: symbol
+    xform:
+      - 1130
+      - 110
+      - MX
+    bbox:
+      - 1120
+      - 106
+      - 1140
+      - 160
+    connections:
+      noConn: net8
     params:
       {}
     is_primitive: true
@@ -1997,143 +2052,85 @@ instances:
     params:
       {}
     is_primitive: true
-  XCM:
-    lib_name: skywater130_bag3_sar_adc
-    cell_name: bootstrap_diff
+  X7:
+    lib_name: basic
+    cell_name: noConn
     view_name: symbol
     xform:
-      - 1060
-      - 70
+      - 400
+      - 250
       - MX
     bbox:
-      - 1056
-      - -374
-      - 1364
-      - 74
+      - 390
+      - 246
+      - 410
+      - 300
     connections:
-      VDD: VDD
-      VSS: VSS
-      cap_bot_n: net12
-      cap_bot_p: net11
-      cap_top_n: net8
-      cap_top_p: net7
-      out_n: vcm
-      out_p: vcm
-      sample: sam_e
-      sample_b: sam_e_b
-      sig_n: out_n_bot
-      sig_p: out_p_bot
-      vg_n: vg_cm
-      vg_p: vg_cm
+      noConn: net2
     params:
       {}
-    is_primitive: false
-  XN:
-    lib_name: skywater130_bag3_sar_adc
-    cell_name: bootstrap
+    is_primitive: true
+  X6:
+    lib_name: basic
+    cell_name: noConn
     view_name: symbol
     xform:
-      - 40
-      - -520
+      - 420
+      - 250
       - MX
     bbox:
-      - 286
-      - -534
-      - 664
-      - -286
+      - 410
+      - 246
+      - 430
+      - 300
     connections:
-      VDD: VDD
-      VSS: VSS
-      cap_bot: net6
-      cap_top: net19
-      in: sig_n
-      in_c: sig_p
-      out: outn
-      sample: sam
-      sample_b: sam_b
-      vg: vg_n
+      noConn: net3
     params:
       {}
-    is_primitive: false
-  XP:
-    lib_name: skywater130_bag3_sar_adc
-    cell_name: bootstrap
+    is_primitive: true
+  X4:
+    lib_name: basic
+    cell_name: noConn
     view_name: symbol
     xform:
-      - 40
-      - 200
+      - 400
+      - -570
       - R0
     bbox:
-      - 286
-      - -34
-      - 664
-      - 214
+      - 390
+      - -620
+      - 410
+      - -566
     connections:
-      VDD: VDD
-      VSS: VSS
-      cap_bot: net3
-      cap_top: net2
-      in: sig_p
-      in_c: sig_n
-      out: outp
-      sample: sam
-      sample_b: sam_b
-      vg: vg_p
+      noConn: net19
     params:
       {}
-    is_primitive: false
-  XSW_CM_N:
-    lib_name: xbase
-    cell_name: nmos4_analog
+    is_primitive: true
+  X3:
+    lib_name: basic
+    cell_name: noConn
     view_name: symbol
     xform:
-      - 640
-      - -200
+      - 420
+      - -570
       - R0
     bbox:
-      - 564
-      - -204
-      - 838
-      - -99
+      - 410
+      - -620
+      - 430
+      - -566
     connections:
-      b: VSS
-      d: out_n_bot
-      g: sam_e
-      s: out_p_bot
+      noConn: net6
     params:
       {}
-    is_primitive: false
-  XSW_CM_P:
-    lib_name: xbase
-    cell_name: pmos4_analog
-    view_name: symbol
-    xform:
-      - 850
-      - -120
-      - MX
-    bbox:
-      - 764
-      - -221
-      - 1048
-      - -116
-    connections:
-      b: VDD
-      d: out_n_bot
-      g: sam_e_b
-      s: out_p_bot
-    params:
-      {}
-    is_primitive: false
+    is_primitive: true
 props:
-  connectivityLastUpdated:
-    - 0
-    - 15941
   instance#:
     - 0
     - 21
-  lastSchematicExtraction:
-    - 4
-    - time_val: 1654471098
+  schXtrVersion:
+    - 3
+    - sch.10.0
   net#:
     - 0
     - 14
@@ -2142,20 +2139,23 @@ props:
     - 16
   schGeometryLastUpdated:
     - 0
-    - 15941
+    - 16775
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
-  schXtrVersion:
-    - 3
-    - sch.10.0
+  lastSchematicExtraction:
+    - 4
+    - time_val: 1676327018
+  connectivityLastUpdated:
+    - 0
+    - 16775
 app_defs:
   _dbLastSavedCounter:
     - 0
-    - 15941
+    - 16775
   _dbvCvTimeStamp:
     - 0
-    - 15941
+    - 16775
   cdbRevision:
     - 0
     - 227612

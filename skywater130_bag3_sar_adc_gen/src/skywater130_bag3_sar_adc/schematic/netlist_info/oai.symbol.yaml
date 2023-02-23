@@ -7,32 +7,6 @@ bbox:
   - 224
   - 204
 terminals:
-  VDD:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 116
-          - 196
-          - 124
-          - 204
-    stype: 1
-    ttype: 2
-  VSS:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 116
-          - -4
-          - 124
-          - 4
-    stype: 1
-    ttype: 2
   in<3:0>:
     obj:
       - 0
@@ -59,6 +33,32 @@ terminals:
           - 104
     stype: 0
     ttype: 1
+  VSS:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 116
+          - -4
+          - 124
+          - 4
+    stype: 1
+    ttype: 2
+  VDD:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 116
+          - 196
+          - 124
+          - 204
+    stype: 1
+    ttype: 2
 shapes:
   -
     - 5
@@ -231,8 +231,8 @@ shapes:
     - layer: 231
       purpose: 4294967295
       net: ""
-      ang_start: 5.497787143782138
-      ang_stop: 0.78539816339744828
+      ang_start: 5.4977871437821380
+      ang_stop: 0.7853981633974483
       bbox:
         - 47
         - 106
@@ -279,7 +279,7 @@ shapes:
     - layer: 231
       purpose: 4294967295
       net: ""
-      ang_start: 0.78539816339744828
+      ang_start: 0.7853981633974483
       ang_stop: 1.5707963267948966
       bbox:
         - 74
@@ -292,7 +292,7 @@ shapes:
       purpose: 4294967295
       net: ""
       ang_start: 4.7123889803846897
-      ang_stop: 5.497787143782138
+      ang_stop: 5.4977871437821380
       bbox:
         - 74
         - 100
@@ -303,8 +303,8 @@ shapes:
     - layer: 231
       purpose: 4294967295
       net: ""
-      ang_start: 5.497787143782138
-      ang_stop: 0.78539816339744828
+      ang_start: 5.4977871437821380
+      ang_stop: 0.7853981633974483
       bbox:
         - 47
         - 66
@@ -328,7 +328,7 @@ shapes:
       purpose: 4294967295
       net: ""
       ang_start: 4.7123889803846897
-      ang_stop: 5.497787143782138
+      ang_stop: 5.4977871437821380
       bbox:
         - 74
         - 60
@@ -363,7 +363,7 @@ shapes:
     - layer: 231
       purpose: 4294967295
       net: ""
-      ang_start: 0.78539816339744828
+      ang_start: 0.7853981633974483
       ang_stop: 1.5707963267948966
       bbox:
         - 74
@@ -407,22 +407,22 @@ shapes:
 instances:
   {}
 props:
-  interfaceLastChanged:
-    - 4
-    - time_val: 1603237486
-  partName:
-    - 3
-    - oai
   pin#:
     - 0
     - 6
+  interfaceLastChanged:
+    - 4
+    - time_val: 1603237486
+  vendorName:
+    - 3
+    - ""
+  partName:
+    - 3
+    - oai
   portOrder:
     - 5
     - name: ILList
       bin_val: ("out" "VDD" "VSS" "in<3:0>")
-  vendorName:
-    - 3
-    - ""
 app_defs:
   _dbLastSavedCounter:
     - 0

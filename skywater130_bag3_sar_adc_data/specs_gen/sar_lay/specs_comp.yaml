@@ -8,7 +8,7 @@ params:
   cls_name: skywater130_bag3_sar_adc.layout.sar_comp.SARComp
   params:
     cls_name: skywater130_bag3_sar_adc.layout.sar_comp.SA
-    sch_cls: strongarm_core
+    sch_cls: comp_strongarm_core
     sup_top_layer: 3
     ncols_tot: 100
     num_comp_tiles: 3
@@ -17,13 +17,13 @@ params:
     add_tap: True
     seg_dict:
       buf: 
-        n: [4,12]
-        p: [4,12]
+        n: [12,12]
+        p: [12,12]
       in: 8
       tail: 8
       nfb: 8
       pfb: 8
-      sw: 4
+      sw: 12
     w_dict:
       buf:
         n: 84

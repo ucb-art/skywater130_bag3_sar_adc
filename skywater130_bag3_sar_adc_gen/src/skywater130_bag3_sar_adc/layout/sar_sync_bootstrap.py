@@ -6,14 +6,14 @@ from xbase.layout.mos.placement.data import MOSArrayPlaceInfo
 from xbase.layout.mos.top import GenericWrapper
 
 from bag.design.database import ModuleDB, Module
-from bag.layout.routing.base import TrackManager, TrackID
+from bag.layout.routing.base import TrackManager, TrackID, WireArray
 from bag.layout.template import TemplateDB, TemplateBase
 from bag.util.immutable import Param
 from bag.util.math import HalfInt
 from bag.io.file import read_yaml
 
 from pybag.core import Transform, BBox
-from pybag.enum import RoundMode, Orientation, Direction
+from pybag.enum import RoundMode, Orientation, Direction, Orient2D
 from .sar_cdac import CapDacColCore, CapMIMCore
 from .sar_comp import SARComp, SA
 from .sar_logic_sync import SARLogic, SARLogicArray
@@ -774,13 +774,6 @@ class SARSliceBootstrap(TemplateBase):
                         (wire_coord<=cdac_decaps_n[num_c-idx].bound_box.yh and wire_coord>=cdac_decaps_n[num_c-idx].bound_box.yl):
                         self.extend_wires(wire, lower=int(cdac_decaps_n[0].get_port('TOP').get_bounding_box().xh//w_blk*w_blk-w_blk),
                                             upper=int(cdac_decaps_p[0].get_port('TOP').get_bounding_box().xl//w_blk*w_blk-w_blk))
-                        # decap_n = self.add_wires(ym_layer+1, wire_tidx,
-                        #                             int(cdac_decaps_n[0].get_port('BOT').get_bounding_box().xl//w_blk*w_blk-w_blk), 
-                        #                             int(cdac_decaps_n[0].get_port('BOT').get_bounding_box().xh//w_blk*w_blk))
-                        # decap_p = self.add_wires(ym_layer+1, wire_tidx,
-                        #                             int(cdac_decaps_p[0].get_port('BOT').get_bounding_box().xl//w_blk*w_blk+w_blk), 
-                        #                             int(cdac_decaps_p[0].get_port('BOT').get_bounding_box().xh//w_blk*w_blk+2*w_blk))
-                        # self.connect_wires([wire, decap_n, decap_p])
 
             # Just VDD and VSS
             xm_boxes = [BBox(clkgen.bound_box.xl, 0, w_tot, clkgen.bound_box.yh), 
@@ -850,3 +843,110 @@ class SARSliceBootstrap(TemplateBase):
         else:
             self._sch_params = sar_params
 
+    def do_power_multi_power_fill(self, layer_id: int, tr_manager: TrackManager, strap_list: List[Union[WireArray, List[WireArray]]],
+                              bound_box: Optional[BBox] = None,
+                              x_margin: int = 0, y_margin: int = 0,
+                              uniform_grid: bool = False) -> Tuple[List[WireArray], List[WireArray]]:
+        """Draw power fill on the given layer."""
+        if bound_box is None:
+            if self.bound_box is None:
+                raise ValueError("bound_box is not set")
+            bound_box = self.bound_box
+        bound_box = bound_box.expand(dx=-x_margin, dy=-y_margin)
+        is_horizontal = (self.grid.get_direction(layer_id) == 0)
+        if is_horizontal:
+            cl, cu = bound_box.yl, bound_box.yh
+            lower, upper = bound_box.xl, bound_box.xh
+        else:
+            cl, cu = bound_box.xl, bound_box.xh
+            lower, upper = bound_box.yl, bound_box.yh
+        fill_width = tr_manager.get_width(layer_id, 'sup')
+        fill_space = tr_manager.get_sep(layer_id, ('sup', 'sup'))
+        sep_margin = tr_manager.get_sep(layer_id, ('sup', ''))
+        tr_bot = self.grid.coord_to_track(layer_id, cl, mode=RoundMode.GREATER_EQ)
+        tr_top = self.grid.coord_to_track(layer_id, cu, mode=RoundMode.LESS_EQ)
+        trs_all = self.get_available_tracks(layer_id, tid_lo=tr_bot, tid_hi=tr_top, lower=lower, upper=upper,
+                                        width=fill_width, sep=fill_space*2, sep_margin=sep_margin,
+                                        uniform_grid=uniform_grid)
+        trs = trs_all
+        # trs = []
+        # if (layer_id ==4 ):
+        #     for tr in trs_all:
+        #        if not tr.is_integer:
+        #            trs.append(tr)
+        # else:
+        #     trs = trs_all
+        top_vdd: List[WireArray] = []
+        top_vss: List[WireArray] = []
+        all_wars = [[] for _ in strap_list]
+        ret_warrs = []
+        htr_sep = HalfInt.convert(fill_space).dbl_value
+        
+        for ncur, tr_idx in enumerate(trs):
+            # tr_idx = (htr0 + ncur * htr_pitch - 1) / 2
+
+            warr = self.add_wires(layer_id, tr_idx, lower, upper, width=fill_width)
+            _ncur = HalfInt.convert(tr_idx).dbl_value // htr_sep if uniform_grid else ncur
+            all_wars[_ncur % len(strap_list)].append(warr)
+        for top_warr, bot_warr in zip(strap_list, all_wars):
+            self.draw_vias_on_intersections(top_warr, bot_warr)
+        return all_wars
+    
+    def do_power_multi_power_fill_box(self, layer_id: int, tr_manager: TrackManager, box_list: List[Union[BBox, List[BBox]]],
+                              bound_box: Optional[BBox] = None,
+                              x_margin: int = 0, y_margin: int = 0,
+                              uniform_grid: bool = False) -> Tuple[List[WireArray], List[WireArray]]:
+        """Draw power fill on the given layer."""
+        if bound_box is None:
+            if self.bound_box is None:
+                raise ValueError("bound_box is not set")
+            bound_box = self.bound_box
+        bound_box = bound_box.expand(dx=-x_margin, dy=-y_margin)
+        is_horizontal = (self.grid.get_direction(layer_id) == 0)
+        if is_horizontal:
+            cl, cu = bound_box.yl, bound_box.yh
+            lower, upper = bound_box.xl, bound_box.xh
+        else:
+            cl, cu = bound_box.xl, bound_box.xh
+            lower, upper = bound_box.yl, bound_box.yh
+        fill_width = tr_manager.get_width(layer_id, 'sup')
+        fill_space = tr_manager.get_sep(layer_id, ('sup', 'sup'))
+        sep_margin = tr_manager.get_sep(layer_id, ('sup', ''))
+        tr_bot = self.grid.coord_to_track(layer_id, cl, mode=RoundMode.GREATER_EQ)
+        tr_top = self.grid.coord_to_track(layer_id, cu, mode=RoundMode.LESS_EQ)
+        trs_all = self.get_available_tracks(layer_id, tid_lo=tr_bot, tid_hi=tr_top, lower=lower, upper=upper,
+                                        width=fill_width, sep=fill_space*2, sep_margin=sep_margin,
+                                        uniform_grid=uniform_grid)
+        trs = trs_all
+        # trs = []
+        # if (layer_id ==4 ):
+        #     for tr in trs_all:
+        #        if not tr.is_integer:
+        #            trs.append(tr)
+        # else:
+        #     trs = trs_all
+        top_vdd: List[WireArray] = []
+        top_vss: List[WireArray] = []
+        all_wars = [[] for _ in box_list]
+        ret_warrs = []
+        htr_sep = HalfInt.convert(fill_space).dbl_value
+        
+        for ncur, tr_idx in enumerate(trs):
+            # tr_idx = (htr0 + ncur * htr_pitch - 1) / 2
+
+            warr = self.add_wires(layer_id, tr_idx, lower, upper, width=fill_width)
+            _ncur = HalfInt.convert(tr_idx).dbl_value // htr_sep if uniform_grid else ncur
+            all_wars[_ncur % len(box_list)].append(warr)
+        for bot_box, top_warr in zip(box_list, all_wars):
+            for warr in top_warr:
+                for b in bot_box:
+                    track_coord = self.grid.htr_to_coord(layer_id, warr.track_id.base_htr)
+                    if self.grid.get_direction(layer_id)==Orient2D.x and b.xl>=bound_box.xl and b.xh<=bound_box.xh \
+                        and b.yl<=track_coord and b.yh>=track_coord:
+                        self.connect_bbox_to_track_wires(Direction.LOWER, 
+                            (f'met{layer_id-1}', 'drawing'), b, warr)
+                    if self.grid.get_direction(layer_id)==Orient2D.y and b.yl>=bound_box.yl and b.yh<=bound_box.yh \
+                        and b.xl<=track_coord and b.xh>=track_coord:
+                        self.connect_bbox_to_track_wires(Direction.LOWER, 
+                            (f'met{layer_id-1}', 'drawing'), b, warr)
+        return all_wars

@@ -86,11 +86,11 @@ class skywater130_bag3_sar_adc__bootstrap(Module):
             self.remove_pin('in_c')
             self.delete_instance('XSAMPLE_DUM')
 
-        if 'XCAP_P_AUX' not in dev_info.keys():
-            self.remove_pin('cap_top_aux')
-            self.delete_instance('XCAP_P_AUX')
-            self.reconnect_instance_terminal('XCAP_P', 'B', 'cap_top')
-            self.reconnect_instance_terminal('XON_P', 'B', 'cap_top')
+        # if 'XCAP_P_AUX' not in dev_info.keys():
+        #     self.remove_pin('cap_top_aux')
+        #     self.delete_instance('XCAP_P_AUX')
+        #     self.reconnect_instance_terminal('XCAP_P', 'B', 'cap_top')
+        #     self.reconnect_instance_terminal('XON_P', 'B', 'cap_top')
         for key, _info in dev_info.items():
             _stack = _info.get('stack', 1)
             self.instances[key].design(l=lch, intent=intent, w=_info['w_n'], nf=_info['nf'], stack=_stack)

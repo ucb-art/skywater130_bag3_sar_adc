@@ -16,6 +16,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import Dict, Any, List
+import copy 
 
 import pkg_resources
 from pathlib import Path

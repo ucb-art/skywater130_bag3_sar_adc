@@ -7,33 +7,20 @@ bbox:
   - 404
   - 284
 terminals:
-  VDD:
+  outp_m:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - 196
-          - 276
-          - 204
-          - 284
-    stype: 1
-    ttype: 2
-  VSS:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 196
-          - -4
-          - 204
-          - 4
-    stype: 2
-    ttype: 2
-  clk:
+          - 396
+          - 46
+          - 404
+          - 54
+    stype: 0
+    ttype: 1
+  osn:
     obj:
       - 0
       - layer: 229
@@ -41,12 +28,25 @@ terminals:
         net: ""
         bbox:
           - -4
-          - 226
+          - 26
           - 4
-          - 234
+          - 34
     stype: 0
     ttype: 0
-  inn:
+  outn_m:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 396
+          - 66
+          - 404
+          - 74
+    stype: 0
+    ttype: 1
+  osp:
     obj:
       - 0
       - layer: 229
@@ -54,9 +54,9 @@ terminals:
         net: ""
         bbox:
           - -4
-          - 46
+          - 6
           - 4
-          - 54
+          - 14
     stype: 0
     ttype: 0
   inp:
@@ -72,7 +72,7 @@ terminals:
           - 214
     stype: 0
     ttype: 0
-  osn:
+  inn:
     obj:
       - 0
       - layer: 229
@@ -80,12 +80,12 @@ terminals:
         net: ""
         bbox:
           - -4
-          - 26
+          - 46
           - 4
-          - 34
+          - 54
     stype: 0
     ttype: 0
-  osp:
+  clk:
     obj:
       - 0
       - layer: 229
@@ -93,37 +93,37 @@ terminals:
         net: ""
         bbox:
           - -4
-          - 6
+          - 226
           - 4
-          - 14
+          - 234
     stype: 0
     ttype: 0
-  outn:
+  VSS:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - 396
-          - 176
-          - 404
-          - 184
-    stype: 0
-    ttype: 1
-  outn_m:
+          - 196
+          - -4
+          - 204
+          - 4
+    stype: 2
+    ttype: 2
+  VDD:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - 396
-          - 66
-          - 404
-          - 74
-    stype: 0
-    ttype: 1
+          - 196
+          - 276
+          - 204
+          - 284
+    stype: 1
+    ttype: 2
   outp:
     obj:
       - 0
@@ -137,7 +137,7 @@ terminals:
           - 204
     stype: 0
     ttype: 1
-  outp_m:
+  outn:
     obj:
       - 0
       - layer: 229
@@ -145,9 +145,9 @@ terminals:
         net: ""
         bbox:
           - 396
-          - 46
+          - 176
           - 404
-          - 54
+          - 184
     stype: 0
     ttype: 1
 shapes:
@@ -1674,15 +1674,12 @@ shapes:
 instances:
   {}
 props:
-  interfaceLastChanged:
-    - 4
-    - time_val: 1605673685
-  partName:
-    - 3
-    - strongarm
   pin#:
     - 0
     - 27
+  interfaceLastChanged:
+    - 4
+    - time_val: 1605673685
   portOrder:
     - 5
     - name: ILList
@@ -1690,6 +1687,9 @@ props:
   vendorName:
     - 3
     - ""
+  partName:
+    - 3
+    - strongarm
 app_defs:
   _dbLastSavedCounter:
     - 0

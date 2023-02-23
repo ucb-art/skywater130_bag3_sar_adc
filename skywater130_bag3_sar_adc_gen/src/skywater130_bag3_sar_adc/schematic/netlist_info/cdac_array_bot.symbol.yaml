@@ -7,18 +7,31 @@ bbox:
   - 334
   - 164
 terminals:
-  VDD:
+  vref:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - 216
-          - 156
-          - 224
-          - 164
-    stype: 1
+          - -4
+          - 36
+          - 4
+          - 44
+    stype: 0
+    ttype: 2
+  top:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 326
+          - 116
+          - 334
+          - 124
+    stype: 0
     ttype: 2
   VSS:
     obj:
@@ -33,20 +46,20 @@ terminals:
           - 164
     stype: 2
     ttype: 2
-  bot:
+  VDD:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - -4
-          - 6
-          - 4
-          - 14
-    stype: 0
+          - 216
+          - 156
+          - 224
+          - 164
+    stype: 1
     ttype: 2
-  ctrl_m:
+  ctrl_p:
     obj:
       - 0
       - layer: 229
@@ -54,9 +67,9 @@ terminals:
         net: ""
         bbox:
           - -4
-          - 76
+          - 56
           - 4
-          - 84
+          - 64
     stype: 0
     ttype: 0
   ctrl_n:
@@ -72,7 +85,7 @@ terminals:
           - 104
     stype: 0
     ttype: 0
-  ctrl_p:
+  ctrl_m:
     obj:
       - 0
       - layer: 229
@@ -80,11 +93,24 @@ terminals:
         net: ""
         bbox:
           - -4
-          - 56
+          - 76
           - 4
-          - 64
+          - 84
     stype: 0
     ttype: 0
+  bot:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 6
+          - 4
+          - 14
+    stype: 0
+    ttype: 2
   ctrl_s:
     obj:
       - 0
@@ -98,32 +124,6 @@ terminals:
           - 74
     stype: 0
     ttype: 0
-  top:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 326
-          - 116
-          - 334
-          - 124
-    stype: 0
-    ttype: 2
-  vref:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - -4
-          - 36
-          - 4
-          - 44
-    stype: 0
-    ttype: 2
 shapes:
   -
     - 4
@@ -932,22 +932,22 @@ shapes:
 instances:
   {}
 props:
-  interfaceLastChanged:
-    - 4
-    - time_val: 1605918042
-  partName:
-    - 3
-    - cdac_array_bot
   pin#:
     - 0
     - 12
+  interfaceLastChanged:
+    - 4
+    - time_val: 1605918042
+  vendorName:
+    - 3
+    - ""
+  partName:
+    - 3
+    - cdac_array_bot
   portOrder:
     - 5
     - name: ILList
       bin_val: ("VDD" "VSS" "bot" "top" "vref" "ctrl_m" "ctrl_n" "ctrl_p" "ctrl_s")
-  vendorName:
-    - 3
-    - ""
 app_defs:
   _dbLastSavedCounter:
     - 0

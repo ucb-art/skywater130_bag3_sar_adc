@@ -7,45 +7,6 @@ bbox:
   - 1052
   - -120
 terminals:
-  VDD:
-    obj:
-      - 1
-      - inst:
-          lib_name: basic
-          cell_name: iopin
-          view_name: symbolr
-          xform:
-            - 390
-            - -160
-            - R0
-          bbox:
-            - 329
-            - -186
-            - 400
-            - -150
-          connections:
-            {}
-          params:
-            {}
-          is_primitive: true
-        attr:
-          layer: 229
-          purpose: 237
-          net: ""
-          origin:
-            - 365
-            - -160
-          alignment: 7
-          orient: R0
-          font: 5
-          height: 10
-          overbar: false
-          visible: true
-          drafting: true
-          attr_type: 0
-          format: 1
-    stype: 1
-    ttype: 2
   VSS:
     obj:
       - 1
@@ -84,6 +45,45 @@ terminals:
           attr_type: 0
           format: 1
     stype: 2
+    ttype: 2
+  out:
+    obj:
+      - 1
+      - inst:
+          lib_name: basic
+          cell_name: iopin
+          view_name: symbolr
+          xform:
+            - 510
+            - -180
+            - R0
+          bbox:
+            - 449
+            - -206
+            - 520
+            - -170
+          connections:
+            {}
+          params:
+            {}
+          is_primitive: true
+        attr:
+          layer: 229
+          purpose: 237
+          net: ""
+          origin:
+            - 485
+            - -180
+          alignment: 7
+          orient: R0
+          font: 5
+          height: 10
+          overbar: false
+          visible: true
+          drafting: true
+          attr_type: 0
+          format: 1
+    stype: 0
     ttype: 2
   ctrl<2:0>:
     obj:
@@ -124,7 +124,7 @@ terminals:
           format: 1
     stype: 0
     ttype: 2
-  out:
+  VDD:
     obj:
       - 1
       - inst:
@@ -132,14 +132,14 @@ terminals:
           cell_name: iopin
           view_name: symbolr
           xform:
-            - 510
-            - -180
+            - 390
+            - -160
             - R0
           bbox:
-            - 449
-            - -206
-            - 520
-            - -170
+            - 329
+            - -186
+            - 400
+            - -150
           connections:
             {}
           params:
@@ -150,8 +150,8 @@ terminals:
           purpose: 237
           net: ""
           origin:
-            - 485
-            - -180
+            - 365
+            - -160
           alignment: 7
           orient: R0
           font: 5
@@ -161,7 +161,7 @@ terminals:
           drafting: true
           attr_type: 0
           format: 1
-    stype: 0
+    stype: 1
     ttype: 2
   vref<2:0>:
     obj:
@@ -540,6 +540,35 @@ shapes:
       drafting: true
       text: ctrl<0>
 instances:
+  XP:
+    lib_name: BAG_prim
+    cell_name: nmos4_standard
+    view_name: symbol
+    xform:
+      - 920
+      - -190
+      - R0
+    bbox:
+      - 852
+      - -224
+      - 1052
+      - -145
+    connections:
+      S: vref<2>
+      D: out
+      B: VSS
+      G: ctrl<2>
+    params:
+      l:
+        - 3
+        - 40n
+      w:
+        - 3
+        - 4
+      nf:
+        - 3
+        - 1
+    is_primitive: true
   XM:
     lib_name: BAG_prim
     cell_name: nmos4_standard
@@ -554,10 +583,10 @@ instances:
       - 892
       - -145
     connections:
-      B: VSS
-      D: out
-      G: ctrl<1>
       S: vref<1>
+      D: out
+      B: VSS
+      G: ctrl<1>
     params:
       l:
         - 3
@@ -583,72 +612,43 @@ instances:
       - 732
       - -145
     connections:
-      B: VSS
-      D: out
-      G: ctrl<0>
       S: vref<0>
-    params:
-      l:
-        - 3
-        - 40n
-      nf:
-        - 3
-        - 1
-      w:
-        - 3
-        - 4
-    is_primitive: true
-  XP:
-    lib_name: BAG_prim
-    cell_name: nmos4_standard
-    view_name: symbol
-    xform:
-      - 920
-      - -190
-      - R0
-    bbox:
-      - 852
-      - -224
-      - 1052
-      - -145
-    connections:
-      B: VSS
       D: out
-      G: ctrl<2>
-      S: vref<2>
+      B: VSS
+      G: ctrl<0>
     params:
       l:
         - 3
         - 40n
-      nf:
-        - 3
-        - 1
       w:
         - 3
         - 4
+      nf:
+        - 3
+        - 1
     is_primitive: true
 props:
-  connectivityLastUpdated:
-    - 0
-    - 3227
   instance#:
     - 0
     - 3
-  lastSchematicExtraction:
-    - 4
-    - time_val: 1614830855
-  net#:
-    - 0
-    - 0
-  pin#:
-    - 0
-    - 6
   schGeometryLastUpdated:
     - 0
     - 3227
   schGeometryVersion:
     - 3
     - sch.ds.gm.1.4
+  net#:
+    - 0
+    - 0
+  pin#:
+    - 0
+    - 6
+  lastSchematicExtraction:
+    - 4
+    - time_val: 1614830855
+  connectivityLastUpdated:
+    - 0
+    - 3227
   schXtrVersion:
     - 3
     - sch.10.0

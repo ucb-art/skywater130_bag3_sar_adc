@@ -7,32 +7,32 @@ bbox:
   - 584
   - 364
 terminals:
-  VDD:
+  osp:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - 456
-          - 356
-          - 464
-          - 364
-    stype: 1
-    ttype: 2
-  VSS:
+          - -4
+          - 26
+          - 4
+          - 34
+    stype: 0
+    ttype: 0
+  osn:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - 436
-          - 356
-          - 444
-          - 364
-    stype: 2
-    ttype: 2
+          - -4
+          - 46
+          - 4
+          - 54
+    stype: 0
+    ttype: 0
   bot_n:
     obj:
       - 0
@@ -59,45 +59,6 @@ terminals:
           - 114
     stype: 0
     ttype: 0
-  clk:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - -4
-          - 336
-          - 4
-          - 344
-    stype: 0
-    ttype: 0
-  clk_e:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - -4
-          - 316
-          - 4
-          - 324
-    stype: 0
-    ttype: 0
-  clk_out:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 576
-          - 276
-          - 584
-          - 284
-    stype: 0
-    ttype: 1
   clk_sel:
     obj:
       - 0
@@ -111,20 +72,20 @@ terminals:
           - 14
     stype: 0
     ttype: 0
-  comp_clk:
+  clk:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - 576
-          - 256
-          - 584
-          - 264
+          - -4
+          - 336
+          - 4
+          - 344
     stype: 0
-    ttype: 1
-  comp_n:
+    ttype: 0
+  dp:
     obj:
       - 0
       - layer: 229
@@ -132,61 +93,9 @@ terminals:
         net: ""
         bbox:
           - 576
-          - 186
+          - 56
           - 584
-          - 194
-    stype: 0
-    ttype: 1
-  comp_p:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 576
-          - 166
-          - 584
-          - 174
-    stype: 0
-    ttype: 1
-  data_out:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 576
-          - 306
-          - 584
-          - 314
-    stype: 0
-    ttype: 1
-  dm:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 576
-          - 96
-          - 584
-          - 104
-    stype: 0
-    ttype: 1
-  dn:
-    obj:
-      - 0
-      - layer: 229
-        purpose: 4294967295
-        net: ""
-        bbox:
-          - 576
-          - 76
-          - 584
-          - 84
+          - 64
     stype: 0
     ttype: 1
   done:
@@ -202,7 +111,7 @@ terminals:
           - 244
     stype: 0
     ttype: 1
-  dp:
+  dn:
     obj:
       - 0
       - layer: 229
@@ -210,38 +119,64 @@ terminals:
         net: ""
         bbox:
           - 576
-          - 56
+          - 76
           - 584
-          - 64
+          - 84
     stype: 0
     ttype: 1
-  osn:
+  dm:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - -4
-          - 46
-          - 4
-          - 54
+          - 576
+          - 96
+          - 584
+          - 104
     stype: 0
-    ttype: 0
-  osp:
+    ttype: 1
+  data_out:
     obj:
       - 0
       - layer: 229
         purpose: 4294967295
         net: ""
         bbox:
-          - -4
-          - 26
-          - 4
-          - 34
+          - 576
+          - 306
+          - 584
+          - 314
     stype: 0
-    ttype: 0
-  top_n:
+    ttype: 1
+  comp_p:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 576
+          - 166
+          - 584
+          - 174
+    stype: 0
+    ttype: 1
+  comp_n:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 576
+          - 186
+          - 584
+          - 194
+    stype: 0
+    ttype: 1
+  clk_e:
     obj:
       - 0
       - layer: 229
@@ -249,9 +184,9 @@ terminals:
         net: ""
         bbox:
           - -4
-          - 206
+          - 316
           - 4
-          - 214
+          - 324
     stype: 0
     ttype: 0
   top_p:
@@ -267,6 +202,58 @@ terminals:
           - 154
     stype: 0
     ttype: 0
+  comp_clk:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 576
+          - 256
+          - 584
+          - 264
+    stype: 0
+    ttype: 1
+  clk_out:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 576
+          - 276
+          - 584
+          - 284
+    stype: 0
+    ttype: 1
+  VSS:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 436
+          - 356
+          - 444
+          - 364
+    stype: 2
+    ttype: 2
+  VDD:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - 456
+          - 356
+          - 464
+          - 364
+    stype: 1
+    ttype: 2
   vref:
     obj:
       - 0
@@ -280,6 +267,19 @@ terminals:
           - 74
     stype: 0
     ttype: 2
+  top_n:
+    obj:
+      - 0
+      - layer: 229
+        purpose: 4294967295
+        net: ""
+        bbox:
+          - -4
+          - 206
+          - 4
+          - 214
+    stype: 0
+    ttype: 0
 shapes:
   -
     - 5
@@ -1732,22 +1732,22 @@ shapes:
 instances:
   {}
 props:
-  interfaceLastChanged:
-    - 4
-    - time_val: 1606174444
-  partName:
-    - 3
-    - sar_slice_bot
   pin#:
     - 0
     - 32
+  interfaceLastChanged:
+    - 4
+    - time_val: 1606174444
+  vendorName:
+    - 3
+    - ""
+  partName:
+    - 3
+    - sar_slice_bot
   portOrder:
     - 5
     - name: ILList
       bin_val: ("clk_out" "comp_clk" "comp_n" "comp_p" "data_out" "dm" "dn" "done" "dp" "VDD" "VSS" "vref" "bot_n" "bot_p" "clk" "clk_e" "clk_sel" "osn" "osp" "top_n" "top_p")
-  vendorName:
-    - 3
-    - ""
 app_defs:
   _dbLastSavedCounter:
     - 0
