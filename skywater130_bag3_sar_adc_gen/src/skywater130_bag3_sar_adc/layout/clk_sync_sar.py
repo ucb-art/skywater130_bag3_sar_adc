@@ -486,7 +486,6 @@ class SyncDivCounter(MOSBase):
                                   lower=buf_out.bound_box.xl, upper=buf_out.bound_box.xh)
         #self.add_pin('PIN', buf_out.get_pin('nin'))
         rst_hm = self.connect_to_tracks(rst_vm, TrackID(hm_layer, hm_tracks[len(hm_tracks)//2], tr_w_hm))
-        print(rst_hm)
         rst_conn = self.connect_to_tracks(buf_out.get_pin('in'), TrackID(conn_layer, 
                                                         self.grid.coord_to_track(conn_layer, buf_out.get_pin('in').bound_box.xm), 1))
         self.connect_to_track_wires(rst_hm, rst_conn) # FIXME

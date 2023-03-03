@@ -111,13 +111,13 @@ params:
           - [[ptap_tile, 1], [logic_tile, 0]]
   nmos_params:
     seg_dict:
-      sampler: [1,1,1,2,2,2,4,4,4] #32
+      sampler:  [1,1,1,2] # [1,1,1,2,2,2,4,4,4] #32
       on_n: 20
       off1: 20
       off0: 12
       cap_n: 12
     sampler_params:
-       m_list: [1,1,1,2,2,2,4,4,4] #[1,1,1,2] #
+       m_list: [1,1,1,2] # [1,1,1,2,2,2,4,4,4] # 
        nbits: 4
        sampler_unit_params:
          ridx_n: 1

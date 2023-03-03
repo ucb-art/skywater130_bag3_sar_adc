@@ -92,7 +92,7 @@ params:
                 bot_wires:
                   data: ['sup', 'sig<0:1>']
                   shared: ['sup']
-                top_wires: ['sig<0:1>']
+                top_wires: ['sig<0:2>']
               - mos_type: nch
                 width: 84
                 threshold: standard

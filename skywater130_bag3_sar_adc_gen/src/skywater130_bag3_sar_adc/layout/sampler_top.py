@@ -560,7 +560,6 @@ class SamplerTop(TemplateBaseZL):
                 shields = True 
 
             if shields:
-                print(cm_sampler.get_all_port_pins('VSS_shield'))
                 vdd_vm_l, vss_vm_l = self.do_power_fill(vm_layer, tr_manager, vdd_topm, vss_topm, 
                                                             bound_box = BBox(0, 0, cm_sampler.get_all_port_pins('VSS_shield')[0].xl, 
                                                                self.grid.htr_to_coord(hm_layer, vdd_topm[0].track_id.base_htr+1)))

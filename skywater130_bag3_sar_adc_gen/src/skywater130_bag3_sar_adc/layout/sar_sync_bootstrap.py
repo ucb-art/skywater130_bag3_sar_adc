@@ -191,7 +191,6 @@ class SARSliceBootstrap(TemplateBase):
                                                        align_track=sam_bot_xm_tidx)
             num_sam_ntr, sam_bot_locs = tr_manager.place_wires(xm_layer, ['cap']*(nbits), align_idx=0,
                                                        align_track=sam_ref_locs[-1])
-            print("SAM BOT LOC: ", sam_ref_locs, sam_bot_locs)
             coord_sam_tr = self.grid.track_to_coord(xm_layer, num_sam_ntr+num_ref_ntr)
 
             sam_bot_locs.pop(0)
@@ -204,9 +203,7 @@ class SARSliceBootstrap(TemplateBase):
             #                               xform=Transform(w_tot//2, sam_y, mode=Orientation.R0))
 
             sampler_out_lay_purp = (sampler.get_port('out_n<0>').get_single_layer(), 'drawing')
-            print(nbits)
             for idx in range(nbits-1):
-                print(idx)
                 _n_xm = [self.connect_bbox_to_tracks(Direction.LOWER, sampler_out_lay_purp, w,
                                              TrackID(xm_layer, sam_bot_locs[idx], tr_w_cap_xm))
                                             for w in sampler.get_all_port_pins(f'out_n<{idx}>')]

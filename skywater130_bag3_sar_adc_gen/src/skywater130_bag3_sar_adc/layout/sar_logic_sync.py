@@ -1005,7 +1005,6 @@ class SARLogicArray(MOSBase):
                 bit_sig_list.append(self.connect_to_tracks(inst.get_pin('bit'),
                                                            TrackID(xm_layer, _tidx, tr_w_xm_sig)))
                 if (idx>0 or jdx>0):
-                    print(idx, jdx)
                     bit_nxt_sig_list.append(self.connect_to_tracks(inst.get_pin('bit_nxt'),
                                                                 TrackID(xm_layer, _tidx_nxt, tr_w_xm_sig)))
                 else:
@@ -1013,14 +1012,17 @@ class SARLogicArray(MOSBase):
                 comp_clk_xm_list.append(self.connect_to_tracks(inst.get_pin('comp_clk'),
                                                  TrackID(xm_layer, xm_locs[3 + num_units], tr_w_xm_sig)))
             bit_nxt_list.extend(bit_nxt_sig_list)
-            for _bit, _bitnxt in zip(bit_nxt_sig_list[1:], bit_sig_list[:-1]):
+            
+            # connect bit and bit_nxt
+            conn_bit_nxt_sig_list = bit_nxt_sig_list[1:] if idx>0 else bit_nxt_sig_list
+            for _bit, _bitnxt in zip(conn_bit_nxt_sig_list, bit_sig_list[:-1]):
                 self.connect_wires([_bit, _bitnxt])
             out_flop_list.extend([self.connect_to_tracks(inst_row[idx].get_pin('out_ret'),
                                                         TrackID(xm_layer, xm_locs[3 + idx], tr_w_xm_sig))
                                  for idx in range(num_units)])
 
+            # connect bit and bit_nxt across rows
             if idx > 0:
-                print(idx)
                 _coord = max(bit_nxt_sig_list[0].middle, last_bit.middle) if idx & 1 else \
                     min(bit_nxt_sig_list[0].middle, last_bit.middle)
                 if lower_layer_routing:
@@ -1176,7 +1178,6 @@ class SARLogicArray(MOSBase):
         vdd_hm = self.connect_wires(vdd_list)
         vss_hm = self.connect_wires(vss_list)
 
-        print(bit_nxt_list)
         for idx, pin in enumerate(bit_nxt_list):
             self.add_pin(f'state<{idx+1}>', pin)
         self.add_pin('VDD', vdd_hm, show=self.show_pins, connect=True)

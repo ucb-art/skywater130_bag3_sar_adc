@@ -1,6 +1,6 @@
-impl_lib: AAAA_SAR_lay_sky2
+impl_lib: AAAA_SAR_lay_sky_check
 impl_cell: AAA_Slice_sync
-root_dir: gen_outputs/skywater130_bag3_sar_adc/AAAA_SAR_lay_sky2
+root_dir: gen_outputs/skywater130_bag3_sar_adc/AAAA_SAR_lay_sky_check
 lay_class: skywater130_bag3_sar_adc.layout.sar_sync_bootstrap.SARSliceBootstrap
 
 params:

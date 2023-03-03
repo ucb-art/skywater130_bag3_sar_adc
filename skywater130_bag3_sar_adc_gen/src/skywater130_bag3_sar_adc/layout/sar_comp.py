@@ -1779,7 +1779,7 @@ class SARComp(MOSBase, TemplateBaseZL):
                               comp.bound_box.yl, 
                               max(bufp.bound_box.xh, comp.bound_box.xh)+coord_x, 
                               ptap_top.bound_box.yh+coord_y)
-            vss_shield = self.add_bbox_array((f'met{3}', 'drawing'), BBoxArray(shield_box))
+            vss_shield = self.add_bbox_array((f'met{xm_layer}', 'drawing'), BBoxArray(shield_box))
             self.add_pin_primitive('VSS_shield', xm_layer, shield_box)
         if side_sup:
             # port_mode = SubPortMode.EVEN if tot_ncol % 4 != 0 else SubPortMode.ODD
@@ -1831,12 +1831,12 @@ class SARComp(MOSBase, TemplateBaseZL):
             #                                                  vm_layer, bbox_r, side_sup=True, align_upper=True)
             # self.connect_to_track_wires(vdd_xm_core, sup_stack_dict_r[0][vm_layer]+sup_stack_dict_l[0][vm_layer])
             # self.connect_to_track_wires(vss_xm_core, sup_stack_dict_r[1][vm_layer]+sup_stack_dict_l[1][vm_layer])
-            self.extend_wires(vss_hm_top, lower=bbox_l.xl, upper=bbox_r.xh)
-            self.extend_wires(vdd_hm_top, lower=bbox_l.xl, upper=bbox_r.xh)
+            vss_hm_top = self.extend_wires(vss_hm_top, lower=bbox_l.xl, upper=bbox_r.xh)
+            vdd_hm_top = self.extend_wires(vdd_hm_top, lower=bbox_l.xl, upper=bbox_r.xh)
             sup_vdd_vm_l, sup_vss_vm_l = self.do_power_fill(vm_layer, tr_manager, vdd_hm_top, vss_hm_top, bbox_l)
             sup_vdd_vm_r, sup_vss_vm_r = self.do_power_fill(vm_layer, tr_manager, vdd_hm_top, vss_hm_top, bbox_r)
-            bbox_l.extend(x=(self.bound_box.xl+self.bound_box.xh)//2-1000)
-            bbox_r.extend(x=(self.bound_box.xl+self.bound_box.xh)//2+1000)
+            # bbox_l.extend(x=(self.bound_box.xl+self.bound_box.xh)//2-1000)
+            # bbox_r.extend(x=(self.bound_box.xl+self.bound_box.xh)//2+1000)
             # sup_stack_dict_l = self.connect_supply_stack_warr(tr_manager, [vdd_xm_core, vss_xm_core], xm_layer,
             #                                                   sup_top_layer, bbox_l, side_sup=False)
             # sup_stack_dict_r = self.connect_supply_stack_warr(tr_manager, [vdd_xm_core, vss_xm_core], xm_layer,
