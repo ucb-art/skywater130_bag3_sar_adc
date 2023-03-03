@@ -522,14 +522,14 @@ class CapDrvCore(MOSBase):
             self.add_tap(sw_col - sp + tap_ncol, vdd_list, vss_list, tile_idx=idx, flip_lr=True)
 
             # supply_hm
-            sup_bot_tid_list.append(self.get_track_id(0, MOSWireType.G, wire_name='sup', tile_idx=idx))
+            # sup_bot_tid_list.append(self.get_track_id(0, MOSWireType.G, wire_name='sup', tile_idx=idx))
             sup_bot_tid_list.append(self.get_track_id(0, MOSWireType.DS, wire_name='sup', tile_idx=idx))
             sup_bot_tid_list.append(self.get_track_id(0, MOSWireType.DS, wire_name='sup', wire_idx=-1, tile_idx=idx))
             sw_list_list.append(sw_list)
             ctrl_list_list.append(ctrl_list)
             vref_list_list.append(vref_list)
 
-        self.set_mos_size()
+        self.set_mos_size(self.num_cols, max(ny, dum_row_idx[-1]))
         for idx in range(ny):
             tile_info, yb, _ = self.get_tile_info(idx)
             xm_locs = self.get_available_tracks(xm_layer, self.grid.coord_to_track(xm_layer, yb, RoundMode.NEAREST),
@@ -959,6 +959,7 @@ class CapDacColCore(TemplateBase):
                 sw_params_list = [sw_master.sch_params for _ in range(nbits)]
                 sw_vss_bbox: List[BBox] = sw.get_all_port_pins('VSS')
             elif sw_type.count('n') == 2:
+
                 sw_n_params = dict(
                     cls_name=CapDrvCore.get_qualified_name(),
                     draw_taps=True,
@@ -973,6 +974,7 @@ class CapDacColCore(TemplateBase):
                 )
                 sw_n_master = self.new_template(GenericWrapper, params=sw_n_params)
                 sw_p_master = self.new_template(GenericWrapper, params=sw_p_params)
+                # back = self.add_instance(sw_p_master)
                 top_layer = max(cap_master.top_layer, sw_n_master.top_layer, sw_p_master.top_layer)
                 w_blk, h_blk = self.grid.get_block_size(top_layer)
                 w_sw_p, h_sw = sw_p_master.bound_box.w, sw_p_master.bound_box.h
@@ -1009,18 +1011,22 @@ class CapDacColCore(TemplateBase):
                     cap_config_dum['dum_col_l'] = dum_col_list[idx]
                     cap_master = self.new_template(CapColCore, params=dict(cap_config=cap_config_dum, ny=4,
                                                                        ratio=1))
+
+                    dums = ny                   
                     unit_cap_height = cap_master.array_box.yh // ny #int(h/self.grid.resolution) // ny
                     sw_n_params = dict(
                     cls_name=CapDrvCore.get_qualified_name(),
                     draw_taps=True,
                     params=dict(pinfo=self.params['pinfo'], seg=seg, ny=ny, w=w_n, sp=sp, nx=2, sw_type='nch',
-                                dum_row_idx=[sum(ny_list[:nbits - diff_idx + 1]) + 1], min_height=unit_cap_height)
+                                dum_row_idx=[dums], min_height=unit_cap_height)
                     )
+                    if idx == 0:
+                        dums = sum(ny_list)
                     sw_p_params = dict(
                         cls_name=CapDrvCore.get_qualified_name(),
                         draw_taps=True,
                         params=dict(pinfo=self.params['pinfo'], seg=seg, ny=ny, w=w_p, sp=sp, nx=1, sw_type='pch',
-                                dum_row_idx=[sum(ny_list[:nbits - diff_idx + 1]) + 1], min_height=unit_cap_height)
+                                dum_row_idx=[dums], min_height=unit_cap_height)
                     )
                     sw_n_master = self.new_template(GenericWrapper, params=sw_n_params)
                     sw_p_master = self.new_template(GenericWrapper, params=sw_p_params)
@@ -1326,8 +1332,13 @@ class CapDacColCore(TemplateBase):
 
         
         # cap top  
-        cap_top = self.connect_wires([pin for inst in cap_list for pin in inst.get_all_port_pins('bot')], upper=-(-(width//w_blk)*w_blk))
-        
+        #cap_top = self.connect_wires([pin for inst in cap_list for pin in inst.get_all_port_pins('bot')], upper=-(-(width//w_blk)*w_blk))
+        top_layer = cap_list[0].get_port('bot').get_single_layer()
+        cap_top = self.add_wires(top_layer, 
+                                self.grid.coord_to_track(top_layer, cap_list[0].get_port('bot').get_bounding_box().xm), 
+                                lower= cap_list[0].get_port('bot').get_bounding_box().yl, 
+                                upper= cap_list[-1].get_port('bot').get_bounding_box().yh, width=4)
+
         # Connect to common-mode switch
         if has_cm_sw:
             if (cap_config['ismim']):

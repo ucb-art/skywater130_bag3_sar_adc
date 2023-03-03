@@ -1,4 +1,4 @@
-impl_lib: AAA_SAR_lay2
+impl_lib: AAA_SAR_lay2_small
 impl_cell: AAA_CapDac
 root_dir: gen_outputs/bag_sar
 lay_class: skywater130_bag3_sar_adc.layout.sar_cdac.CapDacColCore
@@ -7,6 +7,13 @@ lay_class: skywater130_bag3_sar_adc.layout.sar_cdac.CapDacColCore
 params:
   remove_cap: False
   lower_layer_routing: True
+  # nbits: 4
+  # ny_list:    [1, 1, 1, 1, 1] #necessary to figure out switch size
+  # ratio_list: [1, 1, 2, 4, 8] 
+  # row_list: [1, 1, 1, 1, 2]
+  # col_list: [1, 1, 2, 4, 4]
+  # sw_type: ['n', 'n', 'p']
+  # diff_idx: 5
   nbits: 9
   ny_list:    [1, 1, 1, 1, 1, 1, 2, 4, 4, 8] #still necessary for mim to figure out switch size
   ratio_list: [1, 1, 2, 4, 8, 8, 8, 8, 8, 8] 

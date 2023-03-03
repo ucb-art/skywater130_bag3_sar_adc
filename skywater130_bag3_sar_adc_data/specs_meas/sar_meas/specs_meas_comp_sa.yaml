@@ -9,14 +9,14 @@ root_dir: gen_outputs/sar_comp_meas
 gen_specs_file: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/sar_lay/specs_comp_sa.yaml'
 
 meas_params:
-  analysis: ['delay'] #'noise'
+  analysis: ['delay', 'noise']
   swp_info:
-   {}
+    {}
     # v_vcm: # these are the parameters you sweep across
     #   type: 'LINEAR'
-    #   start: 0.5
-    #   stop: 1
-    #   num: 6
+    #   start: 1
+    #   stop: 1.2
+    #   num: 2
     # c_load: # these are the parameters you sweep across
     #   type: 'LINEAR'
     #   start: 1e-15

@@ -71,7 +71,8 @@ class skywater130_bag3_sar_adc__sar_sync_counter(Module):
             nor='Parameters for reset nor',
             buf_out="Parameters for output buf",
             buf_in="Parameters for input buf",
-            buf_comp_clk="Parameters for clk buf"
+            buf_comp_clk="Parameters for clk buf",
+            total_cycles="total clock cycles"
         )
 
     @classmethod
@@ -81,7 +82,8 @@ class skywater130_bag3_sar_adc__sar_sync_counter(Module):
         )
 
     def design(self, inv_div: Param, flop_div: Param, nand: Param, rflop: Param,
-                 nor: Param, buf_out: Param, buf_in: Param, buf_comp_clk: Param) -> None:
+                 nor: Param, buf_out: Param, buf_in: Param, buf_comp_clk: Param,
+                 total_cycles: int) -> None:
         """To be overridden by subclasses to design this module.
 
         This method should fill in values for all parameters in
@@ -97,6 +99,11 @@ class skywater130_bag3_sar_adc__sar_sync_counter(Module):
         restore_instance()
         array_instance()
         """
+        bin_code = [int(b) for b in bin(total_cycles-2)[2:]]
+        max_bit = len(bin_code)
+        padding = [0 for i in range(4-len(bin_code))]
+        bin_code = padding + bin_code
+
         self.instances['XBUF_IN'].design(**buf_in)
         self.instances['XBUF_COMPCLK'].design(**buf_comp_clk)
         self.instances['XFLOP_DIV0'].design(**flop_div)
@@ -108,9 +115,21 @@ class skywater130_bag3_sar_adc__sar_sync_counter(Module):
         self.instances['XFLOP_DIV3'].design(**flop_div)
         self.instances['XINV_DIV3'].design(**inv_div)
         self.instances['XBUF_CLKDIV'].design(**buf_out)
+        self.reconnect_instance_terminal('XBUF_CLKDIV', 'in', 'rst')
+        self.reconnect_instance_terminal('XBUF_CLKDIV', 'out', 'clk_out_b')
+        self.reconnect_instance_terminal('XBUF_CLKDIV', 'outb', 'clk_out')
 
         self.instances['XNOR1'].design(**nor)
         self.instances['XNOR2'].design(**nor)
+
+        str0 = 'xb16' if bin_code[0] else 'x16'
+        str1 = 'xb8' if bin_code[1] else 'x8'
+        self.reconnect_instance_terminal('XNOR2', 'in<1:0>', str1+','+str0)
+        
+        str2 = 'xb4' if bin_code[2] else 'x4'
+        str3 = 'xb2' if bin_code[3] else 'x2'
+        self.reconnect_instance_terminal('XNOR1', 'in<1:0>', str3+','+str2)
+
         self.instances['XNAND'].design(**nand)
         self.instances['XINV_RST'].design(**inv_div)
         self.instances['XFLOP_RST'].design(**rflop)

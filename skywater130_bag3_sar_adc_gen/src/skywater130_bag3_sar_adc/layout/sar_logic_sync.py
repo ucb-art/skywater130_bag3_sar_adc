@@ -991,7 +991,7 @@ class SARLogicArray(MOSBase):
             _tidx_start = self.grid.coord_to_track(xm_layer, _coord, mode=RoundMode.GREATER_EQ)
             num_units = len(inst_row)
             _, xm_locs = tr_manager.place_wires(xm_layer, ['sup']+ ['sig'] * (num_units + 4), _tidx_start, 0)
-            xm_locs = xm_locs[1:] # Avoid put  on top of sup
+            xm_locs = xm_locs[1:] # Avoid put on top of sup
             bit_sig_list = []
             bit_nxt_sig_list = []
             # inst_row = inst_row[::-1] if idx & 1 else inst_row
@@ -1004,8 +1004,12 @@ class SARLogicArray(MOSBase):
                     _tidx = xm_locs[0]
                 bit_sig_list.append(self.connect_to_tracks(inst.get_pin('bit'),
                                                            TrackID(xm_layer, _tidx, tr_w_xm_sig)))
-                bit_nxt_sig_list.append(self.connect_to_tracks(inst.get_pin('bit_nxt'),
-                                                               TrackID(xm_layer, _tidx_nxt, tr_w_xm_sig)))
+                if (idx>0 or jdx>0):
+                    print(idx, jdx)
+                    bit_nxt_sig_list.append(self.connect_to_tracks(inst.get_pin('bit_nxt'),
+                                                                TrackID(xm_layer, _tidx_nxt, tr_w_xm_sig)))
+                else:
+                    self.add_pin(f'state<0>', inst.get_pin('bit_nxt'))
                 comp_clk_xm_list.append(self.connect_to_tracks(inst.get_pin('comp_clk'),
                                                  TrackID(xm_layer, xm_locs[3 + num_units], tr_w_xm_sig)))
             bit_nxt_list.extend(bit_nxt_sig_list)
@@ -1016,6 +1020,7 @@ class SARLogicArray(MOSBase):
                                  for idx in range(num_units)])
 
             if idx > 0:
+                print(idx)
                 _coord = max(bit_nxt_sig_list[0].middle, last_bit.middle) if idx & 1 else \
                     min(bit_nxt_sig_list[0].middle, last_bit.middle)
                 if lower_layer_routing:
@@ -1061,7 +1066,8 @@ class SARLogicArray(MOSBase):
                                                              self.bound_box.yh, width=tr_w_rt_sig, sep=tr_sp_rt_sig)
             rt_tidx_list_upper = self.get_available_tracks(rt_layer, rt_tidx_core_h, rt_tidx_stop, self.bound_box.yl,
                                                            self.bound_box.yh, width=tr_w_rt_sig, sep=tr_sp_rt_sig)
-            flop_out_in_tidx = rt_tidx_list_lower[-1 - num_bits // 2:] + rt_tidx_list_upper[:num_bits // 2]
+            middle = -(-num_bits//2)
+            flop_out_in_tidx = rt_tidx_list_lower[-1 - middle:] + rt_tidx_list_upper[:middle]
             for idx, (flop_in, logic_out) in enumerate(zip(flop_out_in_xm_list, out_flop_list)):
                 self.connect_to_tracks([flop_in, logic_out], TrackID(rt_layer, flop_out_in_tidx[idx], tr_w_rt_sig))
         else:
@@ -1170,8 +1176,9 @@ class SARLogicArray(MOSBase):
         vdd_hm = self.connect_wires(vdd_list)
         vss_hm = self.connect_wires(vss_list)
 
+        print(bit_nxt_list)
         for idx, pin in enumerate(bit_nxt_list):
-            self.add_pin(f'state<{idx}>', pin)
+            self.add_pin(f'state<{idx+1}>', pin)
         self.add_pin('VDD', vdd_hm, show=self.show_pins, connect=True)
         self.add_pin('VSS', vss_hm, show=self.show_pins, connect=True)
         self.add_pin('comp_clk', comp_clk_vm)

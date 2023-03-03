@@ -188,7 +188,8 @@ class SyncDivCounter(MOSBase):
             ridx_n='index for nmos row',
             ridx_p='index for pmos row',
             pinfo='Pinfo for unit row strongArm flop',
-            substrate_row='True to add substrate row'
+            substrate_row='True to add substrate row',
+            total_cycles='Total number of clock cycles, 2 reserved for sampling'
         )
 
     @classmethod
@@ -221,6 +222,10 @@ class SyncDivCounter(MOSBase):
         w_n, w_p = self.params['w_n'], self.params['w_p']
         ridx_n, ridx_p = self.params['ridx_n'], self.params['ridx_p']
         substrate_row = self.params['substrate_row']
+        bin_code = [int(b) for b in bin(int(self.params['total_cycles']-2))[2:]]
+        max_bin = len(bin_code)
+        padding = [0 for i in range(4-len(bin_code))]
+        bin_code = padding+bin_code
 
         conn_layer = self.conn_layer
         hm_layer = self.conn_layer + 1
@@ -245,7 +250,7 @@ class SyncDivCounter(MOSBase):
         buf_in_params = dict(pinfo=pinfo, seg_list=seg_buf_in, w_p=w_p, w_n=w_n, ridx_n=ridx_n, ridx_p=ridx_p,
                              vertical_sup=False, dual_output=True, sig_locs={})
         buf_out_params = dict(pinfo=pinfo, seg_list=seg_buf_out, w_p=w_p, w_n=w_n, ridx_n=ridx_n, ridx_p=ridx_p,
-                              vertical_sup=False, dual_output=True, sig_locs={})
+                              vertical_sup=False, dual_output=True, sig_locs={'nin': ng0_tidx, 'pin': ng2_tidx})
         buf_comp_clk_params = dict(pinfo=pinfo, seg_list=seg_buf_comp_clk, w_p=w_p, w_n=w_n,
                                    ridx_n=ridx_n, ridx_p=ridx_p, vertical_sup=False, dual_output=True,
                                    sig_locs={'nin0': pg0_tidx, 'nin1': pg1_tidx})
@@ -403,8 +408,9 @@ class SyncDivCounter(MOSBase):
         tidx_hi_vm = self.grid.coord_to_track(vm_layer, flop_list[-1].bound_box.xh, mode=RoundMode.LESS_EQ)
         tidx_divb_vm = self.get_available_tracks(vm_layer, tidx_lo_vm, tidx_hi_vm,
                                               flop_list[-1].bound_box.yl, buf_out.bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
-        buf_out_in_vm = self.connect_to_tracks(divb_list[-1], TrackID(vm_layer, tidx_divb_vm[0], tr_w_vm))
-        self.connect_to_track_wires(buf_out_in_vm, buf_out.get_pin('pin'))
+        # connect MSB FIXME
+        # buf_out_in_vm = self.connect_to_tracks(divb_list[-1], TrackID(vm_layer, tidx_divb_vm[0], tr_w_vm))
+        # self.connect_to_track_wires(buf_out_in_vm, buf_out.get_pin('pin'))
 
         # connect the latches to rst logic 
         # -------------------------------------------------------
@@ -414,22 +420,35 @@ class SyncDivCounter(MOSBase):
         tidx_rstnor1_vm = self.get_available_tracks(vm_layer, tidx_lorst_vm, tidx_hirst_vm,
                                               flop_list[0].bound_box.yl, flop_list[1].bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
         
-        xb2 = self.connect_to_tracks(nor1.get_pin('nin<1>'), TrackID(vm_layer, tidx_rstnor1_vm[0], tr_w_vm))
-        self.connect_to_track_wires(xb2, divb_list[0])
+        b2_conn = self.connect_to_tracks(nor1.get_pin('nin<1>'), TrackID(vm_layer, tidx_rstnor1_vm[0], tr_w_vm))
+        if bin_code[3]:
+            self.connect_to_track_wires(b2_conn, divb_list[0])
+        else:
+            self.connect_to_track_wires(b2_conn, div_list[0])
         # self.add_pin('x2b', xb2)
         # self.add_pin('div_x2b', divb_list[0])
         # self.add_pin('div_x2', div_list[0])
-        x4 = self.connect_to_tracks(nor1.get_pin('nin<0>'), TrackID(vm_layer, tidx_rstnor1_vm[1], tr_w_vm))
-        self.connect_to_track_wires(x4, div_list[1])
+        b4_conn = self.connect_to_tracks(nor1.get_pin('nin<0>'), TrackID(vm_layer, tidx_rstnor1_vm[1], tr_w_vm))
+        if bin_code[2]:
+            self.connect_to_track_wires(b4_conn, divb_list[1])
+        else:
+            self.connect_to_track_wires(b4_conn, div_list[1])
         # self.add_pin('x4', x4)
         # self.add_pin('div_x4', div_list[1])
         # self.add_pin('div_x4b', divb_list[1])
         tidx_rstnor2_vm = self.get_available_tracks(vm_layer, tidx_lorst_vm, tidx_hirst_vm,
                                               flop_list[2].bound_box.yl, flop_list[3].bound_box.yh, width=tr_w_vm, sep=tr_sp_vm)
-        x8 = self.connect_to_tracks(nor2.get_pin('nin<1>'), TrackID(vm_layer, tidx_rstnor2_vm[0], tr_w_vm))
-        self.connect_to_track_wires(x8, div_list[2])
-        xb16 = self.connect_to_tracks(nor2.get_pin('nin<0>'), TrackID(vm_layer, tidx_rstnor2_vm[1], tr_w_vm))
-        self.connect_to_track_wires(xb16, divb_list[3])     
+        b8_conn = self.connect_to_tracks(nor2.get_pin('nin<1>'), TrackID(vm_layer, tidx_rstnor2_vm[0], tr_w_vm))
+        if bin_code[1]:
+            self.connect_to_track_wires(b8_conn, divb_list[2])
+        else:
+            self.connect_to_track_wires(b8_conn, div_list[2])
+
+        b16_conn = self.connect_to_tracks(nor2.get_pin('nin<0>'), TrackID(vm_layer, tidx_rstnor2_vm[1], tr_w_vm))
+        if bin_code[0]:
+            self.connect_to_track_wires(b16_conn, divb_list[3])
+        else:
+            self.connect_to_track_wires(b16_conn, div_list[3]) 
 
         # nand connections
         tidx_loin_vm = self.grid.coord_to_track(vm_layer, nor1.bound_box.xl, mode=RoundMode.GREATER_EQ)
@@ -462,6 +481,15 @@ class SyncDivCounter(MOSBase):
         for flop in flop_list:
             # self.add_pin('rst', flop.get_pin('rst'))
             self.connect_to_track_wires(rst_vm, flop.get_pin('rst'))
+        hm_tracks = self.get_available_tracks(hm_layer, self.grid.coord_to_track(hm_layer, buf_out.bound_box.yl),
+                                  self.grid.coord_to_track(hm_layer, buf_out.bound_box.yh), 
+                                  lower=buf_out.bound_box.xl, upper=buf_out.bound_box.xh)
+        #self.add_pin('PIN', buf_out.get_pin('nin'))
+        rst_hm = self.connect_to_tracks(rst_vm, TrackID(hm_layer, hm_tracks[len(hm_tracks)//2], tr_w_hm))
+        print(rst_hm)
+        rst_conn = self.connect_to_tracks(buf_out.get_pin('in'), TrackID(conn_layer, 
+                                                        self.grid.coord_to_track(conn_layer, buf_out.get_pin('in').bound_box.xm), 1))
+        self.connect_to_track_wires(rst_hm, rst_conn) # FIXME
 
         # connect supplies
         # -------------------------------------------------------------------------
@@ -479,8 +507,8 @@ class SyncDivCounter(MOSBase):
         self.add_pin('clk_in', buf_in.get_pin('in'))
         self.add_pin('comp_clk', buf_comp_clk.get_pin('out'))
         self.add_pin('comp_clkb', buf_comp_clk.get_pin('outb'))
-        self.add_pin('clk_out', buf_out.get_pin('out'))
-        self.add_pin('clk_out_b', buf_out.get_pin('outb'))
+        self.add_pin('clk_out_b', buf_out.get_pin('out'))
+        self.add_pin('clk_out', buf_out.get_pin('outb'))
         self.add_pin("VDD", vdd_hm)
         self.add_pin("VSS", vss_hm)
 
@@ -494,6 +522,7 @@ class SyncDivCounter(MOSBase):
             nor=nor_master.sch_params,
             buf_out=buf_out_master.sch_params,
             buf_in=buf_in_master.sch_params,
-            buf_comp_clk=buf_comp_clk_master.sch_params
+            buf_comp_clk=buf_comp_clk_master.sch_params,
+            total_cycles=self.params['total_cycles']
         )
         self.sch_params = sch_params_dict

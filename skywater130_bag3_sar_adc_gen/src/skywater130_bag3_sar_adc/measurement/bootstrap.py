@@ -45,6 +45,7 @@ class BootstrapMM(MeasurementManager):
         fs, fin, vdm = [], [], []
 
         # data length per sample
+        # ---------- Flatten and take FFT
         data_shape = tvec.shape
         shape_by_samp = (np.prod(data_shape[1:-1]), data_shape[-1])
         tvec_rs = tvec.reshape(shape_by_samp)
@@ -76,6 +77,7 @@ class BootstrapMM(MeasurementManager):
         sfdr = np.array(sfdr).reshape(data_shape[1:-1])
         enob = np.array(enob).reshape(data_shape[1:-1])
         
+        # --------------- Calculate swept frequency/amplitude parameters used for reference later
         if len(data_shape) <= 3:
             in_feat_shape: Tuple = (data_shape[1],)
         else:
@@ -136,6 +138,9 @@ class BootstrapMM(MeasurementManager):
 
     async def async_measure_performance(self, name: str, sim_dir: Path, sim_db: SimulationDB,
                                         dut: Optional[DesignInstance]) -> Dict[str, Any]:
+        """ Measures sampling bandwidth, input frequency bandwidth, and dynamic range
+        """
+        
         results = dict()
         # ---------- Max sampling frequency ---------------
         num_samp_base = self.specs['tbm_specs']['sim_params']['base_sample']

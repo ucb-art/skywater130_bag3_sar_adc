@@ -404,7 +404,9 @@ class SamplerTop(TemplateBaseZL):
             decap_l = self.add_instance(decap_vref_master, inst_name='XDECAP', xform=Transform(0, 0))
             decap_r = self.add_instance(decap_vref_master, inst_name='XDECAP', xform=Transform(w_tot, 0, mode=Orientation.MY))
         
-        self.set_size_from_bound_box(top_layer_btstrp, BBox(0, 0, w_tot, max(h_tot, decap_vref_master.bound_box.h)))
+            self.set_size_from_bound_box(top_layer_btstrp, BBox(0, 0, w_tot, max(h_tot, decap_vref_master.bound_box.h)))
+        else:
+            self.set_size_from_bound_box(top_layer_btstrp, BBox(0, 0, w_tot, h_tot))
 
         self.connect_wires(cm_sampler.get_all_port_pins('VDD', layer=top_hor_lay) +
                            sig_sampler_n.get_all_port_pins('VDD', layer=top_hor_lay))
@@ -427,11 +429,12 @@ class SamplerTop(TemplateBaseZL):
         w_conn_blk, h_conn_blk = self.grid.get_block_size(conn_layer)
         w_hm_blk, h_hm_blk = self.grid.get_block_size(hm_layer)
         vm_sw_n_tidx = int(round( self.grid.coord_to_track(vm_layer, -(-cm_sw_n_ym.upper//h_hm_blk)*h_hm_blk, mode=RoundMode.GREATER)))
-        vm_sw_p_tidx = int(round(self.grid.coord_to_track(vm_layer, -(-cm_sw_p_ym.lower//h_hm_blk)*h_hm_blk, mode=RoundMode.LESS)))
-
-        self.connect_to_tracks([mid_sw_p_hm, cm_sw_p_ym], TrackID(vm_layer, vm_sw_p_tidx, width=tr_w_sig_hm))
-        self.connect_to_tracks([mid_sw_n_hm, cm_sw_n_ym], TrackID(vm_layer, vm_sw_n_tidx, width=tr_w_sig_hm))
-
+        vm_sw_p_tidx = int(round(self.grid.coord_to_track(vm_layer, (cm_sw_p_ym.lower//h_hm_blk)*h_hm_blk, mode=RoundMode.LESS)))
+        
+        vm_swn = self.connect_to_tracks([mid_sw_n_hm, cm_sw_n_ym], TrackID(vm_layer, vm_sw_n_tidx, width=tr_w_sig_hm))
+        vm_swp = self.connect_to_tracks([mid_sw_p_hm, cm_sw_p_ym], TrackID(vm_layer, vm_sw_p_tidx, width=tr_w_sig_hm),
+                               track_lower=vm_swn.lower)
+        
         # connect vg_cm
         cm_sw_vg_n = cm_sampler.get_pin('vg_n')
         cm_sw_vg_p = cm_sampler.get_pin('vg_p')
@@ -457,8 +460,8 @@ class SamplerTop(TemplateBaseZL):
                 self.reexport(sig_sampler_n.get_port(pinname), net_name=npin)
                 self.reexport(sig_sampler_p.get_port(pinname), net_name=ppin)
 
-        self.add_pin('out_p_bot', cm_sw_p_ym)
-        self.add_pin('out_n_bot', cm_sw_n_ym)
+        self.add_pin('out_p_bot', vm_swp)
+        self.add_pin('out_n_bot', vm_swn)
 
         self.reexport(sig_sampler_n.get_port('in'), net_name='sig_n')
         self.reexport(sig_sampler_p.get_port('in'), net_name='sig_p')

@@ -909,7 +909,7 @@ class SAHalf(MOSBase):
         # placement
         ridx_in = ridx_n + 1
         ridx_nfb = ridx_in + 1
-        m_in = self.add_mos(ridx_n, 0, seg_in, w=w_in, wire_idx=-1)
+        m_in = self.add_mos(ridx_n, 0, seg_in, w=w_in)
         m_nfb = self.add_mos(ridx_nfb, 0, seg_nfb, w=w_nfb)
         m_pfb = self.add_mos(ridx_p, 0, seg_pfb, w=w_pfb)
 
@@ -923,7 +923,7 @@ class SAHalf(MOSBase):
         pclk_tid = pg_tid
         nclk_tid = self.get_track_id(ridx_in, MOSWireType.G, wire_name='sig')
         nclk_vss = self.get_track_id(ridx_in, MOSWireType.G, wire_name='sig', wire_idx=-1)
-        in_mid_tid = self.get_track_id(ridx_n, MOSWireType.DS, wire_name='sig', wire_idx=-1)
+        in_mid_tid = self.get_track_id(ridx_n, MOSWireType.DS, wire_name='sig', wire_idx=1)
 
         vss_hm = self.connect_to_tracks(m_tail.s, nclk_vss)
         vdd_conn = [m_pfb.s, m_swo.s, m_swm.s]
@@ -942,7 +942,7 @@ class SAHalf(MOSBase):
         grid = self.grid
 
         # tail_tid = self.get_track_id(ridx_n, MOSWireType.DS, wire_name='sig')
-        tail_in_tid = self.get_track_id(ridx_in, MOSWireType.DS, wire_name='sig')
+        tail_in_tid = self.get_track_id(ridx_n, MOSWireType.DS, wire_name='sig', wire_idx=2)
         tail = self.connect_to_tracks(tail_conn, tail_in_tid)
         _tail_in = self.connect_to_tracks(m_in.d, tail_in_tid)
         out = self.connect_wires([m_nfb.d, m_pfb.d, m_swo.d])

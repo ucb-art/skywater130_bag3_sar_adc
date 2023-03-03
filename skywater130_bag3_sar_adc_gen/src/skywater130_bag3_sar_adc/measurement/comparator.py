@@ -44,26 +44,29 @@ class ComparatorMM(MeasurementManager):
         delay_stimuli = specs['delay_stimuli']
         tbm_specs = copy.deepcopy(dict(**specs['tbm_specs']))
         tbm_specs['dut_pins'] = list(dut.sch_master.pins.keys())
+
+        swp_info = []
+        for k, v in specs.get('swp_info', dict()).items():
+            if isinstance(v, list):
+                swp_info.append((k, dict(type='LIST', values=v)))
+            else:
+                _type = v['type']
+                if _type == 'LIST':
+                    swp_info.append((k, dict(type='LIST', values=v['values'])))
+                elif _type == 'LINEAR':
+                    swp_info.append((k, dict(type='LINEAR', start=v['start'], stop=v['stop'], num=v['num'])))
+                elif _type == 'LOG':
+                    swp_info.append((k, dict(type='LOG', start=v['start'], stop=v['stop'], num=v['num'])))
+                else:
+                    raise RuntimeError
+        tbm_specs['swp_info'] = swp_info
+        
         if analysis is DigitalTranTB:
-            swp_info = []
             tbm_specs['src_list'] = []
             tbm_specs['pulse_list'] = list(tbm_specs['pulse_list'])
             tbm_specs['pulse_list'].extend(delay_stimuli)
-            for k, v in specs.get('swp_info', dict()).items():
-                if isinstance(v, list):
-                    swp_info.append((k, dict(type='LIST', values=v)))
-                else:
-                    _type = v['type']
-                    if _type == 'LIST':
-                        swp_info.append((k, dict(type='LIST', values=v['values'])))
-                    elif _type == 'LINEAR':
-                        swp_info.append((k, dict(type='LINEAR', start=v['start'], stop=v['stop'], num=v['num'])))
-                    elif _type == 'LOG':
-                        swp_info.append((k, dict(type='LOG', start=v['start'], stop=v['stop'], num=v['num'])))
-                    else:
-                        raise RuntimeError
-            tbm_specs['swp_info'] = swp_info
         else:
+            tbm_specs['src_list'] = list(tbm_specs['src_list'])
             tbm_specs['src_list'].extend(noise_in_stimuli)
         tbm = cast(analysis, sim_db.make_tbm(analysis, tbm_specs))
         return tbm
@@ -71,22 +74,39 @@ class ComparatorMM(MeasurementManager):
     @staticmethod
     def process_output_noise(noise_sim_results: Union[SimResults, MeasureResult],
                              pac_sim_results: Union[SimResults, MeasureResult]) -> MeasInfo:
+
+        
         data_noise = cast(SimResults, noise_sim_results).data
         # -- Process pnoise --
         data_noise.open_group('pnoise')
         freq = data_noise['freq']
         noise = data_noise['out']
+        orig_shape = noise.shape
+        num_swps  = np.prod(orig_shape[:-1])
         noise_fd = np.square(noise[0])
-        noise_fit = LinearInterpolator([freq], noise_fd, [0])
-        tot_noise = np.sqrt(noise_fit.integrate(noise_fit.input_ranges[0][0], noise_fit.input_ranges[0][1]))
+        noise_fd = noise_fd.reshape(num_swps, orig_shape[-1])
+        tot_noise_list = []
+        for n in noise_fd:
+            noise_fit = LinearInterpolator([freq], n, [0])
+            tot_noise = np.sqrt(noise_fit.integrate(noise_fit.input_ranges[0][0], noise_fit.input_ranges[0][1]))
+            tot_noise_list.append(tot_noise)
         # -- Process pac --
         data_pac = cast(SimResults, pac_sim_results).data
         data_pac.open_group('pac')
-        gain = np.abs(data_pac['outp'] - data_pac['outn'])[0, 0, :][0]
-        in_referred_noise = tot_noise / gain
+        pac_shape = data_pac['outn'].shape
+        data_pac_outp = data_pac['outp'].reshape(num_swps, pac_shape[-2], pac_shape[-1])
+        data_pac_outn = data_pac['outn'].reshape(num_swps, pac_shape[-2], pac_shape[-1])
 
-        return MeasInfo('done', {'Output noise': tot_noise, 
-                                 'Input Ref noise': in_referred_noise})
+        gain_list = []
+        for (pacp, pacn) in zip(data_pac_outp, data_pac_outn):
+            gain = np.abs(pacp - pacn)[0,0]
+            gain_list.append(gain)
+        
+        in_referred_noise_list = [tot_noise / gain for tot_noise, gain in zip(tot_noise_list, gain_list)]
+        tot_noise_list = np.array(tot_noise_list).reshape(orig_shape[:-1])
+        in_referred_noise_list = np.array(in_referred_noise_list).reshape(orig_shape[:-1])
+        return MeasInfo('done', {'Output noise': tot_noise_list, 
+                                 'Input Ref noise': in_referred_noise_list})
 
     @staticmethod
     def process_output_delay(sim_results: Union[SimResults, MeasureResult], tbm: DigitalTranTB) -> MeasInfo:
@@ -106,6 +126,9 @@ class ComparatorMM(MeasurementManager):
         return sim_results
 
     async def get_noise(self, name, sim_db: SimulationDB, dut: DesignInstance, sim_dir: Path, vcm: float):
+        """
+            Fast noise simulation using PNoise and the gain found with PACTB
+        """
         self.specs['tbm_specs']['sim_params']['v_vcm'] = vcm
         tbm_noise = self.setup_tbm(sim_db, dut, PNoiseTB)
         noise_results = await self._run_sim(name + '_noise', sim_db, sim_dir, dut, tbm_noise)
@@ -140,7 +163,8 @@ class ComparatorMM(MeasurementManager):
             #cls = ComparatorDelayMM
             #cls.plot_vcm(data, results['delay']['td'], matplotlib.pyplot, tbm_delay)
         #matplotlib.pyplot.show()
-        return results['delay'] #cast(SimResults, delay_results).data
+        print(results)
+        return results #cast(SimResults, delay_results).data
 
 class ComparatorDelayMM(ComparatorMM):
     def commit(self) -> None:

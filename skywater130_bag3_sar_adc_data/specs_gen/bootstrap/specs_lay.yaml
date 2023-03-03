@@ -13,7 +13,7 @@ params:
     cap: {2: 1, 3: 2, 4: 4, 5: 4}
   tr_spaces: &tr_sp
     !!python/tuple ['cap', 'cap']: {3: 0, 4: 1}
-  shield: True
+  shield: False
   nwl_params:
     seg_dict:
       cap_p: 24
@@ -117,7 +117,7 @@ params:
       off0: 12
       cap_n: 12
     sampler_params:
-       m_list: [1,1,1,2,2,2,4,4,4]
+       m_list: [1,1,1,2,2,2,4,4,4] #[1,1,1,2] #
        nbits: 4
        sampler_unit_params:
          ridx_n: 1

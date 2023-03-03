@@ -1,4 +1,4 @@
-impl_lib: AAA_SAR2
+impl_lib: AAA_SAR_samll
 impl_cell: AAA_Logic_Arr_sync
 root_dir: gen_outputs/bag_sar
 #lay_class: xbase.layout.mos.top.GenericWrapper
@@ -11,14 +11,14 @@ params:
     lower_layer_routing: True
     substrate_row: False
     has_pmos_sw: True
-    logic_unit_row_arr: [3, 3, 4]
-    flop_out_unit_row_arr: [5, 5] 
+    logic_unit_row_arr: [1, 2, 2]
+    flop_out_unit_row_arr: [3, 2] 
     w_n: 84
     w_p: 110
     seg_dict:
         buf_int: [4, 16]
         buf_out: [4, 16]
-        logic_scale_list: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        logic_scale_list: [1, 1, 1, 1, 1]
         flop_out: 16
         logic:
           oai:
@@ -42,7 +42,7 @@ params:
       tile_specs:
         arr_info:
           lch: 30
-          top_layer: 5
+          top_layer: 3
           tr_widths:
             sig: {2: 1}
             clk: {2: 1}

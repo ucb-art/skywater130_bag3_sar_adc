@@ -1,6 +1,6 @@
-impl_lib: AAAA_SAR_lay_sky
+impl_lib: AAAA_SAR_lay_sky2
 impl_cell: AAA_Slice_sync
-root_dir: gen_outputs/skywater130_bag3_sar_adc/AAAA_SAR_lay_sky
+root_dir: gen_outputs/skywater130_bag3_sar_adc/AAAA_SAR_lay_sky2
 lay_class: skywater130_bag3_sar_adc.layout.sar_sync_bootstrap.SARSliceBootstrap
 
 params:
@@ -10,7 +10,7 @@ params:
     sup: {2: 1, 3: 1, 4: 4, 5: 1}
   tr_spaces: &tr_sp
     {}
-  shield: &shield True
+  shield: &shield False
   sampler_params: 'skywater130_bag3_sar_adc/skywater130_bag3_sar_adc_data/specs_gen/bootstrap/specs_lay_sample_top.yaml'
     # Uncomment below for regular mos sampling
     #     m_list: [1,1,1,2,2,2,4,4]
@@ -204,7 +204,7 @@ params:
                 bot_wires:
                   data: ['sup', 'sig<0:1>']
                   shared: ['sup']
-                top_wires: ['sig<0:1>']
+                top_wires: ['sig<0:2>']
               - mos_type: nch
                 width: 84
                 threshold: standard
@@ -255,6 +255,7 @@ params:
     divcount: True
     cls_name: skywater130_bag3_sar_adc.layout.clk_sync_sar.SyncDivCounter
     params:
+      total_cycles: 11
       w_n: 84
       w_p: 110
       ridx_n: 0
@@ -284,8 +285,6 @@ params:
               priority: 1
               bot_mirror: True
               top_mirror: True
-              options:
-                same_col_sub: True
               row_specs:
                 - mos_type: nch
                   width: 84
@@ -459,7 +458,7 @@ params:
                   shared: ['sup']
                 flip: True
         abut_list: []
-  route_power: True
+  route_power: False
   decoupling_cap_params:
     decoupling_margin: 2000
     cap_config:

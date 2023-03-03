@@ -4,7 +4,7 @@ root_dir: gen_outputs/skywater130_bag3_sar_adc/sampler_top
 lay_class: skywater130_bag3_sar_adc.layout.sampler_top.SamplerTop
 
 params:
-  route_power: True
+  route_power: False
   decap_width: 2000
   cap_config: 
     top_layer: 4

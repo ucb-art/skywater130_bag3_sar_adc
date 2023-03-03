@@ -58,6 +58,15 @@ def get_param(key: str, params: Mapping[str, Any], default_params: Optional[Mapp
                 val = default_val
     else:
         val = params[key]
+
+    if int(val)%2:
+        if abs(int(val)+1 - val) > abs(int(val)-1 -val):
+            val = int(val)-1
+        else:
+            val = int(val)+1
+    else:
+        val = int(val)
+        
     return val if dtype is None else dtype(val)
 
 def todict(obj):
@@ -81,6 +90,33 @@ def todict(obj):
         else:
             return obj
         
-def opt_specs_to_yaml():
-    """ Write optimal design specs to a yaml file that can be used later"""
-    pass
+def rec_str(obj):
+        if isinstance(obj, dict):
+            data = {}
+            for (k, v) in obj.items():
+                print(k)
+                try: 
+                    data[k] = rec_str(v.to_dict())
+                    print('success')
+                except Exception:
+                    print('not heppi ....', v)
+                    if not isinstance(v, dict):
+                        data[k] = str(v)
+                    else:
+                        data[k] = rec_str(v)
+            return data
+        # elif hasattr(obj, "_ast"):
+        #     return todict(obj._ast())
+        # elif hasattr(obj, "__iter__") and not isinstance(obj, str):
+        #     return [todict(v) for v in obj]
+        # elif hasattr(obj, "__dict__"):
+        #     data = dict([(key, todict(value)) 
+        #         for key, value in obj.__dict__.items() 
+        #         if not callable(value) and not key.startswith('_')])
+        #     return data
+        else:
+            return obj
+        
+# def opt_specs_to_yaml():
+#     """ Write optimal design specs to a yaml file that can be used later"""
+#     pass

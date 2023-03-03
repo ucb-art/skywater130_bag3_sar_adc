@@ -9,7 +9,7 @@ params:
     fast_on: &fast False
     dum_sampler: &dum False
     has_buf: &buf False
-    shield: True
+    shield:  False
     top_layer: 4
     tr_widths: &tr_w
       sig: {2: 1}

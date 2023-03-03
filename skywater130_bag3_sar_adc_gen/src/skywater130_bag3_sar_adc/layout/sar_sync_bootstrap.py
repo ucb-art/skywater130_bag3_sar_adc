@@ -109,7 +109,7 @@ class SARSliceBootstrap(TemplateBase):
         clkgen_master_dummy: MOSBase = self.new_template(SyncDivCounter, params=clkgen_params) if divcount   \
                                             else self.new_template(SyncClkGen, params=clkgen_params)
         clkgen_params = dict(
-            ncols_tot = clkgen_master_dummy.bound_box.w // comp_master_dummy.sd_pitch + 4 ,
+            ncols_tot = clkgen_master_dummy.bound_box.w // comp_master_dummy.sd_pitch + 20 ,
             cls_name=clkgen_clsname,
             params=clkgen_params
         )
@@ -190,7 +190,8 @@ class SARSliceBootstrap(TemplateBase):
             num_ref_ntr, sam_ref_locs = tr_manager.place_wires(xm_layer, ['cap']*(3), align_idx=0,
                                                        align_track=sam_bot_xm_tidx)
             num_sam_ntr, sam_bot_locs = tr_manager.place_wires(xm_layer, ['cap']*(nbits), align_idx=0,
-                                                       align_track=sam_ref_locs[2])
+                                                       align_track=sam_ref_locs[-1])
+            print("SAM BOT LOC: ", sam_ref_locs, sam_bot_locs)
             coord_sam_tr = self.grid.track_to_coord(xm_layer, num_sam_ntr+num_ref_ntr)
 
             sam_bot_locs.pop(0)
@@ -203,7 +204,9 @@ class SARSliceBootstrap(TemplateBase):
             #                               xform=Transform(w_tot//2, sam_y, mode=Orientation.R0))
 
             sampler_out_lay_purp = (sampler.get_port('out_n<0>').get_single_layer(), 'drawing')
+            print(nbits)
             for idx in range(nbits-1):
+                print(idx)
                 _n_xm = [self.connect_bbox_to_tracks(Direction.LOWER, sampler_out_lay_purp, w,
                                              TrackID(xm_layer, sam_bot_locs[idx], tr_w_cap_xm))
                                             for w in sampler.get_all_port_pins(f'out_n<{idx}>')]
@@ -382,8 +385,8 @@ class SARSliceBootstrap(TemplateBase):
         if lower_layer_routing:
             rt_tidx_start = self.grid.coord_to_track(vm_layer, cdac_n.bound_box.xl-10*w_blk)
             rt_tidx_stop = self.grid.coord_to_track(vm_layer, cdac_p.bound_box.xh+10*w_blk)
-            rt_tidx_cenl = self.grid.coord_to_track(vm_layer, -(-clk_bbox[0].middle//w_blk)*w_blk-10*w_blk)
-            rt_tidx_cenr = self.grid.coord_to_track(vm_layer, -(-clk_bbox[0].middle//w_blk)*w_blk+10*w_blk)
+            rt_tidx_cenl = comp_n_tidx_vm-1  #self.grid.coord_to_track(vm_layer, -(-clk_bbox[0].middle//w_blk)*w_blk-10*w_blk)
+            rt_tidx_cenr = comp_p_tidx_vm+1 #self.grid.coord_to_track(vm_layer, -(-clk_bbox[0].middle//w_blk)*w_blk+10*w_blk)
             tr_w_vm_sig = tr_manager.get_width(vm_layer, 'dig')
             tr_sp_vm_sig = tr_manager.get_sep(vm_layer, ('dig', 'dig'))
             for idx in range(nbits - 1):
@@ -446,10 +449,10 @@ class SARSliceBootstrap(TemplateBase):
                                                 TrackID(xm_layer, dig_tr_locs[5 * idx + 4], tr_w_dig_xm))
                     rt_tidx_list = self.get_available_tracks(vm_layer, rt_tidx_start, rt_tidx_cenl,
                                                             lower=logic.bound_box.yh,
-                                                            upper=comp.bound_box.yl-h_blk*10, width=tr_w_vm_sig, 
+                                                            upper=comp.bound_box.yl-h_blk, width=tr_w_vm_sig, 
                                                             sep=tr_sp_vm_sig) + self.get_available_tracks(vm_layer, rt_tidx_cenr, rt_tidx_stop,
                                                             lower=logic.bound_box.yh,
-                                                            upper=comp.bound_box.yl-h_blk*10, width=tr_w_vm_sig, sep=tr_sp_vm_sig)                        
+                                                            upper=comp.bound_box.yl-h_blk, width=tr_w_vm_sig, sep=tr_sp_vm_sig)                        
                                                                                              
                     rt_tidx_coord_list = [self.grid.track_to_coord(vm_layer, x) for x in rt_tidx_list]
                     mid_coord = -(-clk_bbox[0].middle//w_blk)*w_blk
@@ -616,38 +619,29 @@ class SARSliceBootstrap(TemplateBase):
             clk_sam_ym = self.connect_differential_tracks(clk_sam_xm[0], clk_sam_xm[1], ym_layer, tr_manager.get_next_track(vm_layer, comp_clk_ym_tidx, 'sig', 'sig',
                                                 up=True), tr_manager.get_next_track(vm_layer, comp_clk_ym_tidx, 'sig', 'sig',
                                                 up=False))
-            bit_loc = -(-nbits//2)
-            clk_sam_xm2 = self.connect_differential_tracks(clk_sam_ym[0], clk_sam_ym[1], xm_layer, sam_bot_locs[bit_loc], sam_bot_locs[(bit_loc + 1)]) 
+            bit_loc = (nbits//2)
+            # cannot use connect to differential wires if the tidx is the same for both wires 
+            clk_xm1 = self.connect_to_tracks(clk_sam_ym[0], TrackID(xm_layer, sam_bot_locs[bit_loc], 1))
+            clk_xm2 = self.connect_to_tracks(clk_sam_ym[1], TrackID(xm_layer, sam_bot_locs[bit_loc], 1))
+            samp_vcm_n_vm_tidx =  self.grid.coord_to_track(vm_layer, clk_xm1.middle, mode=RoundMode.GREATER)
+            samp_vcm_p_vm_tidx =  self.grid.coord_to_track(vm_layer, clk_xm2.middle, mode=RoundMode.LESS)
 
-            samp_vcm_n_vm_tidx =  self.grid.coord_to_track(vm_layer, samp_vref[0].xm, mode=RoundMode.GREATER)
-            samp_vcm_p_vm_tidx =  self.grid.coord_to_track(vm_layer, samp_vref[1].xm, mode=RoundMode.LESS)
-            clk_sam_p1_tidx = tr_manager.get_next_track(vm_layer, samp_vcm_n_vm_tidx , 'sig', 'sig',
-                                        up=True)
-            clk_sam_p2_tidx = tr_manager.get_next_track(vm_layer, samp_vcm_p_vm_tidx, 'sig', 'sig',
-                                        up=False)
-            clk_sam_vm1 = self.connect_differential_tracks(clk_sam_xm2[0], clk_sam_xm2[1], vm_layer, clk_sam_p1_tidx, tr_manager.get_next_track(vm_layer, clk_sam_p1_tidx, 'sig', 'sig',
-                                            up=True))
-            clk_sam_vm2 = self.connect_differential_tracks(clk_sam_xm2[0], clk_sam_xm2[1], vm_layer, clk_sam_p2_tidx, tr_manager.get_next_track(vm_layer, clk_sam_p2_tidx, 'sig', 'sig',
-                                            up=False))
-            self.connect_differential_wires(clk_sam_vm1[0], clk_sam_vm1[1], sampler.get_pin('sam'), sampler.get_pin('sam_b'))
-            self.connect_differential_wires(clk_sam_vm2[0], clk_sam_vm2[1], sampler.get_pin('sam'), sampler.get_pin('sam_b'))
+            clk_sam_vm1 = self.connect_to_tracks(clk_xm1, TrackID(vm_layer, samp_vcm_n_vm_tidx, 1))
+            clk_sam_vm2 = self.connect_to_tracks(clk_xm2, TrackID(vm_layer, samp_vcm_p_vm_tidx, 1))
+
+            self.connect_differential_wires(clk_sam_vm1, clk_sam_vm2, sampler.get_pin('sam_b'), sampler.get_pin('sam'))
         
             # Route top_n and top_p to the sampler
-            sam_top_xm = self.connect_differential_tracks(dac_top_p, dac_top_n, xm_layer, sam_bot_locs[bit_loc-1], sam_bot_locs[(bit_loc -2)])
-            samp_vcm_n_vm_tidx =  self.grid.coord_to_track(vm_layer, samp_vref[0].xm, mode=RoundMode.LESS)
-            samp_vcm_p_vm_tidx =  self.grid.coord_to_track(vm_layer, samp_vref[1].xm, mode=RoundMode.GREATER)
-            sam_topn_vm_tidx = tr_manager.get_next_track(vm_layer, samp_vcm_n_vm_tidx , 'sig', 'sig',
-                                        up=False)
-            sam_topp_vm_tidx = tr_manager.get_next_track(vm_layer, samp_vcm_p_vm_tidx, 'sig', 'sig',
-                                        up=True)
-            sam_top_vm = self.connect_differential_tracks(sam_top_xm[0], sam_top_xm[1], vm_layer, sam_topp_vm_tidx, sam_topn_vm_tidx)
-            self.connect_differential_wires(sam_top_vm[0], sam_top_vm[1], sampler.get_pin('out_p_bot'), sampler.get_pin('out_n_bot'))
+            sam_top_xm = self.connect_differential_tracks(dac_top_p, dac_top_n, xm_layer, 
+                                                          sam_bot_locs[bit_loc-1], sam_bot_locs[(bit_loc -2)])
+            self.connect_differential_wires(sampler.get_all_port_pins('out_n_bot'), sampler.get_all_port_pins('out_p_bot'), 
+                                            sam_top_xm[1], sam_top_xm[0])
         
         shield: Param = self.params['shield']
         if shield:
             VSS_shields = sampler.get_all_port_pins('VSS_shield') + comp.get_all_port_pins('VSS_shield')
-            if not route_power:
-                self.reexport(comp.get_port('VSS_shield'), net_name='VSS')
+            # if not route_power: FIXME
+            #     self.reexport(comp.get_port('VSS_shield'), net_name='VSS')
         
         if route_power:
             # Decoupling and power grid 

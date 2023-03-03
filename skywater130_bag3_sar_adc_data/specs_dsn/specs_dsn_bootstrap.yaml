@@ -20,9 +20,10 @@ dsn_params:
   dsn_swp_params:
     cap_n: {start: 8, stop: 24, num: 3}
     off0: {start: 8, stop: 24, num: 2}
+    off1: {start: 8, stop: 24, num: 2}
 
-  sim_load_swp_params:
-    c_load: {start: 1p, stop: 3p, num: 3}
+  # sim_load_swp_params:
+  #   c_load: {start: 1p, stop: 3p, num: 3}
 
   env_list: [tt_25]
 

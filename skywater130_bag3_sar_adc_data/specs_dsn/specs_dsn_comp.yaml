@@ -8,22 +8,23 @@ dsn_params:
   dsn_basename: AAA_COMP
   opt_specs:
     spec_constraints:
-      delay: [null, 600e-12]
+      delay: [null, 500e-8]
+      noise: [null, 200e-3]
     var_constraints:
       {}
-    opt: [delay, False] #spec and if maximum
+    opt: [reward, True]  #spec and if maximum, you can only optimize for one variable
 
   dsn_fixed_params:
-    pfb: 4
     tail: 4
     sw: 2
 
   dsn_swp_params:
-    in: {start: 8, stop: 16, num: 3}
-    nfb: {start: 8, stop: 16, num: 3}
-
-  sim_load_swp_params:
-    c_load: {start: 1f, stop: 100f, num: 3}
+    in: {start: 8, stop: 16, num: 2}
+    nfb: {start: 8, stop: 16, num: 2}
+    pfb: {start: 8, stop: 16, num: 2}
+  # sim_load_swp_params:
+  # #   c_load: {start: 1f, stop: 1f, num: 1}
+  #   c_load: {start: 1f, stop: 100f, num: 2}
 
   env_list: [tt_25]
 
