@@ -58,7 +58,12 @@ class CompDesigner(OptDesigner):
         self._base_gen_specs = self._dut_class.process_params(base_gen_specs['params'])[0]
         self._base_gen_specs = self.get_dut_gen_specs(False, self._base_gen_specs, self._base_gen_specs)
         self._meas_params = parse_params_file(self.dsn_specs['meas_params'])['meas_params']
-
+        self._constraints = self.dsn_specs['opt_specs']
+        
+        opt_specs = self.dsn_specs['opt_specs']
+        self._constraints = {k: (v[0] if v[0] is not None else 0, 
+                                 v[1] if  v[1] is not None else math.inf) \
+                                 for k, v in self.dsn_specs['opt_specs']['spec_constraints'].items()}
         #FIXME
         self._is_lay = True
 
@@ -111,7 +116,7 @@ class CompDesigner(OptDesigner):
         fn_table, swp_order = self.make_models()
         # self.plot_specs(swp_order, db_data, fn_table)
         opt_specs = self._dsn_specs['opt_specs']
-        spec_constraints = {k: tuple(v) for k, v in opt_specs['spec_constraints'].items()}
+        spec_constraints = {k: (0 if v[0] is None else v[0]*(-1e6), math.inf if v[1] is None else v[1]*1e6) for k, v in opt_specs['spec_constraints'].items()}
         var_constraints = opt_specs['var_constraints']
         c_load_arr = [] #self.sim_load_swp.get_swp_values('c_load')
         self.run_opt_sweep(*opt_specs['opt'], '', c_load_arr, fn_table, swp_order,
@@ -130,7 +135,7 @@ class CompDesigner(OptDesigner):
             spec_vals = {}
             num_envs = len(self.env_list)
             success_idx_list = []
-            self.log(f"single opt...")
+            self.log(f"single opt sweep...")
             try:
                 opt_x, opt_y, spec_vals = self.optimize(
                     opt_var, fn_table, swp_order, maximize=opt_maximize, reduce_fn=np.min if opt_maximize else np.max,
@@ -141,16 +146,6 @@ class CompDesigner(OptDesigner):
                 self.warn(f"Error occurred while running: {e}")
             else:
                 success_idx_list.append(1)
-            #     if len(success_idx_list) == 1:
-            #         for k, sub_v in sub_opt_x.items():
-            #             opt_x[k] = np.full((size, *np.array(sub_v).shape), np.nan)
-            #         for k in sub_spec_vals:
-            #             spec_vals[k] = np.full((size, num_envs), np.nan)
-            #     for k, v in sub_opt_x.items():
-            #         opt_x[k][i] = np.array(v)
-            #     opt_y[i] = sub_opt_y
-            #     for k, v in sub_spec_vals.items():
-            #         spec_vals[k][i] = v
         else:
             size = len(swp_vals)
             opt_x = {}
@@ -242,10 +237,12 @@ class CompDesigner(OptDesigner):
 
     def postproc_delay(self, data):
         d_rew = 0
-        if data['delay']['td'][0] < 5e-9:
+        if data['delay']['td'][0] < self._constraints['delay'][1] and \
+           data['delay']['td'][0] > self._constraints['delay'][0]:
             d_rew = 1
         n_rew = 0
-        if data['noise']['Input Ref noise'][0] <1e-3:
+        if data['noise']['Input Ref noise'][0] < self._constraints['noise'][1] and \
+            data['noise']['Input Ref noise'][0] > self._constraints['noise'][0]:
             n_rew = 1/(data['noise']['Input Ref noise'][0])
         return {'delay': data['delay']['td'],
                 'noise': data['noise']['Input Ref noise'],
