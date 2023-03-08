@@ -7,8 +7,12 @@ This repo consists of `skywater130_bag3_sar_adc_gen` and `skywater130_bag3_sar_a
 Provided is a list of files with descriptions. Layout generator files are  in [`skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout`](skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout) and corresponding `yaml` files (when applicable) are located in [`skywater130_bag3_sar_adc_data/specs_gen/sar_lay`](skywater130_bag3_sar_adc_data/specs_gen/sar_lay):
 
  - Top level ADC
-	 - Generator: [sar_sync.py](skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout/sar_sync.py) 
-	 - Specs: [specs_slice_sync.yaml](skywater130_bag3_sar_adc_data/specs_gen/sar_lay/specs_slice_sync.yaml)
+	 - Generator: [sar_sync_bootstrap.py](skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout/sar_sync_bootstrap.py) 
+	 - Specs: [specs_slice_sync_bootstrap.yaml](skywater130_bag3_sar_adc_data/specs_gen/sar_lay/specs_slice_sync_bootstrap.yaml)
+ - Bootstrapped Sampler
+	- Generates sampling switch
+	- Generator: [sampler_top.py](skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout/sampler_top.py) 
+	- Specs:  [specs_clkgen_sync_sar.yaml](skywater130_bag3_sar_adc_data/specs_gen/bootstrap/specs_lay_sample_top.yaml) 
  - Synchronous Logic
 	 - This block can be further split into the full 8 bit logic array with output registers, and the unit logic block for 1 bit
 	 - Generator (for all blocks): [sar_logic_sync.py](skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout/sar_logic_sync.py) 
