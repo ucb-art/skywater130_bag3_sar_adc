@@ -1,0 +1,6 @@
+[submodule "bag3_sync_sar_adc"]
+	path = bag3_sync_sar_adc
+	url = git@github.com:ucb-art/bag3_sync_sar_adc.git
+[submodule "data/bag3_sync_sar_adc_data_skywater130"]
+	path = data/bag3_sync_sar_adc_data_skywater130
+	url = git@github.com:ucb-art/bag3_sync_sar_adc_data_skywater130.git
