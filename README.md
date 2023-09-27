@@ -2,7 +2,7 @@
 Synchronous 8 bit SAR ADC generated using BAG3. 
 
 ## Inventory
-This repo consists of `skywater130_bag3_sar_adc_gen` and `skywater130_bag3_sar_adc_data`. The `_data` folder consists of `yaml` files that describe the required parameters of each circuit. `_gen` consists of BAG3 generators. 
+This repo consists of `bag3_sync_sar_adc` and `data/bag3_sync_sar_adc_data_skywater130`. The later consists of `yaml` files that describe the required parameters of each circuit. The former consists of BAG3 generators. Please visit each repo individually to make sure you have the most up to date implementations. 
 
 Provided is a list of files with descriptions. Layout generator files are  in [`skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout`](skywater130_bag3_sar_adc_gen/src/skywater130_bag3_sar_adc/layout) and corresponding `yaml` files (when applicable) are located in [`skywater130_bag3_sar_adc_data/specs_gen/sar_lay`](skywater130_bag3_sar_adc_data/specs_gen/sar_lay):
 
